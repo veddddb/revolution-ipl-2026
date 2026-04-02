@@ -3,86 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Revolution IPL 2026</title>
+    <title>REVOLUTION IPL 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #0b0e14; color: #e6edf3; font-family: 'Inter', sans-serif; }
-        .glass { background: rgba(22, 27, 34, 0.8); backdrop-filter: blur(10px); border: 1px solid #30363d; }
-        .gold { color: #f1c40f; text-shadow: 0 0 10px rgba(241, 196, 15, 0.5); }
+        .glass { background: #161b22; border: 1px solid #30363d; transition: all 0.3s ease; }
+        .gold { color: #f1c40f; }
+        .hidden-squad { display: none; }
+        .active-squad { display: block; animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="p-4 md:p-8">
-    <div class="max-w-3xl mx-auto">
-        <header class="text-center mb-10">
-            <h1 class="text-4xl font-black tracking-tighter gold mb-2">REVOLUTION IPL</h1>
-            <p class="text-gray-500 text-sm uppercase tracking-widest">Season 2026 • Live Standings</p>
+    <div class="max-w-2xl mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-black gold tracking-tighter italic">REVOLUTION 2026</h1>
+            <p class="text-gray-500 text-xs uppercase tracking-widest mt-1">Tap an owner to view squad points</p>
         </header>
 
-        <div id="podium" class="flex justify-center items-end gap-2 mb-10 h-32">
-            </div>
-
-        <div class="glass rounded-2xl overflow-hidden">
-            <div class="p-4 border-b border-gray-800 flex justify-between items-center">
-                <h2 class="font-bold text-lg">League Table</h2>
-                <span id="live-indicator" class="flex items-center text-xs text-green-500">
-                    <span class="animate-ping w-2 h-2 bg-green-500 rounded-full mr-2"></span> LIVE
-                </span>
-            </div>
-            <div id="leaderboard-list">
-                </div>
+        <div id="leaderboard" class="space-y-3">
+            <div class="text-center py-10 text-gray-500">Connecting to Google Sheets...</div>
         </div>
     </div>
 
     <script>
         const SHEET_ID = '1xIRCNr0tteFfMk6l7inIkKeSJMb7WLBswsXepHRqjio';
-        const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Leaderboard`;
+        
+        // URLs for the two data sources
+        const lbUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Leaderboard`;
+        const pcUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=PointsCalc`;
 
-        async function updateDashboard() {
-            const res = await fetch(url);
-            const text = await res.text();
-            const rows = text.split('\n').slice(1).map(r => r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/));
-            
-            // Sort data by points (descending)
-            const sorted = rows.map(r => ({
-                name: r[0].replace(/"/g, ''),
-                pts: Math.round(parseFloat(r[1].replace(/"/g, '')) || 0)
-            })).sort((a, b) => b.pts - a.pts);
+        async function init() {
+            try {
+                const [lbRes, pcRes] = await Promise.all([fetch(lbUrl), fetch(pcUrl)]);
+                const lbText = await lbRes.text();
+                const pcText = await pcRes.text();
 
-            // 1. Render Podium
-            const podium = document.getElementById('podium');
-            podium.innerHTML = `
-                <div class="flex flex-col items-center">
-                    <div class="text-xs font-bold text-gray-400">2nd</div>
-                    <div class="w-16 bg-gray-700 rounded-t-lg flex items-end justify-center pb-2 h-20 text-xl font-bold">${sorted[1].name[0]}</div>
-                </div>
-                <div class="flex flex-col items-center">
-                    <div class="text-xs font-bold gold">1st</div>
-                    <div class="w-20 bg-yellow-600/20 border-t-4 border-yellow-500 rounded-t-lg flex items-end justify-center pb-2 h-28 text-2xl font-bold gold">${sorted[0].name[0]}</div>
-                </div>
-                <div class="flex flex-col items-center">
-                    <div class="text-xs font-bold text-orange-400">3rd</div>
-                    <div class="w-16 bg-orange-900/20 rounded-t-lg flex items-end justify-center pb-2 h-16 text-xl font-bold">${sorted[2].name[0]}</div>
-                </div>
-            `;
+                // 1. Process Leaderboard Data
+                const lbData = lbText.split('\n').slice(1).map(r => r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/));
+                const sortedOwners = lbData.map(r => ({
+                    name: r[0].replace(/"/g, ''),
+                    total: Math.round(parseFloat(r[1].replace(/"/g, '')) || 0)
+                })).sort((a, b) => b.total - a.total);
 
-            // 2. Render List
-            const list = document.getElementById('leaderboard-list');
-            list.innerHTML = sorted.map((owner, i) => `
-                <div class="flex items-center justify-between p-4 border-b border-gray-800/50 hover:bg-white/5 transition">
-                    <div class="flex items-center gap-4">
-                        <span class="text-gray-600 font-mono w-4">${i + 1}</span>
-                        <span class="font-semibold text-gray-200">${owner.name}</span>
+                // 2. Process Player Data
+                const pcRows = pcText.split('\n').slice(1);
+                const squads = {};
+                pcRows.forEach(row => {
+                    const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    if (cols.length < 7) return;
+                    const pName = cols[1].replace(/"/g, '');
+                    const owner = cols[2].replace(/"/g, '');
+                    const pts = parseFloat(cols[6].replace(/"/g, '')) || 0;
+                    if (!owner || owner === "Unsold") return;
+                    if (!squads[owner]) squads[owner] = {};
+                    squads[owner][pName] = (squads[owner][pName] || 0) + pts;
+                });
+
+                render(sortedOwners, squads);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function render(owners, squads) {
+            const container = document.getElementById('leaderboard');
+            container.innerHTML = owners.map((owner, i) => `
+                <div class="glass rounded-xl overflow-hidden cursor-pointer" onclick="toggleSquad('${i}')">
+                    <div class="p-4 flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <span class="text-gray-600 font-mono text-sm">${i + 1}</span>
+                            <span class="font-bold text-lg text-gray-100">${owner.name}</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xl font-black gold">${owner.total}</span>
+                        </div>
                     </div>
-                    <div class="text-right">
-                        <span class="block text-xl font-black gold">${owner.pts}</span>
-                        <span class="text-[10px] text-gray-500 uppercase font-bold">Total Points</span>
+                    <div id="squad-${i}" class="hidden-squad bg-black/30 border-t border-gray-800 p-4 space-y-2">
+                        <div class="text-[10px] text-gray-500 uppercase font-bold mb-2">Player Performance</div>
+                        ${renderPlayers(squads[owner.name])}
                     </div>
                 </div>
             `).join('');
         }
 
-        updateDashboard();
-        setInterval(updateDashboard, 60000); // Auto-refresh every 60s
+        function renderPlayers(players) {
+            if (!players) return '<div class="text-xs text-gray-600 italic">No points recorded yet</div>';
+            return Object.entries(players)
+                .sort((a, b) => b[1] - a[1]) // Sort players by points
+                .map(([name, pts]) => `
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="text-gray-400">${name}</span>
+                        <span class="font-bold text-gray-200">${Math.round(pts)} pts</span>
+                    </div>
+                `).join('');
+        }
+
+        function toggleSquad(id) {
+            const el = document.getElementById(`squad-${id}`);
+            const isHidden = el.classList.contains('hidden-squad');
+            // Close all others first
+            document.querySelectorAll('.hidden-squad').forEach(s => s.classList.replace('active-squad', 'hidden-squad'));
+            if (isHidden) el.classList.replace('hidden-squad', 'active-squad');
+        }
+
+        init();
+        setInterval(init, 60000);
     </script>
 </body>
 </html>
