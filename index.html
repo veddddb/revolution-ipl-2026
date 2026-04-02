@@ -9,9 +9,6 @@
     <style>
         body { background-color: #030508; color: #f8fafc; font-family: 'Inter', sans-serif; }
         .font-cyber { font-family: 'Orbitron', sans-serif; }
-        
-        /* Podium Styles */
-        .podium-card { background: linear-gradient(180deg, #161b22 0%, #0d1117 100%); border: 1px solid #30363d; border-radius: 12px; }
         .gold-glow { color: #f1c40f; text-shadow: 0 0 15px rgba(241, 196, 15, 0.5); }
         
         /* Accordion Logic */
@@ -21,8 +18,8 @@
         .owner-row { border-bottom: 1px solid rgba(255,255,255,0.03); transition: background 0.2s; }
         .owner-row:hover { background: rgba(255,255,255,0.02); }
         
-        /* Initial Circles */
         .avatar { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: 800; font-size: 14px; background: #21262d; border: 1px solid #30363d; }
+        .unsold-pill { background: #161b22; border: 1px solid #30363d; color: #8b949e; }
     </style>
 </head>
 <body class="p-4 md:p-12">
@@ -31,20 +28,30 @@
             <h1 class="text-5xl font-black font-cyber gold-glow italic tracking-tighter mb-2">REVOLUTION</h1>
             <div class="flex justify-center items-center gap-2">
                 <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Live Scoring Engine v2.0</span>
+                <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest text-center">Live Feed • Season 2026</span>
             </div>
         </header>
 
-        <div id="podium" class="flex justify-center items-end gap-3 mb-12 h-36">
-            </div>
+        <div id="podium" class="flex justify-center items-end gap-3 mb-12 h-36"></div>
 
-        <div class="bg-[#0d1117] border border-white/5 rounded-3xl overflow-hidden shadow-2xl">
+        <div class="bg-[#0d1117] border border-white/5 rounded-3xl overflow-hidden shadow-2xl mb-8">
             <div class="p-5 border-b border-white/5 flex justify-between items-center bg-white/5">
                 <span class="text-xs font-black uppercase tracking-widest text-gray-400">Owner Rankings</span>
-                <span class="text-[10px] text-gray-600 font-bold">Updated: Just Now</span>
             </div>
-            <div id="leaderboard">
+            <div id="leaderboard"></div>
+        </div>
+
+        <div id="unsold-container" class="bg-[#0d1117]/50 border border-dashed border-white/10 rounded-2xl overflow-hidden">
+            <div class="p-4 border-b border-white/5 flex justify-between items-center cursor-pointer" onclick="toggleSquad('unsold')">
+                <div class="flex items-center gap-3">
+                    <span class="text-gray-600 font-cyber text-xs">--</span>
+                    <span class="font-bold text-sm text-gray-500">Unsold Players</span>
                 </div>
+                <span class="text-xs text-gray-600 italic">View Pool</span>
+            </div>
+            <div id="sq-unsold" class="squad-view px-10">
+                <div id="unsold-list" class="space-y-1 mt-4"></div>
+            </div>
         </div>
     </div>
 
@@ -59,14 +66,15 @@
                 const lbRows = (await lbRes.text()).split('\n').slice(1);
                 const pcRows = (await pcRes.text()).split('\n').slice(1);
 
-                const owners = lbRows.map(r => {
+                // 1. Process Owners (Filter out Unsold from Rankings)
+                const allOwners = lbRows.map(r => {
                     const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                    return { 
-                        name: c[0].replace(/"/g, '').trim(), 
-                        score: Math.round(parseFloat(c[1].replace(/"/g, '')) || 0) 
-                    };
-                }).sort((a,b) => b.score - a.score);
+                    return { name: c[0].replace(/"/g, '').trim(), score: Math.round(parseFloat(c[1].replace(/"/g, '')) || 0) };
+                }).filter(o => o.name && o.name.toLowerCase() !== "unsold");
 
+                const sortedOwners = allOwners.sort((a,b) => b.score - a.score);
+
+                // 2. Process Squads (Keep Unsold separate)
                 const squads = {};
                 pcRows.forEach(r => {
                     const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
@@ -74,44 +82,47 @@
                     const owner = c[2].replace(/"/g, '').trim();
                     const player = c[1].replace(/"/g, '');
                     const pts = parseFloat(c[6].replace(/"/g, '')) || 0;
-                    if (owner && owner !== "Unsold") {
+                    if (owner) {
                         if (!squads[owner]) squads[owner] = [];
-                        squads[owner].push({ name: player, pts: Math.round(pts) });
+                        // Check if player already exists in the list to sum points
+                        let existing = squads[owner].find(p => p.name === player);
+                        if (existing) { existing.pts += Math.round(pts); } 
+                        else { squads[owner].push({ name: player, pts: Math.round(pts) }); }
                     }
                 });
 
-                render(owners, squads);
+                render(sortedOwners, squads);
             } catch (e) { console.error(e); }
         }
 
         function render(owners, squads) {
-            // 1. Render Podium
+            // 1. Podium
             const pod = document.getElementById('podium');
             if (owners.length >= 3) {
                 pod.innerHTML = `
                     <div class="flex flex-col items-center">
-                        <div class="avatar border-blue-500/50 mb-2">${owners[1].name[0]}</div>
-                        <div class="w-20 bg-[#161b22] h-16 rounded-t-lg border-t-2 border-blue-500/50 flex items-center justify-center font-cyber text-sm">2nd</div>
+                        <div class="avatar mb-2">${owners[1].name[0]}</div>
+                        <div class="w-20 bg-[#161b22] h-16 rounded-t-lg border-t-2 border-blue-500/50 flex items-center justify-center font-cyber text-[10px]">2nd</div>
                     </div>
                     <div class="flex flex-col items-center">
                         <div class="avatar border-yellow-500 mb-2 gold-glow">${owners[0].name[0]}</div>
-                        <div class="w-24 bg-[#1c2128] h-24 rounded-t-lg border-t-4 border-yellow-500 flex items-center justify-center font-cyber text-lg gold-glow">1st</div>
+                        <div class="w-24 bg-[#1c2128] h-24 rounded-t-lg border-t-4 border-yellow-500 flex items-center justify-center font-cyber text-sm gold-glow">1st</div>
                     </div>
                     <div class="flex flex-col items-center">
-                        <div class="avatar border-orange-500/50 mb-2">${owners[2].name[0]}</div>
-                        <div class="w-20 bg-[#161b22] h-12 rounded-t-lg border-t-2 border-orange-500/50 flex items-center justify-center font-cyber text-sm">3rd</div>
+                        <div class="avatar mb-2">${owners[2].name[0]}</div>
+                        <div class="w-20 bg-[#161b22] h-12 rounded-t-lg border-t-2 border-orange-500/50 flex items-center justify-center font-cyber text-[10px]">3rd</div>
                     </div>
                 `;
             }
 
-            // 2. Render List
+            // 2. Ranked List
             const list = document.getElementById('leaderboard');
             list.innerHTML = owners.map((o, i) => `
                 <div class="owner-row">
                     <div class="p-5 flex justify-between items-center cursor-pointer" onclick="toggleSquad('${i}')">
                         <div class="flex items-center gap-4">
-                            <span class="font-cyber text-xs ${i < 3 ? 'gold-glow' : 'text-gray-700'}">${i+1}</span>
-                            <div class="avatar text-[10px] ${i===0 ? 'border-yellow-500 text-yellow-500' : ''}">${o.name[0]}</div>
+                            <span class="font-cyber text-[10px] ${i < 3 ? 'gold-glow' : 'text-gray-700'}">${i+1}</span>
+                            <div class="avatar ${i===0 ? 'border-yellow-500 text-yellow-500' : ''}">${o.name[0]}</div>
                             <span class="font-bold text-sm tracking-tight">${o.name}</span>
                         </div>
                         <div class="font-cyber text-lg font-black ${i === 0 ? 'gold-glow' : ''}">${o.score}</div>
@@ -126,6 +137,16 @@
                     </div>
                 </div>
             `).join('');
+
+            // 3. Unsold Section
+            const unsoldList = document.getElementById('unsold-list');
+            const unsoldPlayers = squads["Unsold"] || [];
+            unsoldList.innerHTML = unsoldPlayers.sort((a,b) => b.pts - a.pts).map(p => `
+                <div class="flex justify-between items-center py-1 text-[11px] border-b border-white/5">
+                    <span class="text-gray-600">${p.name}</span>
+                    <span class="font-cyber text-gray-500">${p.pts}</span>
+                </div>
+            `).join('') || '<div class="text-[10px] text-gray-700 py-4 italic">No unsold players with points recorded.</div>';
         }
 
         function toggleSquad(id) {
