@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>REVOLUTION IPL 2026 | 2026</title>
+    <title>REVOLUTION PRO | 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
@@ -13,8 +13,10 @@
         .gold-glow { color: #f1c40f; text-shadow: 0 0 15px rgba(241, 196, 15, 0.4); }
         .card-pro { background: #0d1117; border: 1px solid #30363d; border-radius: 20px; transition: all 0.3s; }
         .squad-view { max-height: 0; overflow: hidden; transition: all 0.5s ease; opacity: 0; }
-        .squad-view.open { max-height: 1500px; opacity: 1; padding: 20px; border-top: 1px solid #1f2937; }
-        .unsold-card { border: 1px dashed #4b5563; background: rgba(17, 24, 39, 0.4); }
+        .squad-view.open { max-height: 2000px; opacity: 1; padding: 20px; border-top: 1px solid #1f2937; }
+        .role-tag { font-size: 8px; padding: 2px 6px; border-radius: 4px; font-weight: 900; text-transform: uppercase; margin-left: 8px; }
+        .tag-c { background: #f1c40f; color: #000; }
+        .tag-vc { background: #94a3b8; color: #000; }
     </style>
 </head>
 <body class="p-4 md:p-10">
@@ -22,96 +24,98 @@
         <header class="flex justify-between items-center mb-10 border-b border-white/5 pb-6">
             <div>
                 <h1 class="text-3xl font-black font-cyber gold-glow tracking-tighter italic">REVOLUTION PRO</h1>
-                <p class="text-gray-500 text-[10px] uppercase tracking-widest mt-1">Live Season Analytics</p>
+                <p class="text-gray-500 text-[10px] uppercase tracking-widest mt-1">Full Roster Management</p>
             </div>
-            <div class="text-right">
-                <div id="last-update" class="text-[10px] text-gray-500 font-bold uppercase">Syncing...</div>
-            </div>
+            <div id="last-update" class="text-[10px] text-gray-500 font-bold uppercase">Syncing...</div>
         </header>
 
-        <div class="card-pro p-6 mb-10">
-            <h3 class="text-[10px] font-bold text-gray-500 uppercase mb-4 tracking-[0.2em]">League Points Spread</h3>
-            <canvas id="mainChart" height="120"></canvas>
-        </div>
+        <div class="card-pro p-6 mb-10"><canvas id="mainChart" height="100"></canvas></div>
 
-        <div id="leaderboard" class="grid gap-4 mb-10">
-            </div>
-
-        <div id="unsold-section">
-            </div>
+        <div id="leaderboard" class="grid gap-4 mb-10"></div>
+        <div id="unsold-section"></div>
     </div>
 
     <script>
         const SHEET_ID = '1xIRCNr0tteFfMk6l7inIkKeSJMb7WLBswsXepHRqjio';
         const lbUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Leaderboard`;
         const pcUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=PointsCalc`;
+        const rosUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Roster`;
 
         let myChart;
 
         async function updateData() {
             try {
-                const [lbRes, pcRes] = await Promise.all([
-                    fetch(lbUrl + '&t=' + Date.now()), 
-                    fetch(pcUrl + '&t=' + Date.now())
+                const [lbRes, pcRes, rosRes] = await Promise.all([
+                    fetch(lbUrl + '&t=' + Date.now()), fetch(pcUrl + '&t=' + Date.now()), fetch(rosUrl + '&t=' + Date.now())
                 ]);
+                
                 const lbRows = (await lbRes.text()).split('\n').slice(1);
                 const pcRows = (await pcRes.text()).split('\n').slice(1);
+                const rosRows = (await rosRes.text()).split('\n').slice(1);
 
-                // 1. Process Owners & Unsold Total
-                let unsoldTotalScore = 0;
+                // 1. Process Master Roster (Every Player)
+                const masterRoster = {};
+                rosRows.forEach(r => {
+                    const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    if (c.length < 7) return;
+                    const pName = c[0].replace(/"/g, '').trim();
+                    const owner = c[1].replace(/"/g, '').trim();
+                    const mult = parseFloat(c[6].replace(/"/g, '')) || 1;
+                    if (owner) {
+                        if (!masterRoster[owner]) masterRoster[owner] = [];
+                        masterRoster[owner].push({ name: pName, role: mult === 2 ? 'C' : mult === 1.5 ? 'VC' : '', pts: 0 });
+                    }
+                });
+
+                // 2. Add Points from PointsCalc
+                pcRows.forEach(r => {
+                    const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    if (c.length < 7) return;
+                    const pName = c[1].replace(/"/g, '').trim();
+                    const owner = c[2].replace(/"/g, '').trim();
+                    const pts = Math.round(parseFloat(c[6].replace(/"/g, '')) || 0);
+                    if (owner && masterRoster[owner]) {
+                        let p = masterRoster[owner].find(x => x.name === pName);
+                        if (p) p.pts += pts;
+                    }
+                });
+
+                // 3. Process Leaderboard
+                let unsoldPoints = 0;
                 const owners = lbRows.map(r => {
                     const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                     const name = c[0].replace(/"/g, '').trim();
                     const score = Math.round(parseFloat(c[1].replace(/"/g, '')) || 0);
-                    if (name.toLowerCase() === "unsold") { unsoldTotalScore = score; return null; }
+                    if (name.toLowerCase() === "unsold") { unsoldPoints = score; return null; }
                     return { name, score };
-                }).filter(o => o !== null && o.name !== "").sort((a,b) => b.score - a.score);
+                }).filter(o => o && o.name !== "").sort((a,b) => b.score - a.score);
 
-                // 2. Process Squads (Including Unsold)
-                const squads = {};
-                pcRows.forEach(r => {
-                    const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                    if (c.length < 7) return;
-                    const owner = c[2].replace(/"/g, '').trim();
-                    const player = c[1].replace(/"/g, '');
-                    const pts = Math.round(parseFloat(c[6].replace(/"/g, '')) || 0);
-                    if (owner) {
-                        if (!squads[owner]) squads[owner] = [];
-                        let ex = squads[owner].find(p => p.name === player);
-                        if (ex) ex.pts += pts; else squads[owner].push({name: player, pts: pts});
-                    }
-                });
-
-                renderDashboard(owners, squads, unsoldTotalScore);
+                renderDashboard(owners, masterRoster, unsoldPoints);
                 updateChart(owners);
-                document.getElementById('last-update').innerText = "Last Updated: " + new Date().toLocaleTimeString();
+                document.getElementById('last-update').innerText = "Sync: " + new Date().toLocaleTimeString();
             } catch (e) { console.error(e); }
         }
 
         function renderDashboard(owners, squads, unsoldScore) {
             const list = document.getElementById('leaderboard');
             list.innerHTML = owners.map((o, i) => `
-                <div class="card-pro overflow-hidden shadow-lg">
-                    <div class="p-5 flex justify-between items-center cursor-pointer hover:bg-white/5 active:scale-95 transition" onclick="toggle('sq-${i}')">
+                <div class="card-pro overflow-hidden mb-4">
+                    <div class="p-5 flex justify-between items-center cursor-pointer" onclick="toggle('sq-${i}')">
                         <div class="flex items-center gap-6">
                             <span class="font-cyber text-2xl ${i < 3 ? 'gold-glow' : 'text-gray-800'}">${i+1}</span>
-                            <div>
-                                <div class="font-extrabold text-sm text-gray-200">${o.name}</div>
-                                <div class="text-[9px] text-gray-500 uppercase tracking-widest">${squads[o.name]?.length || 0} Active Players</div>
-                            </div>
+                            <div class="font-extrabold text-sm text-gray-200">${o.name}</div>
                         </div>
                         <div class="text-2xl font-cyber font-black ${i === 0 ? 'gold-glow' : ''}">${o.score}</div>
                     </div>
                     <div id="sq-${i}" class="squad-view">
-                        <div class="grid grid-cols-2 gap-3 mb-4">
-                            <div class="bg-white/5 p-2 rounded-lg text-center"><div class="text-[8px] text-gray-500 uppercase">MVP</div><div class="text-[10px] font-bold">${squads[o.name]?.sort((a,b)=>b.pts-a.pts)[0]?.name || 'N/A'}</div></div>
-                            <div class="bg-white/5 p-2 rounded-lg text-center"><div class="text-[8px] text-gray-500 uppercase">Avg Pts</div><div class="text-[10px] font-bold">${Math.round(o.score / (squads[o.name]?.length || 1))}</div></div>
-                        </div>
-                        <div class="space-y-1">
+                        <div class="space-y-2">
                             ${(squads[o.name] || []).sort((a,b)=>b.pts-a.pts).map(p => `
-                                <div class="flex justify-between text-[11px] py-1 border-b border-white/5">
-                                    <span class="text-gray-400">${p.name}</span>
-                                    <span class="font-bold font-cyber text-[10px]">${p.pts}</span>
+                                <div class="flex justify-between items-center text-[11px] py-1 border-b border-white/5">
+                                    <div class="flex items-center">
+                                        <span class="${p.pts > 0 ? 'text-gray-300' : 'text-gray-600'}">${p.name}</span>
+                                        ${p.role ? `<span class="role-tag tag-${p.role.toLowerCase()}">${p.role}</span>` : ''}
+                                    </div>
+                                    <span class="font-cyber ${p.pts > 0 ? 'text-yellow-500' : 'text-gray-700'}">${p.pts}</span>
                                 </div>
                             `).join('')}
                         </div>
@@ -119,29 +123,14 @@
                 </div>
             `).join('');
 
-            // Unsold Section (Separate)
-            const unsoldDiv = document.getElementById('unsold-section');
-            unsoldDiv.innerHTML = `
-                <div class="card-pro unsold-card overflow-hidden">
-                    <div class="p-4 flex justify-between items-center cursor-pointer opacity-60" onclick="toggle('sq-unsold')">
-                        <div class="flex items-center gap-4">
-                            <span class="font-cyber text-xs text-gray-600">--</span>
-                            <span class="font-bold text-xs text-gray-400 uppercase tracking-widest">Unsold Player Pool</span>
-                        </div>
-                        <div class="font-cyber text-lg text-gray-500">${unsoldScore}</div>
-                    </div>
-                    <div id="sq-unsold" class="squad-view">
-                        <div class="space-y-1">
-                            ${(squads["Unsold"] || []).sort((a,b)=>b.pts-a.pts).map(p => `
-                                <div class="flex justify-between text-[10px] py-1 border-b border-white/5 text-gray-500">
-                                    <span>${p.name}</span>
-                                    <span class="font-cyber">${p.pts}</span>
-                                </div>
-                            `).join('') || '<div class="text-center text-[10px] py-4 italic text-gray-700">No scoring unsold players.</div>'}
-                        </div>
-                    </div>
-                </div>
-            `;
+            const uDiv = document.getElementById('unsold-section');
+            uDiv.innerHTML = `<div class="card-pro p-4 opacity-50 flex justify-between items-center cursor-pointer" onclick="toggle('sq-u')">
+                <span class="text-xs font-bold uppercase tracking-widest text-gray-500">Unsold Pool</span>
+                <span class="font-cyber text-gray-600">${unsoldScore}</span>
+            </div>
+            <div id="sq-u" class="squad-view">
+                ${(squads["Unsold"] || []).map(p => `<div class="flex justify-between text-[10px] text-gray-700 py-1"><span>${p.name}</span><span>${p.pts}</span></div>`).join('')}
+            </div>`;
         }
 
         function updateChart(owners) {
@@ -149,24 +138,8 @@
             if (myChart) myChart.destroy();
             myChart = new Chart(ctx, {
                 type: 'bar',
-                data: {
-                    labels: owners.map(o => o.name),
-                    datasets: [{
-                        label: 'Points',
-                        data: owners.map(o => o.score),
-                        backgroundColor: owners.map((_, i) => i === 0 ? '#f1c40f' : '#1f2937'),
-                        borderWidth: 0,
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { display: false },
-                        y: { ticks: { color: '#6b7280', font: { size: 9, family: 'Orbitron' } }, grid: { display: false } }
-                    }
-                }
+                data: { labels: owners.map(o => o.name), datasets: [{ data: owners.map(o => o.score), backgroundColor: '#f1c40f', borderRadius: 4 }] },
+                options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { ticks: { color: '#6b7280', font: { size: 9 } }, grid: { display: false } } } }
             });
         }
 
