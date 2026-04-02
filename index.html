@@ -3,75 +3,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>REVOLUTION IPL 2026</title>
+    <title>Revolution IPL 2026</title>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #0b0e14; color: #ffffff; margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .card { background: #161b22; width: 100%; max-width: 500px; border-radius: 16px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid #30363d; }
-        h1 { color: #f1c40f; text-align: center; font-size: 24px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 2px; }
-        .update-tag { text-align: center; color: #8b949e; font-size: 12px; margin-bottom: 24px; }
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; color: #8b949e; font-size: 12px; text-transform: uppercase; padding-bottom: 12px; border-bottom: 1px solid #30363d; }
-        td { padding: 16px 0; border-bottom: 1px solid #21262d; font-size: 16px; font-weight: 500; }
-        .rank { color: #f1c40f; width: 40px; font-weight: bold; }
-        .points { text-align: right; color: #f1c40f; font-weight: 800; font-size: 18px; }
-        .loading { text-align: center; padding: 40px; color: #8b949e; }
+        :root { --bg: #0d1117; --card: #161b22; --accent: #f1c40f; --text: #c9d1d9; --border: #30363d; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; line-height: 1.6; }
+        .container { max-width: 800px; margin: auto; }
+        h1, h2 { color: var(--accent); text-align: center; text-transform: uppercase; letter-spacing: 2px; }
+        .section { background: var(--card); border-radius: 12px; padding: 20px; margin-bottom: 30px; border: 1px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { text-align: left; font-size: 12px; color: #8b949e; text-transform: uppercase; border-bottom: 2px solid var(--border); padding: 10px; }
+        td { padding: 12px 10px; border-bottom: 1px solid #21262d; }
+        
+        .rank { font-weight: bold; color: var(--accent); width: 30px; }
+        .pts { text-align: right; font-weight: 800; color: var(--accent); }
+        .owner-header { background: #21262d; font-weight: bold; color: var(--accent); padding: 8px 10px; margin-top: 15px; border-radius: 4px; }
+        .player-row { font-size: 14px; display: flex; justify-content: space-between; padding: 5px 10px; border-bottom: 1px solid #30363d; }
+        .player-pts { color: #8b949e; }
+        .loading { text-align: center; padding: 20px; color: #8b949e; }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1>Revolution Leaderboard</h1>
-        <div class="update-tag">Live Updates from Google Sheets</div>
-        <table id="leaderboard">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Owner</th>
-                    <th style="text-align: right;">Total Pts</th>
-                </tr>
-            </thead>
-            <tbody id="data-rows">
-                <tr><td colspan="3" class="loading">Loading live standings...</td></tr>
-            </tbody>
-        </table>
+    <div class="container">
+        <h1>Revolution IPL 2026</h1>
+
+        <div class="section">
+            <h2>🏆 Leaderboard</h2>
+            <table id="leaderboard">
+                <thead>
+                    <tr><th>#</th><th>Owner</th><th style="text-align:right;">Total Pts</th></tr>
+                </thead>
+                <tbody id="leaderboard-body"><tr><td colspan="3" class="loading">Fetching standings...</td></tr></tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>👤 Squad Breakdowns</h2>
+            <div id="squads-body" class="loading">Loading squads...</div>
+        </div>
     </div>
 
     <script>
-        // 1. PASTE YOUR GOOGLE SHEET ID BELOW
         const SHEET_ID = '1xIRCNr0tteFfMk6l7inIkKeSJMb7WLBswsXepHRqjio';
-        const TAB_NAME = 'Leaderboard';
         
-        const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${TAB_NAME}`;
+        // Query for Leaderboard: Select Owner and Points, Sort by Points Descending
+        const leaderboardQuery = encodeURIComponent("SELECT A, B ORDER BY B DESC");
+        const leaderboardUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Leaderboard&tq=${leaderboardQuery}`;
 
-        async function loadScores() {
+        // Query for Squads: Get Player, Owner, and Points from the Match Log
+        const squadUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=PointsCalc`;
+
+        async function fetchData() {
             try {
-                const response = await fetch(url);
-                const data = await response.text();
-                const rows = data.split('\n').slice(1); // Skip header
-                const tbody = document.getElementById('data-rows');
-                tbody.innerHTML = '';
+                // 1. Fetch & Render Leaderboard
+                const lbRes = await fetch(leaderboardUrl);
+                const lbData = await lbRes.text();
+                renderLeaderboard(lbData);
 
-                rows.forEach((row, i) => {
-                    const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                    const name = cols[0].replace(/"/g, '');
-                    const pts = cols[1].replace(/"/g, '');
-                    
-                    if (name && pts) {
-                        const tr = document.createElement('tr');
-                        tr.innerHTML = `
-                            <td class="rank">${i + 1}</td>
-                            <td>${name}</td>
-                            <td class="points">${Math.round(pts)}</td>
-                        `;
-                        tbody.appendChild(tr);
-                    }
-                });
+                // 2. Fetch & Render Squads
+                const sqRes = await fetch(squadUrl);
+                const sqData = await sqRes.text();
+                renderSquads(sqData);
             } catch (e) {
-                document.getElementById('data-rows').innerHTML = '<tr><td colspan="3" class="loading">Error loading data. Make sure your sheet is "Public".</td></tr>';
+                console.error(e);
             }
         }
 
-        loadScores();
-        setInterval(loadScores, 60000); // Refresh every minute
+        function renderLeaderboard(csv) {
+            const rows = csv.split('\n').slice(1);
+            const tbody = document.getElementById('leaderboard-body');
+            tbody.innerHTML = '';
+            rows.forEach((row, i) => {
+                const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                if (cols.length < 2) return;
+                const name = cols[0].replace(/"/g, '');
+                const pts = cols[1].replace(/"/g, '');
+                tbody.innerHTML += `<tr><td class="rank">${i+1}</td><td>${name}</td><td class="pts">${Math.round(pts)}</td></tr>`;
+            });
+        }
+
+        function renderSquads(csv) {
+            const rows = csv.split('\n').slice(1);
+            const squadContainer = document.getElementById('squads-body');
+            const squads = {};
+
+            rows.forEach(row => {
+                const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                if (cols.length < 7) return;
+                const player = cols[1].replace(/"/g, '');
+                const owner = cols[2].replace(/"/g, '');
+                const pts = parseFloat(cols[6].replace(/"/g, '')) || 0;
+
+                if (owner === "Unsold" || !owner) return;
+                if (!squads[owner]) squads[owner] = {};
+                
+                // Add points together if player appears in multiple matches
+                squads[owner][player] = (squads[owner][player] || 0) + pts;
+            });
+
+            squadContainer.innerHTML = '';
+            // Sort owners alphabetically for the squads list
+            Object.keys(squads).sort().forEach(owner => {
+                let html = `<div class="owner-header">${owner}</div>`;
+                // Sort players in squad by points
+                const sortedPlayers = Object.entries(squads[owner]).sort((a,b) => b[1] - a[1]);
+                sortedPlayers.forEach(([p, pPts]) => {
+                    html += `<div class="player-row"><span>${p}</span><span class="player-pts">${Math.round(pPts)} pts</span></div>`;
+                });
+                squadContainer.innerHTML += html;
+            });
+        }
+
+        fetchData();
+        setInterval(fetchData, 60000); // Refresh every minute
     </script>
 </body>
 </html>
