@@ -57,7 +57,7 @@
                     const pName = c[0].replace(/"/g, '').trim();
                     const owner = c[1].replace(/"/g, '').trim();
                     const roleRaw = c[2] ? c[2].replace(/"/g, '').toLowerCase() : "";
-                    const mult = c[6] ? parseFloat(c[6].replace(/"/g, '')) : 1;
+                    const mult = c[2] ? parseFloat(c[2].replace(/"/g, '')) : 1;
 
                     let roleLabel = "";
                     if (mult === 2 || roleRaw.includes("captain")) roleLabel = "C";
