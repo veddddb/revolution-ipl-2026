@@ -3,133 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>REVOLUTION IPL 2026</title>
+    <title>REVOLUTION 2026 | ELITE</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #05070a; color: #e6edf3; font-family: 'Inter', sans-serif; }
+        body { background-color: #030508; color: #f8fafc; font-family: 'Inter', sans-serif; }
         .font-cyber { font-family: 'Orbitron', sans-serif; }
-        .glass { background: #11141b; border: 1px solid #30363d; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .glass:hover { border-color: #f1c40f; box-shadow: 0 0 15px rgba(241, 196, 15, 0.1); }
-        .gold-glow { color: #f1c40f; text-shadow: 0 0 10px rgba(241, 196, 15, 0.6); }
-        .rank-gradient { background: linear-gradient(180deg, #f1c40f 0%, #b8860b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
-        /* Smooth Accordion */
-        .squad-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out, opacity 0.3s ease; opacity: 0; }
-        .squad-active { max-height: 1000px; opacity: 1; padding: 16px; border-top: 1px solid #30363d; background: rgba(0,0,0,0.2); }
+        /* Podium Styles */
+        .podium-card { background: linear-gradient(180deg, #161b22 0%, #0d1117 100%); border: 1px solid #30363d; border-radius: 12px; }
+        .gold-glow { color: #f1c40f; text-shadow: 0 0 15px rgba(241, 196, 15, 0.5); }
         
-        .live-pulse { animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+        /* Accordion Logic */
+        .squad-view { max-height: 0; overflow: hidden; transition: all 0.5s cubic-bezier(0, 1, 0, 1); opacity: 0; }
+        .squad-view.open { max-height: 1200px; opacity: 1; padding-bottom: 20px; transition: all 0.5s ease-in; }
+
+        .owner-row { border-bottom: 1px solid rgba(255,255,255,0.03); transition: background 0.2s; }
+        .owner-row:hover { background: rgba(255,255,255,0.02); }
+        
+        /* Initial Circles */
+        .avatar { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: 800; font-size: 14px; background: #21262d; border: 1px solid #30363d; }
     </style>
 </head>
-<body class="p-4 md:p-10">
+<body class="p-4 md:p-12">
     <div class="max-w-xl mx-auto">
         <header class="text-center mb-10">
-            <h1 class="text-4xl font-black font-cyber gold-glow italic tracking-tighter">REVOLUTION</h1>
-            <div class="flex justify-center items-center gap-2 mt-2">
-                <span class="w-2 h-2 bg-green-500 rounded-full live-pulse"></span>
-                <p class="text-gray-500 text-[10px] uppercase tracking-[0.3em]">Live Feed • Season 2026</p>
+            <h1 class="text-5xl font-black font-cyber gold-glow italic tracking-tighter mb-2">REVOLUTION</h1>
+            <div class="flex justify-center items-center gap-2">
+                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Live Scoring Engine v2.0</span>
             </div>
         </header>
 
-        <div id="leaderboard" class="space-y-4">
-            <div class="text-center py-20 text-gray-600 animate-pulse font-cyber">Syncing Satellite Data...</div>
+        <div id="podium" class="flex justify-center items-end gap-3 mb-12 h-36">
+            </div>
+
+        <div class="bg-[#0d1117] border border-white/5 rounded-3xl overflow-hidden shadow-2xl">
+            <div class="p-5 border-b border-white/5 flex justify-between items-center bg-white/5">
+                <span class="text-xs font-black uppercase tracking-widest text-gray-400">Owner Rankings</span>
+                <span class="text-[10px] text-gray-600 font-bold">Updated: Just Now</span>
+            </div>
+            <div id="leaderboard">
+                </div>
         </div>
     </div>
 
     <script>
         const SHEET_ID = '1xIRCNr0tteFfMk6l7inIkKeSJMb7WLBswsXepHRqjio';
-        
         const lbUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Leaderboard`;
         const pcUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=PointsCalc`;
 
-        async function init() {
+        async function updateDashboard() {
             try {
-                const [lbRes, pcRes] = await Promise.all([
-                    fetch(lbUrl + '&cache=' + Date.now()), 
-                    fetch(pcUrl + '&cache=' + Date.now())
-                ]);
-                const lbText = await lbRes.text();
-                const pcText = await pcRes.text();
+                const [lbRes, pcRes] = await Promise.all([fetch(lbUrl), fetch(pcUrl)]);
+                const lbRows = (await lbRes.text()).split('\n').slice(1);
+                const pcRows = (await pcRes.text()).split('\n').slice(1);
 
-                // Process Leaderboard
-                const lbRows = lbText.split('\n').slice(1);
-                const owners = lbRows.map(row => {
-                    const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                    return {
-                        name: cols[0] ? cols[0].replace(/"/g, '').trim() : null,
-                        total: cols[1] ? Math.round(parseFloat(cols[1].replace(/"/g, ''))) : 0
+                const owners = lbRows.map(r => {
+                    const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    return { 
+                        name: c[0].replace(/"/g, '').trim(), 
+                        score: Math.round(parseFloat(c[1].replace(/"/g, '')) || 0) 
                     };
-                }).filter(o => o.name).sort((a, b) => b.total - a.total);
+                }).sort((a,b) => b.score - a.score);
 
-                // Process Players
-                const pcRows = pcText.split('\n').slice(1);
                 const squads = {};
-                pcRows.forEach(row => {
-                    const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                    if (cols.length < 7) return;
-                    const pName = cols[1].replace(/"/g, '');
-                    const owner = cols[2].replace(/"/g, '').trim();
-                    const pts = parseFloat(cols[6].replace(/"/g, '')) || 0;
-                    if (!owner || owner === "Unsold") return;
-                    if (!squads[owner]) squads[owner] = {};
-                    squads[owner][pName] = (squads[owner][pName] || 0) + pts;
+                pcRows.forEach(r => {
+                    const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    if (c.length < 7) return;
+                    const owner = c[2].replace(/"/g, '').trim();
+                    const player = c[1].replace(/"/g, '');
+                    const pts = parseFloat(c[6].replace(/"/g, '')) || 0;
+                    if (owner && owner !== "Unsold") {
+                        if (!squads[owner]) squads[owner] = [];
+                        squads[owner].push({ name: player, pts: Math.round(pts) });
+                    }
                 });
 
                 render(owners, squads);
-            } catch (e) {
-                document.getElementById('leaderboard').innerHTML = `<div class="text-red-500 text-center font-cyber">CONNECTION LOST</div>`;
-            }
+            } catch (e) { console.error(e); }
         }
 
         function render(owners, squads) {
-            const container = document.getElementById('leaderboard');
-            container.innerHTML = owners.map((owner, i) => `
-                <div class="glass rounded-2xl overflow-hidden shadow-2xl">
-                    <div class="p-5 flex items-center justify-between cursor-pointer active:scale-95 transition" onclick="toggleSquad('${i}')">
-                        <div class="flex items-center gap-5">
-                            <span class="font-cyber text-2xl ${i === 0 ? 'rank-gradient' : 'text-gray-700'}">${i + 1}</span>
-                            <span class="font-bold text-lg tracking-tight text-gray-200">${owner.name}</span>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-2xl font-black font-cyber ${i === 0 ? 'gold-glow' : 'text-white'}">${owner.total}</span>
-                        </div>
+            // 1. Render Podium
+            const pod = document.getElementById('podium');
+            if (owners.length >= 3) {
+                pod.innerHTML = `
+                    <div class="flex flex-col items-center">
+                        <div class="avatar border-blue-500/50 mb-2">${owners[1].name[0]}</div>
+                        <div class="w-20 bg-[#161b22] h-16 rounded-t-lg border-t-2 border-blue-500/50 flex items-center justify-center font-cyber text-sm">2nd</div>
                     </div>
-                    <div id="squad-${i}" class="squad-content space-y-3">
-                        <div class="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1">Squad Breakdown</div>
-                        ${renderPlayers(squads[owner.name])}
+                    <div class="flex flex-col items-center">
+                        <div class="avatar border-yellow-500 mb-2 gold-glow">${owners[0].name[0]}</div>
+                        <div class="w-24 bg-[#1c2128] h-24 rounded-t-lg border-t-4 border-yellow-500 flex items-center justify-center font-cyber text-lg gold-glow">1st</div>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="avatar border-orange-500/50 mb-2">${owners[2].name[0]}</div>
+                        <div class="w-20 bg-[#161b22] h-12 rounded-t-lg border-t-2 border-orange-500/50 flex items-center justify-center font-cyber text-sm">3rd</div>
+                    </div>
+                `;
+            }
+
+            // 2. Render List
+            const list = document.getElementById('leaderboard');
+            list.innerHTML = owners.map((o, i) => `
+                <div class="owner-row">
+                    <div class="p-5 flex justify-between items-center cursor-pointer" onclick="toggleSquad('${i}')">
+                        <div class="flex items-center gap-4">
+                            <span class="font-cyber text-xs ${i < 3 ? 'gold-glow' : 'text-gray-700'}">${i+1}</span>
+                            <div class="avatar text-[10px] ${i===0 ? 'border-yellow-500 text-yellow-500' : ''}">${o.name[0]}</div>
+                            <span class="font-bold text-sm tracking-tight">${o.name}</span>
+                        </div>
+                        <div class="font-cyber text-lg font-black ${i === 0 ? 'gold-glow' : ''}">${o.score}</div>
+                    </div>
+                    <div id="sq-${i}" class="squad-view px-14">
+                        ${(squads[o.name] || []).sort((a,b) => b.pts - a.pts).map(p => `
+                            <div class="flex justify-between items-center py-1 text-[11px] border-b border-white/5">
+                                <span class="text-gray-500">${p.name}</span>
+                                <span class="font-cyber text-gray-300">${p.pts}</span>
+                            </div>
+                        `).join('')}
                     </div>
                 </div>
             `).join('');
         }
 
-        function renderPlayers(players) {
-            if (!players || Object.keys(players).length === 0) return '<div class="text-xs text-gray-600 italic">No points deployed yet</div>';
-            return Object.entries(players)
-                .sort((a, b) => b[1] - a[1])
-                .map(([name, pts]) => `
-                    <div class="flex justify-between items-center text-sm group">
-                        <span class="text-gray-400 group-hover:text-white transition">${name}</span>
-                        <span class="font-bold text-gray-300 font-cyber text-[12px]">${Math.round(pts)}</span>
-                    </div>
-                `).join('');
-        }
-
         function toggleSquad(id) {
-            const el = document.getElementById(`squad-${id}`);
-            const isActive = el.classList.contains('squad-active');
-            
-            // Close all others
-            document.querySelectorAll('.squad-content').forEach(s => s.classList.remove('squad-active'));
-            
-            // If it wasn't active, open it
-            if (!isActive) {
-                el.classList.add('squad-active');
-            }
+            const el = document.getElementById(`sq-${id}`);
+            const isOpen = el.classList.contains('open');
+            document.querySelectorAll('.squad-view').forEach(s => s.classList.remove('open'));
+            if (!isOpen) el.classList.add('open');
         }
 
-        init();
-        setInterval(init, 60000); // 60s Refresh
+        updateDashboard();
+        setInterval(updateDashboard, 60000);
     </script>
 </body>
 </html>
