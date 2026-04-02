@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REVOLUTION IPL 2026</title>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0b0e14; color: #ffffff; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .card { background: #161b22; width: 100%; max-width: 500px; border-radius: 16px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid #30363d; }
+        h1 { color: #f1c40f; text-align: center; font-size: 24px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 2px; }
+        .update-tag { text-align: center; color: #8b949e; font-size: 12px; margin-bottom: 24px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; color: #8b949e; font-size: 12px; text-transform: uppercase; padding-bottom: 12px; border-bottom: 1px solid #30363d; }
+        td { padding: 16px 0; border-bottom: 1px solid #21262d; font-size: 16px; font-weight: 500; }
+        .rank { color: #f1c40f; width: 40px; font-weight: bold; }
+        .points { text-align: right; color: #f1c40f; font-weight: 800; font-size: 18px; }
+        .loading { text-align: center; padding: 40px; color: #8b949e; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Revolution Leaderboard</h1>
+        <div class="update-tag">Live Updates from Google Sheets</div>
+        <table id="leaderboard">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Owner</th>
+                    <th style="text-align: right;">Total Pts</th>
+                </tr>
+            </thead>
+            <tbody id="data-rows">
+                <tr><td colspan="3" class="loading">Loading live standings...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // 1. PASTE YOUR GOOGLE SHEET ID BELOW
+        const SHEET_ID = '1xIRCNr0tteFfMk6l7inIkKeSJMb7WLBswsXepHRqjio';
+        const TAB_NAME = 'Leaderboard';
+        
+        const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${TAB_NAME}`;
+
+        async function loadScores() {
+            try {
+                const response = await fetch(url);
+                const data = await response.text();
+                const rows = data.split('\n').slice(1); // Skip header
+                const tbody = document.getElementById('data-rows');
+                tbody.innerHTML = '';
+
+                rows.forEach((row, i) => {
+                    const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    const name = cols[0].replace(/"/g, '');
+                    const pts = cols[1].replace(/"/g, '');
+                    
+                    if (name && pts) {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td class="rank">${i + 1}</td>
+                            <td>${name}</td>
+                            <td class="points">${Math.round(pts)}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    }
+                });
+            } catch (e) {
+                document.getElementById('data-rows').innerHTML = '<tr><td colspan="3" class="loading">Error loading data. Make sure your sheet is "Public".</td></tr>';
+            }
+        }
+
+        loadScores();
+        setInterval(loadScores, 60000); // Refresh every minute
+    </script>
+</body>
+</html>
