@@ -4,118 +4,85 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Revolution IPL 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root { --bg: #0d1117; --card: #161b22; --accent: #f1c40f; --text: #c9d1d9; --border: #30363d; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; line-height: 1.6; }
-        .container { max-width: 800px; margin: auto; }
-        h1, h2 { color: var(--accent); text-align: center; text-transform: uppercase; letter-spacing: 2px; }
-        .section { background: var(--card); border-radius: 12px; padding: 20px; margin-bottom: 30px; border: 1px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { text-align: left; font-size: 12px; color: #8b949e; text-transform: uppercase; border-bottom: 2px solid var(--border); padding: 10px; }
-        td { padding: 12px 10px; border-bottom: 1px solid #21262d; }
-        
-        .rank { font-weight: bold; color: var(--accent); width: 30px; }
-        .pts { text-align: right; font-weight: 800; color: var(--accent); }
-        .owner-header { background: #21262d; font-weight: bold; color: var(--accent); padding: 8px 10px; margin-top: 15px; border-radius: 4px; }
-        .player-row { font-size: 14px; display: flex; justify-content: space-between; padding: 5px 10px; border-bottom: 1px solid #30363d; }
-        .player-pts { color: #8b949e; }
-        .loading { text-align: center; padding: 20px; color: #8b949e; }
+        body { background-color: #0b0e14; color: #e6edf3; font-family: 'Inter', sans-serif; }
+        .glass { background: rgba(22, 27, 34, 0.8); backdrop-filter: blur(10px); border: 1px solid #30363d; }
+        .gold { color: #f1c40f; text-shadow: 0 0 10px rgba(241, 196, 15, 0.5); }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h1>Revolution IPL 2026</h1>
+<body class="p-4 md:p-8">
+    <div class="max-w-3xl mx-auto">
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-black tracking-tighter gold mb-2">REVOLUTION IPL</h1>
+            <p class="text-gray-500 text-sm uppercase tracking-widest">Season 2026 • Live Standings</p>
+        </header>
 
-        <div class="section">
-            <h2>🏆 Leaderboard</h2>
-            <table id="leaderboard">
-                <thead>
-                    <tr><th>#</th><th>Owner</th><th style="text-align:right;">Total Pts</th></tr>
-                </thead>
-                <tbody id="leaderboard-body"><tr><td colspan="3" class="loading">Fetching standings...</td></tr></tbody>
-            </table>
-        </div>
+        <div id="podium" class="flex justify-center items-end gap-2 mb-10 h-32">
+            </div>
 
-        <div class="section">
-            <h2>👤 Squad Breakdowns</h2>
-            <div id="squads-body" class="loading">Loading squads...</div>
+        <div class="glass rounded-2xl overflow-hidden">
+            <div class="p-4 border-b border-gray-800 flex justify-between items-center">
+                <h2 class="font-bold text-lg">League Table</h2>
+                <span id="live-indicator" class="flex items-center text-xs text-green-500">
+                    <span class="animate-ping w-2 h-2 bg-green-500 rounded-full mr-2"></span> LIVE
+                </span>
+            </div>
+            <div id="leaderboard-list">
+                </div>
         </div>
     </div>
 
     <script>
         const SHEET_ID = '1xIRCNr0tteFfMk6l7inIkKeSJMb7WLBswsXepHRqjio';
-        
-        // Query for Leaderboard: Select Owner and Points, Sort by Points Descending
-        const leaderboardQuery = encodeURIComponent("SELECT A, B ORDER BY B DESC");
-        const leaderboardUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Leaderboard&tq=${leaderboardQuery}`;
+        const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Leaderboard`;
 
-        // Query for Squads: Get Player, Owner, and Points from the Match Log
-        const squadUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=PointsCalc`;
+        async function updateDashboard() {
+            const res = await fetch(url);
+            const text = await res.text();
+            const rows = text.split('\n').slice(1).map(r => r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/));
+            
+            // Sort data by points (descending)
+            const sorted = rows.map(r => ({
+                name: r[0].replace(/"/g, ''),
+                pts: Math.round(parseFloat(r[1].replace(/"/g, '')) || 0)
+            })).sort((a, b) => b.pts - a.pts);
 
-        async function fetchData() {
-            try {
-                // 1. Fetch & Render Leaderboard
-                const lbRes = await fetch(leaderboardUrl);
-                const lbData = await lbRes.text();
-                renderLeaderboard(lbData);
+            // 1. Render Podium
+            const podium = document.getElementById('podium');
+            podium.innerHTML = `
+                <div class="flex flex-col items-center">
+                    <div class="text-xs font-bold text-gray-400">2nd</div>
+                    <div class="w-16 bg-gray-700 rounded-t-lg flex items-end justify-center pb-2 h-20 text-xl font-bold">${sorted[1].name[0]}</div>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="text-xs font-bold gold">1st</div>
+                    <div class="w-20 bg-yellow-600/20 border-t-4 border-yellow-500 rounded-t-lg flex items-end justify-center pb-2 h-28 text-2xl font-bold gold">${sorted[0].name[0]}</div>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="text-xs font-bold text-orange-400">3rd</div>
+                    <div class="w-16 bg-orange-900/20 rounded-t-lg flex items-end justify-center pb-2 h-16 text-xl font-bold">${sorted[2].name[0]}</div>
+                </div>
+            `;
 
-                // 2. Fetch & Render Squads
-                const sqRes = await fetch(squadUrl);
-                const sqData = await sqRes.text();
-                renderSquads(sqData);
-            } catch (e) {
-                console.error(e);
-            }
+            // 2. Render List
+            const list = document.getElementById('leaderboard-list');
+            list.innerHTML = sorted.map((owner, i) => `
+                <div class="flex items-center justify-between p-4 border-b border-gray-800/50 hover:bg-white/5 transition">
+                    <div class="flex items-center gap-4">
+                        <span class="text-gray-600 font-mono w-4">${i + 1}</span>
+                        <span class="font-semibold text-gray-200">${owner.name}</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="block text-xl font-black gold">${owner.pts}</span>
+                        <span class="text-[10px] text-gray-500 uppercase font-bold">Total Points</span>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        function renderLeaderboard(csv) {
-            const rows = csv.split('\n').slice(1);
-            const tbody = document.getElementById('leaderboard-body');
-            tbody.innerHTML = '';
-            rows.forEach((row, i) => {
-                const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                if (cols.length < 2) return;
-                const name = cols[0].replace(/"/g, '');
-                const pts = cols[1].replace(/"/g, '');
-                tbody.innerHTML += `<tr><td class="rank">${i+1}</td><td>${name}</td><td class="pts">${Math.round(pts)}</td></tr>`;
-            });
-        }
-
-        function renderSquads(csv) {
-            const rows = csv.split('\n').slice(1);
-            const squadContainer = document.getElementById('squads-body');
-            const squads = {};
-
-            rows.forEach(row => {
-                const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                if (cols.length < 7) return;
-                const player = cols[1].replace(/"/g, '');
-                const owner = cols[2].replace(/"/g, '');
-                const pts = parseFloat(cols[6].replace(/"/g, '')) || 0;
-
-                if (owner === "Unsold" || !owner) return;
-                if (!squads[owner]) squads[owner] = {};
-                
-                // Add points together if player appears in multiple matches
-                squads[owner][player] = (squads[owner][player] || 0) + pts;
-            });
-
-            squadContainer.innerHTML = '';
-            // Sort owners alphabetically for the squads list
-            Object.keys(squads).sort().forEach(owner => {
-                let html = `<div class="owner-header">${owner}</div>`;
-                // Sort players in squad by points
-                const sortedPlayers = Object.entries(squads[owner]).sort((a,b) => b[1] - a[1]);
-                sortedPlayers.forEach(([p, pPts]) => {
-                    html += `<div class="player-row"><span>${p}</span><span class="player-pts">${Math.round(pPts)} pts</span></div>`;
-                });
-                squadContainer.innerHTML += html;
-            });
-        }
-
-        fetchData();
-        setInterval(fetchData, 60000); // Refresh every minute
+        updateDashboard();
+        setInterval(updateDashboard, 60000); // Auto-refresh every 60s
     </script>
 </body>
 </html>
