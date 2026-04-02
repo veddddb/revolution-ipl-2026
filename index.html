@@ -15,11 +15,11 @@
         .squad-view { max-height: 0; overflow: hidden; transition: all 0.5s cubic-bezier(0, 1, 0, 1); opacity: 0; }
         .squad-view.open { max-height: 1200px; opacity: 1; padding-bottom: 20px; transition: all 0.5s ease-in; }
 
-        .owner-row { border-bottom: 1px solid rgba(255,255,255,0.03); transition: background 0.2s; }
-        .owner-row:hover { background: rgba(255,255,255,0.02); }
+        .owner-row { border-bottom: 1px solid rgba(255,255,255,0.03); }
         
-        .avatar { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: 800; font-size: 14px; background: #21262d; border: 1px solid #30363d; }
-        .unsold-pill { background: #161b22; border: 1px solid #30363d; color: #8b949e; }
+        /* Podium Name Labels */
+        .podium-label { font-size: 10px; font-weight: 800; text-align: center; width: 80px; line-height: 1.2; margin-top: 8px; color: #94a3b8; }
+        .avatar-large { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: 900; font-size: 18px; background: #161b22; border: 2px solid #30363d; }
     </style>
 </head>
 <body class="p-4 md:p-12">
@@ -28,11 +28,11 @@
             <h1 class="text-5xl font-black font-cyber gold-glow italic tracking-tighter mb-2">REVOLUTION</h1>
             <div class="flex justify-center items-center gap-2">
                 <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest text-center">Live Feed • Season 2026</span>
+                <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest text-center">Live Engine Active</span>
             </div>
         </header>
 
-        <div id="podium" class="flex justify-center items-end gap-3 mb-12 h-36"></div>
+        <div id="podium" class="flex justify-center items-end gap-3 mb-16 h-44"></div>
 
         <div class="bg-[#0d1117] border border-white/5 rounded-3xl overflow-hidden shadow-2xl mb-8">
             <div class="p-5 border-b border-white/5 flex justify-between items-center bg-white/5">
@@ -41,16 +41,16 @@
             <div id="leaderboard"></div>
         </div>
 
-        <div id="unsold-container" class="bg-[#0d1117]/50 border border-dashed border-white/10 rounded-2xl overflow-hidden">
-            <div class="p-4 border-b border-white/5 flex justify-between items-center cursor-pointer" onclick="toggleSquad('unsold')">
-                <div class="flex items-center gap-3">
-                    <span class="text-gray-600 font-cyber text-xs">--</span>
-                    <span class="font-bold text-sm text-gray-500">Unsold Players</span>
+        <div id="unsold-container" class="bg-[#0d1117]/40 border border-dashed border-white/10 rounded-2xl overflow-hidden mb-20">
+            <div class="p-5 flex justify-between items-center cursor-pointer" onclick="toggleSquad('unsold')">
+                <div class="flex items-center gap-4">
+                    <span class="text-gray-700 font-cyber text-[10px]">--</span>
+                    <span class="font-bold text-sm text-gray-500">Unsold Players Pool</span>
                 </div>
-                <span class="text-xs text-gray-600 italic">View Pool</span>
+                <div id="unsold-total-label" class="font-cyber text-sm text-gray-600">0</div>
             </div>
-            <div id="sq-unsold" class="squad-view px-10">
-                <div id="unsold-list" class="space-y-1 mt-4"></div>
+            <div id="sq-unsold" class="squad-view px-14">
+                <div id="unsold-list" class="space-y-1"></div>
             </div>
         </div>
     </div>
@@ -66,28 +66,32 @@
                 const lbRows = (await lbRes.text()).split('\n').slice(1);
                 const pcRows = (await pcRes.text()).split('\n').slice(1);
 
-                // 1. Process Owners (Filter out Unsold from Rankings)
+                // 1. Process Owners (Ranking)
+                let unsoldPoints = 0;
                 const allOwners = lbRows.map(r => {
                     const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                    return { name: c[0].replace(/"/g, '').trim(), score: Math.round(parseFloat(c[1].replace(/"/g, '')) || 0) };
-                }).filter(o => o.name && o.name.toLowerCase() !== "unsold");
+                    const name = c[0].replace(/"/g, '').trim();
+                    const score = Math.round(parseFloat(c[1].replace(/"/g, '')) || 0);
+                    if (name.toLowerCase() === "unsold") { unsoldPoints = score; return null; }
+                    return { name, score };
+                }).filter(o => o !== null);
 
                 const sortedOwners = allOwners.sort((a,b) => b.score - a.score);
+                document.getElementById('unsold-total-label').innerText = unsoldPoints;
 
-                // 2. Process Squads (Keep Unsold separate)
+                // 2. Process Squads
                 const squads = {};
                 pcRows.forEach(r => {
                     const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                     if (c.length < 7) return;
                     const owner = c[2].replace(/"/g, '').trim();
                     const player = c[1].replace(/"/g, '');
-                    const pts = parseFloat(c[6].replace(/"/g, '')) || 0;
+                    const pts = Math.round(parseFloat(c[6].replace(/"/g, '')) || 0);
                     if (owner) {
                         if (!squads[owner]) squads[owner] = [];
-                        // Check if player already exists in the list to sum points
                         let existing = squads[owner].find(p => p.name === player);
-                        if (existing) { existing.pts += Math.round(pts); } 
-                        else { squads[owner].push({ name: player, pts: Math.round(pts) }); }
+                        if (existing) { existing.pts += pts; } 
+                        else { squads[owner].push({ name: player, pts }); }
                     }
                 });
 
@@ -96,33 +100,35 @@
         }
 
         function render(owners, squads) {
-            // 1. Podium
+            // 1. Render Podium (Full Names)
             const pod = document.getElementById('podium');
             if (owners.length >= 3) {
                 pod.innerHTML = `
                     <div class="flex flex-col items-center">
-                        <div class="avatar mb-2">${owners[1].name[0]}</div>
-                        <div class="w-20 bg-[#161b22] h-16 rounded-t-lg border-t-2 border-blue-500/50 flex items-center justify-center font-cyber text-[10px]">2nd</div>
+                        <div class="avatar-large border-blue-500/30">${owners[1].name[0]}</div>
+                        <div class="podium-label">${owners[1].name}</div>
+                        <div class="w-20 bg-[#161b22] h-12 rounded-t-lg border-t border-blue-500/50 flex items-center justify-center font-cyber text-[10px] mt-2">2nd</div>
                     </div>
                     <div class="flex flex-col items-center">
-                        <div class="avatar border-yellow-500 mb-2 gold-glow">${owners[0].name[0]}</div>
-                        <div class="w-24 bg-[#1c2128] h-24 rounded-t-lg border-t-4 border-yellow-500 flex items-center justify-center font-cyber text-sm gold-glow">1st</div>
+                        <div class="avatar-large border-yellow-500 gold-glow">${owners[0].name[0]}</div>
+                        <div class="podium-label text-yellow-500">${owners[0].name}</div>
+                        <div class="w-24 bg-[#1c2128] h-20 rounded-t-lg border-t-2 border-yellow-500 flex items-center justify-center font-cyber text-[12px] gold-glow mt-2">1st</div>
                     </div>
                     <div class="flex flex-col items-center">
-                        <div class="avatar mb-2">${owners[2].name[0]}</div>
-                        <div class="w-20 bg-[#161b22] h-12 rounded-t-lg border-t-2 border-orange-500/50 flex items-center justify-center font-cyber text-[10px]">3rd</div>
+                        <div class="avatar-large border-orange-500/30">${owners[2].name[0]}</div>
+                        <div class="podium-label">${owners[2].name}</div>
+                        <div class="w-20 bg-[#161b22] h-8 rounded-t-lg border-t border-orange-500/50 flex items-center justify-center font-cyber text-[10px] mt-2">3rd</div>
                     </div>
                 `;
             }
 
-            // 2. Ranked List
+            // 2. Render Leaderboard
             const list = document.getElementById('leaderboard');
             list.innerHTML = owners.map((o, i) => `
                 <div class="owner-row">
                     <div class="p-5 flex justify-between items-center cursor-pointer" onclick="toggleSquad('${i}')">
                         <div class="flex items-center gap-4">
-                            <span class="font-cyber text-[10px] ${i < 3 ? 'gold-glow' : 'text-gray-700'}">${i+1}</span>
-                            <div class="avatar ${i===0 ? 'border-yellow-500 text-yellow-500' : ''}">${o.name[0]}</div>
+                            <span class="font-cyber text-[10px] ${i < 3 ? 'gold-glow' : 'text-gray-800'}">${i+1}</span>
                             <span class="font-bold text-sm tracking-tight">${o.name}</span>
                         </div>
                         <div class="font-cyber text-lg font-black ${i === 0 ? 'gold-glow' : ''}">${o.score}</div>
@@ -138,15 +144,15 @@
                 </div>
             `).join('');
 
-            // 3. Unsold Section
-            const unsoldList = document.getElementById('unsold-list');
-            const unsoldPlayers = squads["Unsold"] || [];
-            unsoldList.innerHTML = unsoldPlayers.sort((a,b) => b.pts - a.pts).map(p => `
+            // 3. Render Unsold List
+            const uList = document.getElementById('unsold-list');
+            const uPlayers = squads["Unsold"] || [];
+            uList.innerHTML = uPlayers.sort((a,b) => b.pts - a.pts).map(p => `
                 <div class="flex justify-between items-center py-1 text-[11px] border-b border-white/5">
                     <span class="text-gray-600">${p.name}</span>
                     <span class="font-cyber text-gray-500">${p.pts}</span>
                 </div>
-            `).join('') || '<div class="text-[10px] text-gray-700 py-4 italic">No unsold players with points recorded.</div>';
+            `).join('') || '<div class="text-[10px] text-gray-700 py-4 italic">No unsold scorers.</div>';
         }
 
         function toggleSquad(id) {
