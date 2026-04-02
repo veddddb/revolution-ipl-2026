@@ -23,18 +23,22 @@
 </head>
 <body class="p-4 md:p-10">
     <div class="max-w-xl mx-auto pb-20">
-        <div class="mb-8 bg-yellow-500/5 border border-yellow-500/20 rounded-full py-2 px-6 flex justify-between items-center">
-            <span class="text-[10px] font-black gold-glow animate-pulse uppercase tracking-widest">Live: KKR vs SRH</span>
-            <span id="last-update" class="text-[9px] text-gray-600 font-bold uppercase">Syncing...</span>
-        </div>
-
-        <header class="text-center mb-10">
-            <h1 class="text-4xl font-black font-cyber gold-glow italic tracking-tighter">REVOLUTION PRO</h1>
+        <header class="flex justify-between items-center mb-10 border-b border-white/5 pb-6">
+            <div>
+                <h1 class="text-3xl font-black font-cyber gold-glow italic tracking-tighter uppercase">REVOLUTION</h1>
+                <p class="text-[9px] text-gray-500 uppercase tracking-[0.4em] mt-1">League Analytics 2026</p>
+            </div>
+            <div id="last-update" class="text-[9px] text-gray-600 font-bold uppercase tracking-widest text-right">Syncing...</div>
         </header>
 
-        <div id="podium-area" class="flex justify-center items-end gap-2 mb-10 h-44"></div>
-        <div id="leaderboard"></div>
-        <div id="unsold-section"></div>
+        <div id="podium-area" class="flex justify-center items-end gap-2 mb-12 h-44">
+            </div>
+
+        <div id="leaderboard">
+            </div>
+
+        <div id="unsold-section" class="mt-10">
+            </div>
     </div>
 
     <script>
@@ -58,7 +62,7 @@
                     if (c.length < 3) return;
                     const pName = c[0].replace(/"/g, '').trim();
                     const owner = c[1].replace(/"/g, '').trim().toLowerCase();
-                    const mult = parseFloat(c[2].replace(/"/g, '')) || 1; // Looking at Column C
+                    const mult = parseFloat(c[2].replace(/"/g, '')) || 1;
                     
                     if (owner) {
                         if (!masterRoster[owner]) masterRoster[owner] = [];
@@ -118,7 +122,7 @@
 
             const lb = document.getElementById('leaderboard');
             lb.innerHTML = owners.map((o, i) => `
-                <div class="card-pro overflow-hidden">
+                <div class="card-pro overflow-hidden mb-4">
                     <div class="p-5 flex justify-between items-center cursor-pointer active:scale-95 transition" onclick="toggle('sq-${i}')">
                         <div class="flex items-center gap-6">
                             <span class="font-cyber text-xl ${i < 3 ? 'gold-glow' : 'text-gray-800'}">${i+1}</span>
