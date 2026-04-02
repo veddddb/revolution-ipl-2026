@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>REVOLUTION PRO | 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         body { background-color: #05070a; color: #f8fafc; font-family: 'Inter', sans-serif; }
         .font-cyber { font-family: 'Orbitron', sans-serif; }
@@ -14,24 +13,31 @@
         .card-pro { background: #0d1117; border: 1px solid #30363d; border-radius: 20px; transition: all 0.3s; }
         .squad-view { max-height: 0; overflow: hidden; transition: all 0.5s ease; opacity: 0; }
         .squad-view.open { max-height: 2000px; opacity: 1; padding: 20px; border-top: 1px solid #1f2937; }
-        .role-tag { font-size: 8px; padding: 2px 6px; border-radius: 4px; font-weight: 900; text-transform: uppercase; margin-left: 8px; }
+        
+        /* Podium Styles */
+        .podium-base { background: linear-gradient(180deg, #161b22 0%, #05070a 100%); border-top: 2px solid #30363d; }
+        .rank-1-border { border-top-color: #f1c40f; box-shadow: 0 -10px 20px rgba(241, 196, 15, 0.1); }
+        
+        .role-tag { font-size: 8px; padding: 1px 5px; border-radius: 3px; font-weight: 900; margin-left: 6px; }
         .tag-c { background: #f1c40f; color: #000; }
         .tag-vc { background: #94a3b8; color: #000; }
     </style>
 </head>
 <body class="p-4 md:p-10">
-    <div class="max-w-4xl mx-auto pb-20">
+    <div class="max-w-xl mx-auto pb-20">
         <header class="flex justify-between items-center mb-10 border-b border-white/5 pb-6">
             <div>
                 <h1 class="text-3xl font-black font-cyber gold-glow tracking-tighter italic">REVOLUTION PRO</h1>
-                <p class="text-gray-500 text-[10px] uppercase tracking-widest mt-1">Full Roster Management</p>
+                <p class="text-[9px] text-gray-500 uppercase tracking-[0.3em] mt-1">Live Analytics Engine</p>
             </div>
-            <div id="last-update" class="text-[10px] text-gray-500 font-bold uppercase">Syncing...</div>
+            <div id="last-update" class="text-[9px] text-gray-600 font-bold uppercase tracking-widest text-right">Syncing...</div>
         </header>
 
-        <div class="card-pro p-6 mb-10"><canvas id="mainChart" height="100"></canvas></div>
+        <div id="podium-area" class="flex justify-center items-end gap-2 mb-12 h-48">
+            </div>
 
         <div id="leaderboard" class="grid gap-4 mb-10"></div>
+
         <div id="unsold-section"></div>
     </div>
 
@@ -41,19 +47,15 @@
         const pcUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=PointsCalc`;
         const rosUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Roster`;
 
-        let myChart;
-
         async function updateData() {
             try {
                 const [lbRes, pcRes, rosRes] = await Promise.all([
                     fetch(lbUrl + '&t=' + Date.now()), fetch(pcUrl + '&t=' + Date.now()), fetch(rosUrl + '&t=' + Date.now())
                 ]);
-                
                 const lbRows = (await lbRes.text()).split('\n').slice(1);
                 const pcRows = (await pcRes.text()).split('\n').slice(1);
                 const rosRows = (await rosRes.text()).split('\n').slice(1);
 
-                // 1. Process Master Roster (Every Player)
                 const masterRoster = {};
                 rosRows.forEach(r => {
                     const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
@@ -67,7 +69,6 @@
                     }
                 });
 
-                // 2. Add Points from PointsCalc
                 pcRows.forEach(r => {
                     const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                     if (c.length < 7) return;
@@ -80,7 +81,6 @@
                     }
                 });
 
-                // 3. Process Leaderboard
                 let unsoldPoints = 0;
                 const owners = lbRows.map(r => {
                     const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
@@ -90,25 +90,57 @@
                     return { name, score };
                 }).filter(o => o && o.name !== "").sort((a,b) => b.score - a.score);
 
-                renderDashboard(owners, masterRoster, unsoldPoints);
-                updateChart(owners);
-                document.getElementById('last-update').innerText = "Sync: " + new Date().toLocaleTimeString();
+                renderPodium(owners);
+                renderLeaderboard(owners, masterRoster, unsoldPoints);
+                document.getElementById('last-update').innerText = "Update: " + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             } catch (e) { console.error(e); }
         }
 
-        function renderDashboard(owners, squads, unsoldScore) {
+        function renderPodium(owners) {
+            const pod = document.getElementById('podium-area');
+            if (owners.length < 3) return;
+            pod.innerHTML = `
+                <div class="flex flex-col items-center w-1/3">
+                    <div class="text-[9px] font-cyber text-gray-500 mb-1">2ND</div>
+                    <div class="text-[10px] font-bold text-center h-8 flex items-center leading-tight mb-2">${owners[1].name}</div>
+                    <div class="w-full podium-base h-20 rounded-t-xl flex flex-col justify-center items-center">
+                        <div class="font-cyber text-xl font-bold">${owners[1].score}</div>
+                    </div>
+                </div>
+                <div class="flex flex-col items-center w-1/3">
+                    <div class="text-[9px] font-cyber gold-glow mb-1 italic">CHAMPION</div>
+                    <div class="text-[11px] font-black text-center h-8 flex items-center leading-tight mb-2 gold-glow uppercase">${owners[0].name}</div>
+                    <div class="w-full podium-base rank-1-border h-32 rounded-t-xl flex flex-col justify-center items-center">
+                        <div class="font-cyber text-2xl font-black gold-glow">${owners[0].score}</div>
+                    </div>
+                </div>
+                <div class="flex flex-col items-center w-1/3">
+                    <div class="text-[9px] font-cyber text-gray-600 mb-1">3RD</div>
+                    <div class="text-[10px] font-bold text-center h-8 flex items-center leading-tight mb-2">${owners[2].name}</div>
+                    <div class="w-full podium-base h-12 rounded-t-xl flex flex-col justify-center items-center">
+                        <div class="font-cyber text-lg font-bold text-gray-400">${owners[2].score}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderLeaderboard(owners, squads, unsoldScore) {
             const list = document.getElementById('leaderboard');
             list.innerHTML = owners.map((o, i) => `
-                <div class="card-pro overflow-hidden mb-4">
-                    <div class="p-5 flex justify-between items-center cursor-pointer" onclick="toggle('sq-${i}')">
+                <div class="card-pro overflow-hidden">
+                    <div class="p-5 flex justify-between items-center cursor-pointer active:bg-white/5" onclick="toggle('sq-${i}')">
                         <div class="flex items-center gap-6">
-                            <span class="font-cyber text-2xl ${i < 3 ? 'gold-glow' : 'text-gray-800'}">${i+1}</span>
-                            <div class="font-extrabold text-sm text-gray-200">${o.name}</div>
+                            <span class="font-cyber text-xl ${i < 3 ? 'gold-glow' : 'text-gray-800'}">${i+1}</span>
+                            <div class="font-bold text-sm text-gray-200 uppercase tracking-tighter">${o.name}</div>
                         </div>
-                        <div class="text-2xl font-cyber font-black ${i === 0 ? 'gold-glow' : ''}">${o.score}</div>
+                        <div class="text-xl font-cyber font-black ${i === 0 ? 'gold-glow' : ''}">${o.score}</div>
                     </div>
                     <div id="sq-${i}" class="squad-view">
-                        <div class="space-y-2">
+                        <div class="grid grid-cols-2 gap-2 mb-4">
+                            <div class="bg-white/5 p-2 rounded-lg text-center"><div class="text-[7px] text-gray-500 uppercase font-bold">Top Player</div><div class="text-[10px] font-bold text-gray-300">${squads[o.name]?.sort((a,b)=>b.pts-a.pts)[0]?.name || '-'}</div></div>
+                            <div class="bg-white/5 p-2 rounded-lg text-center"><div class="text-[7px] text-gray-500 uppercase font-bold">Avg Points</div><div class="text-[10px] font-bold text-gray-300">${Math.round(o.score / (squads[o.name]?.length || 1))}</div></div>
+                        </div>
+                        <div class="space-y-1">
                             ${(squads[o.name] || []).sort((a,b)=>b.pts-a.pts).map(p => `
                                 <div class="flex justify-between items-center text-[11px] py-1 border-b border-white/5">
                                     <div class="flex items-center">
@@ -125,22 +157,12 @@
 
             const uDiv = document.getElementById('unsold-section');
             uDiv.innerHTML = `<div class="card-pro p-4 opacity-50 flex justify-between items-center cursor-pointer" onclick="toggle('sq-u')">
-                <span class="text-xs font-bold uppercase tracking-widest text-gray-500">Unsold Pool</span>
-                <span class="font-cyber text-gray-600">${unsoldScore}</span>
+                <span class="text-[10px] font-bold uppercase tracking-widest text-gray-500">Unsold Player Pool</span>
+                <span class="font-cyber text-sm text-gray-600">${unsoldScore}</span>
             </div>
             <div id="sq-u" class="squad-view">
-                ${(squads["Unsold"] || []).map(p => `<div class="flex justify-between text-[10px] text-gray-700 py-1"><span>${p.name}</span><span>${p.pts}</span></div>`).join('')}
+                ${(squads["Unsold"] || []).sort((a,b)=>b.pts-a.pts).map(p => `<div class="flex justify-between text-[10px] text-gray-700 py-1 border-b border-white/5"><span>${p.name}</span><span class="font-cyber">${p.pts}</span></div>`).join('')}
             </div>`;
-        }
-
-        function updateChart(owners) {
-            const ctx = document.getElementById('mainChart').getContext('2d');
-            if (myChart) myChart.destroy();
-            myChart = new Chart(ctx, {
-                type: 'bar',
-                data: { labels: owners.map(o => o.name), datasets: [{ data: owners.map(o => o.score), backgroundColor: '#f1c40f', borderRadius: 4 }] },
-                options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { ticks: { color: '#6b7280', font: { size: 9 } }, grid: { display: false } } } }
-            });
         }
 
         function toggle(id) {
