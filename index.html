@@ -17,7 +17,6 @@
         .squad-view { max-height: 0; overflow: hidden; transition: all 0.5s ease; opacity: 0; }
         .squad-view.open { max-height: 5000px; opacity: 1; padding: 20px; border-top: 1px solid var(--border); }
         .badge { font-size: 8px; padding: 1px 5px; border-radius: 3px; font-weight: 900; margin-left: 6px; background: rgba(255,255,255,0.1); }
-        /* Live Pulse Animation */
         .pulse-red { background: #ef4444; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); animation: pulse 2s infinite; }
         @keyframes pulse { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
     </style>
@@ -26,16 +25,16 @@
     <div class="max-w-xl mx-auto pb-20">
         <header class="text-center mb-6">
             <h1 class="text-3xl font-black font-cyber gold-glow italic tracking-tighter mb-2 uppercase">REVOLUTION IPL 2026</h1>
-            <div id="countdown" class="text-[9px] font-bold text-gray-500 uppercase tracking-[0.4em]">Initializing Core Systems...</div>
+            <div id="countdown" class="text-[9px] font-bold text-gray-500 uppercase tracking-[0.4em]">Live System Online</div>
         </header>
 
-        <div id="live-ticker" class="glass-card mb-10 p-4 hidden border-l-4 border-yellow-500">
+        <div id="live-ticker" class="glass-card mb-10 p-4 border-l-4 border-yellow-500">
             <div class="flex justify-between items-center">
                 <div class="flex items-center gap-3">
-                    <div class="h-2 w-2 rounded-full pulse-red"></div>
-                    <span id="live-match-name" class="font-cyber text-[10px] text-white uppercase tracking-wider">DC vs MI</span>
+                    <div id="status-dot" class="h-2 w-2 rounded-full bg-gray-600"></div>
+                    <span id="live-match-name" class="font-cyber text-[10px] text-gray-400 uppercase tracking-wider">No Active Match</span>
                 </div>
-                <div id="live-match-score" class="font-cyber text-sm font-black gold-glow">--/-- (0.0 ov)</div>
+                <div id="live-match-score" class="font-cyber text-sm font-black gold-glow italic">Upcoming: DC vs MI</div>
             </div>
         </div>
 
@@ -64,32 +63,33 @@
         const SHEET_ID = '1xIRCNr0tteFfMk6l7inIkKeSJMb7WLBswsXepHRqjio';
         const SEASON_ID = '1795';
         
-        // URLs
         const lbUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Leaderboard`;
         const pcUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=PointsCalc`;
         const rosUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Roster`;
 
         async function fetchLiveScores() {
             try {
-                // This calls your Vercel API Route to hide your token
                 const response = await fetch('/api/livescore');
                 const json = await response.json();
                 
                 const iplMatch = json.data ? json.data.find(m => m.season_id == SEASON_ID) : null;
-                const ticker = document.getElementById('live-ticker');
-                const statusText = document.getElementById('countdown');
+                const dot = document.getElementById('status-dot');
+                const matchName = document.getElementById('live-match-name');
+                const matchScore = document.getElementById('live-match-score');
 
-                if (iplMatch) {
-                    ticker.classList.remove('hidden');
-                    statusText.innerText = "LIVE SYSTEM ACTIVE";
-                    document.getElementById('live-match-name').innerText = `${iplMatch.localteam.name} vs ${iplMatch.visitorteam.name}`;
+                if (iplMatch && (iplMatch.status === "Live" || iplMatch.status === "Innings Break")) {
+                    dot.className = "h-2 w-2 rounded-full pulse-red";
+                    matchName.innerText = `${iplMatch.localteam.name} vs ${iplMatch.visitorteam.name}`;
+                    matchName.classList.remove('text-gray-400');
+                    
                     const score = iplMatch.runs[0];
                     if (score) {
-                        document.getElementById('live-match-score').innerText = `${score.score}/${score.wickets} (${score.overs} ov)`;
+                        matchScore.innerText = `${score.score}/${score.wickets} (${score.overs} ov)`;
                     }
                 } else {
-                    ticker.classList.add('hidden');
-                    statusText.innerText = "Next: DC vs MI • 3:30 PM IST";
+                    dot.className = "h-2 w-2 rounded-full bg-gray-600";
+                    matchName.innerText = "Next: DC vs MI";
+                    matchScore.innerText = "Starts 3:30 PM IST";
                 }
             } catch (e) { console.log("Live Score Sync Pending..."); }
         }
@@ -180,8 +180,8 @@
                         ${(squads[o.cleanName] || []).sort((a,b)=>b.pts-a.pts).map(p => `
                             <div class="flex justify-between items-center text-[11px] py-1.5 border-b border-white/5">
                                 <div class="flex items-center">
-                                    <span class="${p.pts > 0 ? 'text-gray-300' : 'text-gray-600'}">${p.name}</span>
-                                    ${p.role ? `<span class="badge font-cyber text-yellow-500">${p.role}</span>` : ''}
+                                    <span class="${p.pts > 0 ? 'text-gray-300' : 'text-gray-600'} font-medium">${p.name}</span>
+                                    ${p.role ? `<span class="badge font-cyber text-yellow-500 border border-yellow-500/30">${p.role}</span>` : ''}
                                 </div>
                                 <span class="font-cyber ${p.pts > 0 ? 'text-yellow-500' : 'text-gray-700'}">${p.pts}</span>
                             </div>
@@ -206,7 +206,6 @@
             if (!isOpen) el.classList.add('open');
         }
 
-        // Run both systems
         updateData();
         fetchLiveScores();
         setInterval(updateData, 60000);
