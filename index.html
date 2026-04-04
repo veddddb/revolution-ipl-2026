@@ -87,8 +87,8 @@
 
         <div id="view-strategy" class="hidden space-y-6">
             <div class="glass-card p-6 border-b-2 border-yellow-500/30">
-                <h3 class="font-cyber text-xs gold-glow uppercase mb-2 tracking-widest">The "What If" Index</h3>
-                <p class="text-[9px] text-gray-400 italic mb-6">Calculating optimal scores based on the top 2 field performers as C/VC.</p>
+                <h3 class="font-cyber text-xs gold-glow uppercase mb-2 tracking-widest">The "What If" Season Index</h3>
+                <p class="text-[9px] text-gray-400 italic mb-6">Optimized total based on the top 2 overall raw performers (Column F) as C/VC.</p>
                 <div id="strategy-list" class="space-y-4"></div>
             </div>
         </div>
@@ -151,7 +151,7 @@
                         }
                     }
                 }
-            } catch (e) { console.log("Live Sync Error"); }
+            } catch (e) { console.log("Sync Error"); }
         }
 
         async function updateData() {
@@ -172,15 +172,20 @@
                     const team = c[4] || "", type = c[6] || "";
                     if (owner) {
                         if (!masterRoster[owner]) masterRoster[owner] = [];
-                        masterRoster[owner].push({ name, role: mult === 2 ? 'C' : mult === 1.5 ? 'VC' : '', pts: 0, team, type, mult });
+                        masterRoster[owner].push({ name, role: mult === 2 ? 'C' : mult === 1.5 ? 'VC' : '', pts: 0, rawTotal: 0, team, type, mult });
                     }
                 });
 
                 pcRows.forEach(c => {
-                    const name = c[1], owner = c[2]?.toLowerCase(), pts = Math.round(parseFloat(c[6])) || 0;
+                    const name = c[1], owner = c[2]?.toLowerCase();
+                    const actualPts = Math.round(parseFloat(c[6])) || 0; // Column G
+                    const basePts = Math.round(parseFloat(c[5])) || 0;   // Column F
                     if (owner && masterRoster[owner]) {
                         let p = masterRoster[owner].find(x => x.name === name);
-                        if (p) p.pts += pts;
+                        if (p) {
+                            p.pts += actualPts;
+                            p.rawTotal += basePts;
+                        }
                     }
                 });
 
@@ -192,87 +197,64 @@
                 }).filter(o => o !== null).sort((a,b) => b.score - a.score);
 
                 renderDashboard(owners, masterRoster, usTotal);
-            } catch (e) { console.error("Data Load Error:", e); }
+            } catch (e) { console.error("Data Error", e); }
         }
 
         function renderDashboard(owners, squads, unsoldPts) {
-    const pod = document.getElementById('podium-area');
-    if (owners.length >= 3) {
-        pod.innerHTML = `
-            <div class="flex flex-col items-center w-1/3"><div class="text-[9px] mb-2 uppercase">${owners[1].displayName}</div><div class="w-full podium-pillar h-24 rounded-t-2xl flex flex-col justify-center items-center text-gray-400 border border-white/5"><span class="font-cyber text-xl font-bold">${owners[1].score}</span></div></div>
-            <div class="flex flex-col items-center w-1/3"><div class="text-[10px] gold-glow mb-2 uppercase font-black">${owners[0].displayName}</div><div class="w-full podium-pillar rank-1-pillar h-36 rounded-t-2xl flex flex-col justify-center items-center"><span class="font-cyber text-2xl font-black gold-glow">${owners[0].score}</span></div></div>
-            <div class="flex flex-col items-center w-1/3"><div class="text-[9px] mb-2 text-gray-600 uppercase">${owners[2].displayName}</div><div class="w-full podium-pillar h-16 rounded-t-2xl flex flex-col justify-center items-center text-gray-600 border border-white/5"><span class="font-cyber text-lg font-bold">${owners[2].score}</span></div></div>`;
-    }
+            const pod = document.getElementById('podium-area');
+            if (owners.length >= 3) {
+                pod.innerHTML = `
+                    <div class="flex flex-col items-center w-1/3"><div class="text-[9px] mb-2 uppercase">${owners[1].displayName}</div><div class="w-full podium-pillar h-24 rounded-t-2xl flex flex-col justify-center items-center text-gray-400 border border-white/5"><span class="font-cyber text-xl font-bold">${owners[1].score}</span></div></div>
+                    <div class="flex flex-col items-center w-1/3"><div class="text-[10px] gold-glow mb-2 uppercase font-black">${owners[0].displayName}</div><div class="w-full podium-pillar rank-1-pillar h-36 rounded-t-2xl flex flex-col justify-center items-center"><span class="font-cyber text-2xl font-black gold-glow">${owners[0].score}</span></div></div>
+                    <div class="flex flex-col items-center w-1/3"><div class="text-[9px] mb-2 text-gray-600 uppercase">${owners[2].displayName}</div><div class="w-full podium-pillar h-16 rounded-t-2xl flex flex-col justify-center items-center text-gray-600 border border-white/5"><span class="font-cyber text-lg font-bold">${owners[2].score}</span></div></div>`;
+            }
 
-    const lb = document.getElementById('leaderboard');
-    lb.innerHTML = owners.map((o, i) => `
-        <div class="glass-card overflow-hidden">
-            <div class="p-5 flex justify-between items-center cursor-pointer" onclick="toggleSection('sq-${i}')">
-                <div class="flex items-center gap-6"><span class="font-cyber text-lg ${i < 3 ? 'gold-glow' : 'text-gray-700'}">${i+1}</span><span class="font-bold text-sm tracking-widest uppercase">${o.displayName}</span></div>
-                <span class="text-xl font-cyber font-black ${i === 0 ? 'gold-glow' : ''}">${o.score}</span>
-            </div>
-            <div id="sq-${i}" class="squad-view">
-                ${(squads[o.cleanName] || []).sort((a,b)=>b.pts-a.pts).map((p, idx) => {
-                    const isLive = activePlayers.some(name => name && name.includes(p.name));
-                    return `<div class="flex justify-between items-center text-[11px] py-1.5 border-b border-white/5">
-                        <div class="flex items-center"><span class="text-[9px] font-bold text-gray-500 mr-2 w-4">${idx+1}.</span><span class="${isLive ? 'impact-glow' : 'text-gray-300'}">${p.name} (${p.team})</span>${p.type ? `<span class="role-tag">${p.type}</span>` : ''}${p.role ? `<span class="badge font-cyber">${p.role}</span>` : ''}${isLive ? `<span class="ml-2 h-1.5 w-1.5 rounded-full bg-yellow-500 animate-ping"></span>` : ''}</div>
-                        <span class="font-cyber ${p.pts > 0 ? 'text-yellow-500' : 'text-gray-700'}">${p.pts}</span>
-                    </div>`}).join('')}
-            </div>
-        </div>`).join('');
-
-    // --- STRATEGIC INSIGHTS LOGIC WITH SORTING ---
-    const strategyData = owners.map(o => {
-        const s = (squads[o.cleanName] || []).map(p => ({ ...p, raw: p.pts / (p.mult || 1) }));
-        const sorted = [...s].sort((a,b) => b.raw - a.raw);
-        const top1 = sorted[0], top2 = sorted[1];
-        let prob = 0;
-        s.forEach(p => {
-            if (top1 && p.name === top1.name) prob += (p.raw * 2);
-            else if (top2 && p.name === top2.name) prob += (p.raw * 1.5);
-            else prob += p.raw;
-        });
-        return { 
-            name: o.displayName, 
-            potential: Math.round(prob), 
-            diff: Math.round(prob - o.score),
-            top1: top1 ? top1.name : '--',
-            top2: top2 ? top2.name : '--'
-        };
-    });
-
-    // SORT STRATEGY DATA DESCENDING
-    strategyData.sort((a, b) => b.potential - a.potential);
-
-    const stratList = document.getElementById('strategy-list');
-    stratList.innerHTML = strategyData.map((data, i) => `
-        <div class="p-4 rounded-xl bg-white/5 border border-white/5 mb-3 flex justify-between items-center">
-            <div class="flex items-center gap-4">
-                <span class="font-cyber text-xs text-gray-600">${i + 1}</span>
-                <div>
-                    <p class="text-[11px] font-black uppercase tracking-widest">${data.name}</p>
-                    <div class="flex gap-2 mt-1">
-                        <span class="text-[8px] text-blue-500 font-bold uppercase">C: ${data.top1}</span>
-                        <span class="text-[8px] text-purple-500 font-bold uppercase">VC: ${data.top2}</span>
+            const lb = document.getElementById('leaderboard');
+            lb.innerHTML = owners.map((o, i) => `
+                <div class="glass-card overflow-hidden">
+                    <div class="p-5 flex justify-between items-center cursor-pointer" onclick="toggleSection('sq-${i}')">
+                        <div class="flex items-center gap-6"><span class="font-cyber text-lg ${i < 3 ? 'gold-glow' : 'text-gray-700'}">${i+1}</span><span class="font-bold text-sm tracking-widest uppercase">${o.displayName}</span></div>
+                        <span class="text-xl font-cyber font-black ${i === 0 ? 'gold-glow' : ''}">${o.score}</span>
                     </div>
-                </div>
-            </div>
-            <div class="text-right">
-                <p class="font-cyber text-sm gold-glow">${data.potential}</p>
-                <p class="text-[8px] uppercase font-black ${data.diff > 0 ? 'text-green-500' : 'text-gray-600'}">
-                    ${data.diff > 0 ? `+${data.diff} Missed` : 'Perfect'}
-                </p>
-            </div>
-        </div>`).join('');
+                    <div id="sq-${i}" class="squad-view">
+                        ${(squads[o.cleanName] || []).sort((a,b)=>b.pts-a.pts).map((p, idx) => {
+                            const isLive = activePlayers.some(name => name && name.includes(p.name));
+                            return `<div class="flex justify-between items-center text-[11px] py-1.5 border-b border-white/5">
+                                <div class="flex items-center"><span class="text-[9px] font-bold text-gray-500 mr-2 w-4">${idx+1}.</span><span class="${isLive ? 'impact-glow' : 'text-gray-300'}">${p.name} (${p.team})</span>${p.type ? `<span class="role-tag">${p.type}</span>` : ''}${p.role ? `<span class="badge font-cyber">${p.role}</span>` : ''}${isLive ? `<span class="ml-2 h-1.5 w-1.5 rounded-full bg-yellow-500 animate-ping"></span>` : ''}</div>
+                                <span class="font-cyber ${p.pts > 0 ? 'text-yellow-500' : 'text-gray-700'}">${p.pts}</span>
+                            </div>`}).join('')}
+                    </div>
+                </div>`).join('');
 
-    document.getElementById('unsold-total-val').innerText = unsoldPts;
-    const unsoldPlayers = squads['unsold'] || [];
-    document.getElementById('unsold-items-list').innerHTML = unsoldPlayers.sort((a,b)=>b.pts-a.pts).map((p, idx) => `
-        <div class="flex justify-between items-center text-[11px] py-1.5 border-b border-white/5 opacity-80">
-            <div class="flex items-center"><span class="text-[9px] font-bold text-gray-700 mr-2 w-4">${idx+1}.</span><span class="text-gray-400 font-medium">${p.name} (${p.team})</span>${p.type ? `<span class="role-tag">${p.type}</span>` : ''}</div>
-            <span class="font-cyber text-gray-500">${p.pts}</span>
-        </div>`).join('') || '<div class="text-[10px] text-center py-4 italic text-gray-700">Empty</div>';
-}
+            const strategyData = owners.map(o => {
+                const s = squads[o.cleanName] || [];
+                const sorted = [...s].sort((a,b) => b.rawTotal - a.rawTotal);
+                const top1 = sorted[0], top2 = sorted[1];
+                let potential = 0;
+                s.forEach(p => {
+                    if (top1 && p.name === top1.name) potential += (p.rawTotal * 2);
+                    else if (top2 && p.name === top2.name) potential += (p.rawTotal * 1.5);
+                    else potential += p.rawTotal;
+                });
+                return { name: o.displayName, potential: Math.round(potential), diff: Math.round(potential - o.score), t1: top1?.name, t2: top2?.name };
+            }).sort((a,b) => b.potential - a.potential);
+
+            document.getElementById('strategy-list').innerHTML = strategyData.map((data, i) => `
+                <div class="p-4 rounded-xl bg-white/5 border border-white/5 mb-3 flex justify-between items-center">
+                    <div class="flex items-center gap-4"><span class="font-cyber text-xs text-gray-600">${i + 1}</span>
+                    <div><p class="text-[11px] font-black uppercase tracking-widest">${data.name}</p><div class="flex gap-2 mt-1"><span class="text-[8px] text-blue-500 font-bold uppercase">C: ${data.t1 || '--'}</span><span class="text-[8px] text-purple-500 font-bold uppercase">VC: ${data.t2 || '--'}</span></div></div></div>
+                    <div class="text-right"><p class="font-cyber text-sm gold-glow">${data.potential}</p><p class="text-[8px] uppercase font-black ${data.diff > 0 ? 'text-green-500' : 'text-gray-600'}">${data.diff > 0 ? `+${data.diff} Missed` : 'Perfect'}</p></div>
+                </div>`).join('');
+
+            document.getElementById('unsold-total-val').innerText = unsoldPts;
+            const unsoldPlayers = squads['unsold'] || [];
+            document.getElementById('unsold-items-list').innerHTML = unsoldPlayers.sort((a,b)=>b.pts-a.pts).map((p, idx) => `
+                <div class="flex justify-between items-center text-[11px] py-1.5 border-b border-white/5 opacity-80">
+                    <div class="flex items-center"><span class="text-[9px] font-bold text-gray-700 mr-2 w-4">${idx+1}.</span><span class="text-gray-400 font-medium">${p.name} (${p.team})</span>${p.type ? `<span class="role-tag">${p.type}</span>` : ''}</div>
+                    <span class="font-cyber text-gray-500">${p.pts}</span>
+                </div>`).join('') || '<div class="text-[10px] text-center py-4 italic text-gray-700">Empty</div>';
+        }
+
         function toggleSection(id) {
             const el = document.getElementById(id);
             const isOpen = el.classList.contains('open');
