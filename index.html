@@ -18,7 +18,11 @@
         .rank-1-pillar { border-top-color: var(--accent); box-shadow: 0 -15px 40px rgba(241, 196, 15, 0.15); }
         .squad-view { max-height: 0; overflow: hidden; transition: all 0.6s ease; opacity: 0; }
         .squad-view.open { max-height: 2000px; opacity: 1; padding: 20px; border-top: 1px solid var(--border); }
-        .badge { font-size: 8px; padding: 2px 6px; border-radius: 4px; font-weight: 900; background: rgba(241, 196, 15, 0.15); border: 1px solid rgba(241, 196, 15, 0.3); color: var(--accent); }
+        .badge { font-size: 8px; padding: 2px 6px; border-radius: 4px; font-weight: 900; margin-left: 6px; background: rgba(241, 196, 15, 0.15); border: 1px solid rgba(241, 196, 15, 0.3); color: var(--accent); }
+        .role-tag { font-size: 7px; padding: 1px 4px; border-radius: 3px; background: rgba(255, 255, 255, 0.05); color: #94a3b8; text-transform: uppercase; margin-left: 5px; font-weight: 700; border: 1px solid rgba(255,255,255,0.1); }
+        .live-dot { height: 8px; width: 8px; background: #ef4444; border-radius: 50%; display: inline-block; position: relative; }
+        .live-dot::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 50%; background: #ef4444; animation: live-pulse 2s infinite; }
+        @keyframes live-pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(3); opacity: 0; } }
         .impact-glow { color: #f1c40f !important; font-weight: 900 !important; text-shadow: 0 0 12px rgba(241, 196, 15, 0.9); }
         .win-prob-bar { height: 8px; border-radius: 4px; background: rgba(255,255,255,0.1); overflow: hidden; display: flex; margin-top: 10px; }
         .team-a-prob { background: #2563eb; transition: width 1s ease; box-shadow: 0 0 10px rgba(37, 99, 235, 0.5); }
@@ -32,7 +36,7 @@
             <h1 class="text-4xl font-black font-cyber gold-glow italic tracking-tighter mb-2 uppercase">REVOLUTION</h1>
             <div class="flex justify-center gap-2 mt-4">
                 <button onclick="switchTab('main')" id="btn-main" class="tab-btn active">Live Ranks</button>
-                <button onclick="switchTab('strategy')" id="btn-strat" class="tab-btn">Strategy Insights</button>
+                <button onclick="switchTab('strategy')" id="btn-strat" class="tab-btn">Strategic Insights</button>
             </div>
         </header>
 
@@ -55,7 +59,7 @@
                 </div>
                 <div class="text-center w-1/3">
                     <div id="live-score" class="font-cyber text-2xl font-black gold-glow mb-1 italic">Match 8</div>
-                    <div id="live-overs" class="text-[10px] font-bold text-gray-400 tracking-widest">Starts 3:30 PM</div>
+                    <div id="live-overs" class="text-[10px] font-bold text-gray-500 tracking-widest">Starts 3:30 PM</div>
                 </div>
                 <div class="flex flex-col items-center w-1/3 text-center">
                     <div class="w-12 h-12 rounded-full bg-blue-900/20 border border-blue-800/30 flex items-center justify-center overflow-hidden relative">
@@ -79,7 +83,7 @@
             <div id="podium-area" class="flex justify-center items-end gap-3 mb-14 h-48 text-center"></div>
             <div id="leaderboard" class="space-y-4"></div>
 
-            <div id="unsold-container" class="mt-12 glass-card overflow-hidden">
+            <div id="unsold-container" class="mt-12 glass-card overflow-hidden opacity-50">
                 <div class="p-4 flex justify-between items-center cursor-pointer" onclick="toggleSection('sq-unsold')">
                     <div class="flex items-center gap-3">
                         <span class="text-gray-600 font-cyber text-[10px]">--</span>
@@ -95,8 +99,8 @@
 
         <div id="view-strategy" class="hidden space-y-6">
             <div class="glass-card p-6 border-b-2 border-yellow-500/30">
-                <h3 class="font-cyber text-xs gold-glow uppercase mb-4 tracking-widest">The "What If" Table</h3>
-                <p class="text-[10px] text-gray-400 mb-6 italic">What your score would be if you picked your top 2 performers as C & VC.</p>
+                <h3 class="font-cyber text-xs gold-glow uppercase mb-2 tracking-widest">The "What If" Index</h3>
+                <p class="text-[9px] text-gray-400 italic mb-6">Calculating optimal scores by picking the top 2 field performers as C/VC.</p>
                 <div id="strategy-list" class="space-y-4"></div>
             </div>
         </div>
@@ -117,8 +121,7 @@
 
         function switchTab(tab) {
             document.getElementById('view-main').classList.toggle('hidden', tab !== 'main');
-            document.getElementById('view-strategy').classList.toggle('hidden', tab !== 'main'); // Fixed logic below
-            document.getElementById('view-strategy').className = tab === 'strategy' ? 'space-y-6' : 'hidden';
+            document.getElementById('view-strategy').classList.toggle('hidden', tab !== 'strategy');
             document.getElementById('btn-main').className = tab === 'main' ? 'tab-btn active' : 'tab-btn';
             document.getElementById('btn-strat').className = tab === 'strategy' ? 'tab-btn active' : 'tab-btn';
         }
@@ -145,7 +148,7 @@
                         }
                     }
                 }
-            } catch (e) { console.log("Live Score Poll..."); }
+            } catch (e) { console.log("Live Sync..."); }
         }
 
         async function updateData() {
@@ -161,27 +164,26 @@
                 rosRows.forEach(r => {
                     const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                     if (c.length < 2) return;
-                    const pName = c[0].replace(/"/g, '').trim();
+                    const name = c[0].replace(/"/g, '').trim();
                     const owner = c[1].replace(/"/g, '').trim().toLowerCase();
                     const mult = parseFloat(c[2].replace(/"/g, '')) || 1;
-                    const realTeam = c[4] ? c[4].replace(/"/g, '').trim() : "";
-                    const pRole = c[6] ? c[6].replace(/"/g, '').trim() : "";
+                    const team = c[4] ? c[4].replace(/"/g, '').trim() : "";
+                    const type = c[6] ? c[6].replace(/"/g, '').trim() : "";
                     if (owner) {
                         if (!masterRoster[owner]) masterRoster[owner] = [];
-                        masterRoster[owner].push({ name: pName, role: mult === 2 ? 'C' : mult === 1.5 ? 'VC' : '', pts: 0, basePts: 0, team: realTeam, type: pRole });
+                        masterRoster[owner].push({ name, role: mult === 2 ? 'C' : mult === 1.5 ? 'VC' : '', pts: 0, team, type, mult });
                     }
                 });
 
                 pcRows.forEach(r => {
                     const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                     if (c.length < 7) return;
-                    const pName = c[1].replace(/"/g, '').trim();
+                    const name = c[1].replace(/"/g, '').trim();
                     const owner = c[2].replace(/"/g, '').trim().toLowerCase();
                     const pts = Math.round(parseFloat(c[6].replace(/"/g, '')) || 0);
-                    const basePts = Math.round(parseFloat(c[5].replace(/"/g, '')) || 0);
                     if (owner && masterRoster[owner]) {
-                        let pObj = masterRoster[owner].find(p => p.name === pName);
-                        if (pObj) { pObj.pts += pts; pObj.basePts += basePts; }
+                        let pObj = masterRoster[owner].find(p => p.name === name);
+                        if (pObj) pObj.pts += pts;
                     }
                 });
 
@@ -190,115 +192,4 @@
                     const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                     if (!c[0]) return null;
                     const n = c[0].replace(/"/g, '').trim();
-                    const s = Math.round(parseFloat(c[1].replace(/"/g, '')) || 0);
-                    if (n.toLowerCase() === 'unsold') { usTotal = s; return null; }
-                    return { displayName: n, cleanName: n.toLowerCase(), score: s };
-                }).filter(o => o !== null).sort((a,b) => b.score - a.score);
-
-                renderDashboard(owners, masterRoster, usTotal);
-            } catch (e) { console.error(e); }
-        }
-
-// ... [Keep everything else the same, update only the Strategy Logic inside renderDashboard] ...
-
-function renderDashboard(owners, squads, unsoldPts) {
-    // [Keep Podium and Leaderboard code exactly as it is]
-
-    // --- STRATEGY LOGIC: FIXED & ACCURATE ---
-    const stratList = document.getElementById('strategy-list');
-    stratList.innerHTML = owners.map(o => {
-        const squad = squads[o.cleanName] || [];
-        
-        // 1. Calculate RAW POINTS for each player
-        const squadWithRaw = squad.map(p => {
-            let raw = p.pts;
-            if (p.role === 'C') raw = p.pts / 2;
-            if (p.role === 'VC') raw = p.pts / 1.5;
-            return { ...p, rawPoints: Math.round(raw) };
-        });
-
-        // 2. Sort by Raw Performance to find the "True" Top 2
-        const sortedRaw = [...squadWithRaw].sort((a, b) => b.rawPoints - a.rawPoints);
-        const top1 = sortedRaw[0]; // Potential C
-        const top2 = sortedRaw[1]; // Potential VC
-
-        // 3. Calculate what the score WOULD have been
-        let probableTotal = 0;
-        squadWithRaw.forEach(p => {
-            if (top1 && p.name === top1.name) {
-                probableTotal += (p.rawPoints * 2);
-            } else if (top2 && p.name === top2.name) {
-                probableTotal += (p.rawPoints * 1.5);
-            } else {
-                probableTotal += p.rawPoints;
-            }
-        });
-
-        const diff = Math.round(probableTotal - o.score);
-
-        return `
-            <div class="flex justify-between items-center p-4 rounded-xl bg-white/5 border border-white/5 mb-3">
-                <div class="flex-1">
-                    <p class="text-[11px] font-black uppercase tracking-tighter">${o.displayName}</p>
-                    <div class="flex gap-2 mt-1">
-                        <span class="text-[8px] text-blue-400 font-bold uppercase">Optimum C: ${top1 ? top1.name : 'N/A'}</span>
-                        <span class="text-[8px] text-purple-400 font-bold uppercase">Optimum VC: ${top2 ? top2.name : 'N/A'}</span>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <p class="font-cyber text-sm gold-glow">${Math.round(probableTotal)}</p>
-                    <p class="text-[8px] font-black uppercase ${diff > 0 ? 'text-green-500' : 'text-gray-600'}">
-                        ${diff > 0 ? `+${diff} Missed` : 'Perfect Setup'}
-                    </p>
-                </div>
-            </div>`;
-    }).join('');
-
-    // [Keep Unsold List code exactly as it is]
-}
-            // UNSOLD LOGIC
-            document.getElementById('unsold-total-val').innerText = unsoldPts;
-            const unsoldList = squads['unsold'] || [];
-            document.getElementById('unsold-items-list').innerHTML = unsoldList.sort((a,b)=>b.pts-a.pts).map((p, idx) => `
-                <div class="flex justify-between items-center text-[11px] py-1.5 border-b border-white/5 opacity-80">
-                    <span><span class="text-[9px] mr-2 text-gray-700">${idx+1}.</span>${p.name} (${p.team})</span>
-                    <span class="font-cyber text-gray-500">${p.pts}</span>
-                </div>`).join('') || '<div class="text-[10px] text-center py-4">No unsold players with points.</div>';
-
-            // STRATEGY LOGIC
-            const stratList = document.getElementById('strategy-list');
-            stratList.innerHTML = owners.map(o => {
-                const s = squads[o.cleanName] || [];
-                const sorted = [...s].sort((a,b) => b.basePts - a.basePts);
-                let probable = 0;
-                s.forEach(p => probable += p.basePts);
-                if (sorted[0]) probable += (sorted[0].basePts * 1); // Add extra 1x for C
-                if (sorted[1]) probable += (sorted[1].basePts * 0.5); // Add extra 0.5x for VC
-                const diff = Math.round(probable - o.score);
-                return `<div class="flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/5">
-                    <div><p class="text-[11px] font-bold uppercase">${o.displayName}</p><p class="text-[9px] text-gray-500">Optimum C: ${sorted[0]?.name || '--'}</p></div>
-                    <div class="text-right"><p class="font-cyber text-sm ${diff > 0 ? 'text-green-500' : 'text-gray-500'}">${Math.round(probable)}</p><p class="text-[8px] uppercase ${diff > 0 ? 'text-green-800' : 'text-gray-700'}">${diff > 0 ? `+${diff} Potential` : 'Maxed Out'}</p></div>
-                </div>`;
-            }).join('');
-
-            // Podium Logic...
-            if (owners.length >= 3) {
-                document.getElementById('podium-area').innerHTML = `
-                    <div class="flex flex-col items-center w-1/3"><div class="text-[9px] mb-2">${owners[1].displayName}</div><div class="w-full podium-pillar h-24 rounded-t-2xl flex flex-col justify-center items-center"><span class="font-cyber text-xl font-bold">${owners[1].score}</span></div></div>
-                    <div class="flex flex-col items-center w-1/3"><div class="text-[10px] gold-glow mb-2">${owners[0].displayName}</div><div class="w-full podium-pillar rank-1-pillar h-36 rounded-t-2xl flex flex-col justify-center items-center"><span class="font-cyber text-2xl font-black gold-glow">${owners[0].score}</span></div></div>
-                    <div class="flex flex-col items-center w-1/3"><div class="text-[9px] mb-2 text-gray-600">${owners[2].displayName}</div><div class="w-full podium-pillar h-16 rounded-t-2xl flex flex-col justify-center items-center"><span class="font-cyber text-lg text-gray-500">${owners[2].score}</span></div></div>`;
-            }
-        }
-
-        function toggleSection(id) {
-            const el = document.getElementById(id);
-            const isOpen = el.classList.contains('open');
-            document.querySelectorAll('.squad-view').forEach(s => s.classList.remove('open'));
-            if (!isOpen) el.classList.add('open');
-        }
-
-        updateData(); fetchLiveScores();
-        setInterval(updateData, 60000); setInterval(fetchLiveScores, 20000);
-    </script>
-</body>
-</html>
+                    const s = Math.round(parseFloat(c[1].replace(/"/g, '')) ||
