@@ -199,25 +199,63 @@
             } catch (e) { console.error(e); }
         }
 
-        function renderDashboard(owners, squads, unsoldPts) {
-            // Leaderboard & Podium Logic...
-            const lb = document.getElementById('leaderboard');
-            lb.innerHTML = owners.map((o, i) => `
-                <div class="glass-card overflow-hidden">
-                    <div class="p-5 flex justify-between items-center cursor-pointer" onclick="toggleSection('sq-${i}')">
-                        <div class="flex items-center gap-6"><span class="font-cyber text-lg ${i < 3 ? 'gold-glow' : 'text-gray-700'}">${i+1}</span><span class="font-bold text-sm uppercase tracking-widest">${o.displayName}</span></div>
-                        <span class="text-xl font-cyber font-black ${i === 0 ? 'gold-glow' : ''}">${o.score}</span>
-                    </div>
-                    <div id="sq-${i}" class="squad-view">
-                        ${(squads[o.cleanName] || []).sort((a,b)=>b.pts-a.pts).map((p, idx) => {
-                            const isLive = activePlayers.some(name => name && name.includes(p.name));
-                            return `<div class="flex justify-between items-center text-[11px] py-1.5 border-b border-white/5">
-                                <div class="flex items-center"><span class="text-[9px] font-bold text-gray-500 mr-2 w-4">${idx+1}.</span><span class="${isLive ? 'impact-glow' : 'text-gray-300'}">${p.name} (${p.team})</span>${p.role ? `<span class="badge ml-2">${p.role}</span>` : ''}</div>
-                                <span class="font-cyber ${p.pts > 0 ? 'text-yellow-500' : 'text-gray-700'}">${p.pts}</span>
-                            </div>`}).join('')}
-                    </div>
-                </div>`).join('');
+// ... [Keep everything else the same, update only the Strategy Logic inside renderDashboard] ...
 
+function renderDashboard(owners, squads, unsoldPts) {
+    // [Keep Podium and Leaderboard code exactly as it is]
+
+    // --- STRATEGY LOGIC: FIXED & ACCURATE ---
+    const stratList = document.getElementById('strategy-list');
+    stratList.innerHTML = owners.map(o => {
+        const squad = squads[o.cleanName] || [];
+        
+        // 1. Calculate RAW POINTS for each player
+        const squadWithRaw = squad.map(p => {
+            let raw = p.pts;
+            if (p.role === 'C') raw = p.pts / 2;
+            if (p.role === 'VC') raw = p.pts / 1.5;
+            return { ...p, rawPoints: Math.round(raw) };
+        });
+
+        // 2. Sort by Raw Performance to find the "True" Top 2
+        const sortedRaw = [...squadWithRaw].sort((a, b) => b.rawPoints - a.rawPoints);
+        const top1 = sortedRaw[0]; // Potential C
+        const top2 = sortedRaw[1]; // Potential VC
+
+        // 3. Calculate what the score WOULD have been
+        let probableTotal = 0;
+        squadWithRaw.forEach(p => {
+            if (top1 && p.name === top1.name) {
+                probableTotal += (p.rawPoints * 2);
+            } else if (top2 && p.name === top2.name) {
+                probableTotal += (p.rawPoints * 1.5);
+            } else {
+                probableTotal += p.rawPoints;
+            }
+        });
+
+        const diff = Math.round(probableTotal - o.score);
+
+        return `
+            <div class="flex justify-between items-center p-4 rounded-xl bg-white/5 border border-white/5 mb-3">
+                <div class="flex-1">
+                    <p class="text-[11px] font-black uppercase tracking-tighter">${o.displayName}</p>
+                    <div class="flex gap-2 mt-1">
+                        <span class="text-[8px] text-blue-400 font-bold uppercase">Optimum C: ${top1 ? top1.name : 'N/A'}</span>
+                        <span class="text-[8px] text-purple-400 font-bold uppercase">Optimum VC: ${top2 ? top2.name : 'N/A'}</span>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="font-cyber text-sm gold-glow">${Math.round(probableTotal)}</p>
+                    <p class="text-[8px] font-black uppercase ${diff > 0 ? 'text-green-500' : 'text-gray-600'}">
+                        ${diff > 0 ? `+${diff} Missed` : 'Perfect Setup'}
+                    </p>
+                </div>
+            </div>`;
+    }).join('');
+
+    // [Keep Unsold List code exactly as it is]
+}
             // UNSOLD LOGIC
             document.getElementById('unsold-total-val').innerText = unsoldPts;
             const unsoldList = squads['unsold'] || [];
