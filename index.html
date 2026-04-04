@@ -43,7 +43,7 @@
                     <div id="status-indicator" class="h-2 w-2 rounded-full bg-gray-600"></div>
                     <span id="live-label" class="font-cyber text-[8px] text-gray-500 uppercase tracking-widest">Standby</span>
                 </div>
-                <div id="match-venue" class="text-[9px] font-bold text-gray-500 uppercase tracking-tighter">Arun Jaitley Stadium</div>
+                <div id="match-venue" class="text-[9px] font-bold text-gray-500 uppercase tracking-tighter text-right">Arun Jaitley Stadium</div>
             </div>
 
             <div class="flex justify-between items-center mb-6">
@@ -88,7 +88,7 @@
         <div id="view-strategy" class="hidden space-y-6">
             <div class="glass-card p-6 border-b-2 border-yellow-500/30">
                 <h3 class="font-cyber text-xs gold-glow uppercase mb-2 tracking-widest">The "What If" Season Index</h3>
-                <p class="text-[9px] text-gray-400 italic mb-6">Optimized total based on the top 2 overall raw performers (Column F) as C/VC.</p>
+                <p class="text-[9px] text-gray-400 italic mb-6 uppercase tracking-tighter">Calculated using Total Raw Points (Column F) across the season.</p>
                 <div id="strategy-list" class="space-y-4"></div>
             </div>
         </div>
@@ -144,6 +144,8 @@
                         activePlayers = [];
                         if (iplMatch.batting) iplMatch.batting.forEach(b => activePlayers.push(b.player?.data?.fullname));
                         if (iplMatch.bowling) iplMatch.bowling.forEach(bw => activePlayers.push(bw.player?.data?.fullname));
+                        if (iplMatch.localteam?.image_path) document.getElementById('local-logo').src = iplMatch.localteam.image_path;
+                        if (iplMatch.visitorteam?.image_path) document.getElementById('visitor-logo').src = iplMatch.visitorteam.image_path;
                         const score = iplMatch.runs ? iplMatch.runs[0] : null;
                         if (score) {
                             document.getElementById('live-score').innerText = `${score.score}/${score.wickets}`;
@@ -178,13 +180,13 @@
 
                 pcRows.forEach(c => {
                     const name = c[1], owner = c[2]?.toLowerCase();
-                    const actualPts = Math.round(parseFloat(c[6])) || 0; // Column G
-                    const basePts = Math.round(parseFloat(c[5])) || 0;   // Column F
+                    const actualPts = Math.round(parseFloat(c[6])) || 0; // Points with Multiplier
+                    const rawPts = Math.round(parseFloat(c[5])) || 0;    // PURE POINTS FROM COLUMN F
                     if (owner && masterRoster[owner]) {
                         let p = masterRoster[owner].find(x => x.name === name);
                         if (p) {
                             p.pts += actualPts;
-                            p.rawTotal += basePts;
+                            p.rawTotal += rawPts; // Store for Strategic Logic
                         }
                     }
                 });
@@ -197,10 +199,11 @@
                 }).filter(o => o !== null).sort((a,b) => b.score - a.score);
 
                 renderDashboard(owners, masterRoster, usTotal);
-            } catch (e) { console.error("Data Error", e); }
+            } catch (e) { console.error("Data Load Error:", e); }
         }
 
         function renderDashboard(owners, squads, unsoldPts) {
+            // Podium Rendering
             const pod = document.getElementById('podium-area');
             if (owners.length >= 3) {
                 pod.innerHTML = `
@@ -209,6 +212,7 @@
                     <div class="flex flex-col items-center w-1/3"><div class="text-[9px] mb-2 text-gray-600 uppercase">${owners[2].displayName}</div><div class="w-full podium-pillar h-16 rounded-t-2xl flex flex-col justify-center items-center text-gray-600 border border-white/5"><span class="font-cyber text-lg font-bold">${owners[2].score}</span></div></div>`;
             }
 
+            // Leaderboard Squad Rendering
             const lb = document.getElementById('leaderboard');
             lb.innerHTML = owners.map((o, i) => `
                 <div class="glass-card overflow-hidden">
@@ -220,39 +224,49 @@
                         ${(squads[o.cleanName] || []).sort((a,b)=>b.pts-a.pts).map((p, idx) => {
                             const isLive = activePlayers.some(name => name && name.includes(p.name));
                             return `<div class="flex justify-between items-center text-[11px] py-1.5 border-b border-white/5">
-                                <div class="flex items-center"><span class="text-[9px] font-bold text-gray-500 mr-2 w-4">${idx+1}.</span><span class="${isLive ? 'impact-glow' : 'text-gray-300'}">${p.name} (${p.team})</span>${p.type ? `<span class="role-tag">${p.type}</span>` : ''}${p.role ? `<span class="badge font-cyber">${p.role}</span>` : ''}${isLive ? `<span class="ml-2 h-1.5 w-1.5 rounded-full bg-yellow-500 animate-ping"></span>` : ''}</div>
+                                <div class="flex items-center"><span class="text-[9px] font-bold text-gray-500 mr-2 w-4">${idx+1}.</span><span class="${isLive ? 'impact-glow' : (p.pts > 0 ? 'text-gray-300' : 'text-gray-600')} font-medium">${p.name} (${p.team})</span>${p.type ? `<span class="role-tag">${p.type}</span>` : ''}${p.role ? `<span class="badge font-cyber">${p.role}</span>` : ''}${isLive ? `<span class="ml-2 h-1.5 w-1.5 rounded-full bg-yellow-500 animate-ping"></span>` : ''}</div>
                                 <span class="font-cyber ${p.pts > 0 ? 'text-yellow-500' : 'text-gray-700'}">${p.pts}</span>
                             </div>`}).join('')}
                     </div>
                 </div>`).join('');
 
-            const strategyData = owners.map(o => {
+            // --- STRATEGIC INSIGHTS LOGIC (DESCENDING ORDER) ---
+            const stratData = owners.map(o => {
                 const s = squads[o.cleanName] || [];
+                // Sort by the season-long raw points from Column F
                 const sorted = [...s].sort((a,b) => b.rawTotal - a.rawTotal);
                 const top1 = sorted[0], top2 = sorted[1];
-                let potential = 0;
+                let seasonPotential = 0;
                 s.forEach(p => {
-                    if (top1 && p.name === top1.name) potential += (p.rawTotal * 2);
-                    else if (top2 && p.name === top2.name) potential += (p.rawTotal * 1.5);
-                    else potential += p.rawTotal;
+                    if (top1 && p.name === top1.name) seasonPotential += (p.rawTotal * 2);
+                    else if (top2 && p.name === top2.name) seasonPotential += (p.rawTotal * 1.5);
+                    else seasonPotential += p.rawTotal;
                 });
-                return { name: o.displayName, potential: Math.round(potential), diff: Math.round(potential - o.score), t1: top1?.name, t2: top2?.name };
+                return { 
+                    name: o.displayName, 
+                    potential: Math.round(seasonPotential), 
+                    diff: Math.round(seasonPotential - o.score),
+                    t1: top1?.name || '--', 
+                    t2: top2?.name || '--' 
+                };
             }).sort((a,b) => b.potential - a.potential);
 
-            document.getElementById('strategy-list').innerHTML = strategyData.map((data, i) => `
+            document.getElementById('strategy-list').innerHTML = stratData.map((data, i) => `
                 <div class="p-4 rounded-xl bg-white/5 border border-white/5 mb-3 flex justify-between items-center">
                     <div class="flex items-center gap-4"><span class="font-cyber text-xs text-gray-600">${i + 1}</span>
-                    <div><p class="text-[11px] font-black uppercase tracking-widest">${data.name}</p><div class="flex gap-2 mt-1"><span class="text-[8px] text-blue-500 font-bold uppercase">C: ${data.t1 || '--'}</span><span class="text-[8px] text-purple-500 font-bold uppercase">VC: ${data.t2 || '--'}</span></div></div></div>
-                    <div class="text-right"><p class="font-cyber text-sm gold-glow">${data.potential}</p><p class="text-[8px] uppercase font-black ${data.diff > 0 ? 'text-green-500' : 'text-gray-600'}">${data.diff > 0 ? `+${data.diff} Missed` : 'Perfect'}</p></div>
+                    <div><p class="text-[11px] font-black uppercase tracking-widest">${data.name}</p>
+                    <div class="flex gap-2 mt-1"><span class="text-[8px] text-blue-500 font-bold uppercase">C: ${data.t1}</span><span class="text-[8px] text-purple-500 font-bold uppercase">VC: ${data.t2}</span></div></div></div>
+                    <div class="text-right"><p class="font-cyber text-sm gold-glow">${data.potential}</p><p class="text-[8px] uppercase font-black ${data.diff > 0 ? 'text-green-500' : 'text-gray-600'}">${data.diff > 0 ? `+${data.diff} Missed` : 'Perfect Setup'}</p></div>
                 </div>`).join('');
 
+            // Unsold Pool Rendering
             document.getElementById('unsold-total-val').innerText = unsoldPts;
             const unsoldPlayers = squads['unsold'] || [];
             document.getElementById('unsold-items-list').innerHTML = unsoldPlayers.sort((a,b)=>b.pts-a.pts).map((p, idx) => `
                 <div class="flex justify-between items-center text-[11px] py-1.5 border-b border-white/5 opacity-80">
                     <div class="flex items-center"><span class="text-[9px] font-bold text-gray-700 mr-2 w-4">${idx+1}.</span><span class="text-gray-400 font-medium">${p.name} (${p.team})</span>${p.type ? `<span class="role-tag">${p.type}</span>` : ''}</div>
                     <span class="font-cyber text-gray-500">${p.pts}</span>
-                </div>`).join('') || '<div class="text-[10px] text-center py-4 italic text-gray-700">Empty</div>';
+                </div>`).join('') || '<div class="text-[10px] text-center py-4 italic text-gray-700">All players assigned.</div>';
         }
 
         function toggleSection(id) {
