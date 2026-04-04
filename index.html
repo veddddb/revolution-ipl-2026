@@ -7,11 +7,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --accent: #f1c40f; --glass: rgba(17, 25, 40, 0.95); --border: rgba(255, 255, 255, 0.1); }
+        :root { --accent: #f1c40f; --glass: rgba(17, 25, 40, 0.96); --border: rgba(255, 255, 255, 0.1); }
         body { background: radial-gradient(circle at top, #111827 0%, #030508 100%) no-repeat; background-attachment: fixed; color: #f8fafc; font-family: 'Inter', sans-serif; min-height: 100vh; overflow-x: hidden; }
         .font-cyber { font-family: 'Orbitron', sans-serif; }
         .gold-glow { color: var(--accent); text-shadow: 0 0 20px rgba(241, 196, 15, 0.6); }
-        .glass-card { background: var(--glass); backdrop-filter: blur(25px); border: 1px solid var(--border); border-radius: 28px; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .glass-card { background: var(--glass); backdrop-filter: blur(25px); border: 1px solid var(--border); border-radius: 28px; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         
         @keyframes springIn {
             0% { opacity: 0; transform: translateY(30px) scale(0.9); }
@@ -27,15 +27,13 @@
         .tab-btn.active { background: var(--accent); color: #000; border-color: var(--accent); box-shadow: 0 0 20px rgba(241, 196, 15, 0.3); }
         
         .podium-pillar { background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(0,0,0,0.9) 100%); border-top: 3px solid var(--border); transition: height 1.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
-        
-        .badge { font-size: 8px; padding: 2px 8px; border-radius: 6px; font-weight: 900; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .badge { font-size: 8px; padding: 2px 8px; border-radius: 6px; font-weight: 900; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); }
         .role-tag { font-size: 7px; padding: 2px 5px; border-radius: 4px; background: rgba(255, 255, 255, 0.05); color: #94a3b8; text-transform: uppercase; font-weight: 700; margin-left: 5px; }
         
-        .player-row-active { color: #fff !important; font-weight: 900 !important; }
         .player-row-dim { opacity: 0.25 !important; filter: grayscale(1); }
-        
-        /* DYNAMIC OWNER COLORS */
-        .owner-card-open { border-width: 2px !important; }
+        .live-dot { height: 8px; width: 8px; background: #ef4444; border-radius: 50%; display: inline-block; position: relative; }
+        .live-dot::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 50%; background: #ef4444; animation: live-pulse 2s infinite; }
+        @keyframes live-pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(3); opacity: 0; } }
     </style>
 </head>
 <body class="p-4 md:p-10">
@@ -47,6 +45,34 @@
                 <button onclick="switchTab('strategy')" id="btn-strat" class="tab-btn">Strategic Insights</button>
             </div>
         </header>
+
+        <div id="live-ticker" class="glass-card mb-10 p-6 border-l-4 border-yellow-500 relative">
+            <div class="flex justify-between items-center mb-4 text-[9px] font-bold text-gray-500 uppercase tracking-widest">
+                <div class="flex items-center gap-2">
+                    <div id="status-indicator" class="h-2 w-2 rounded-full bg-gray-600"></div>
+                    <span id="live-label">Standby</span>
+                </div>
+                <div id="match-venue">Arun Jaitley Stadium</div>
+            </div>
+            <div class="flex justify-between items-center mb-6 text-center">
+                <div class="w-1/3 flex flex-col items-center">
+                    <div class="w-12 h-12 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center overflow-hidden relative">
+                        <span id="local-code" class="absolute font-black text-[10px] text-blue-400">DC</span>
+                        <img id="local-logo" src="" onerror="this.style.opacity='0'" class="w-full h-full object-contain relative z-20">
+                    </div>
+                </div>
+                <div class="w-1/3">
+                    <div id="live-score" class="font-cyber text-2xl font-black gold-glow mb-1 italic">Match 8</div>
+                    <div id="live-overs" class="text-[10px] font-bold text-gray-500 tracking-widest">Starts 3:30 PM</div>
+                </div>
+                <div class="w-1/3 flex flex-col items-center">
+                    <div class="w-12 h-12 rounded-full bg-blue-900/20 border border-blue-800/30 flex items-center justify-center overflow-hidden relative">
+                        <span id="visitor-code" class="absolute font-black text-[10px] text-blue-700">MI</span>
+                        <img id="visitor-logo" src="" onerror="this.style.opacity='0'" class="w-full h-full object-contain relative z-20">
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <div id="view-main" class="space-y-6">
             <div id="podium-area" class="flex justify-center items-end gap-4 mb-16 h-56 text-center px-4"></div>
@@ -62,8 +88,8 @@
 
         <div id="view-strategy" class="hidden space-y-6">
             <div class="glass-card p-8 border-b-4 border-yellow-500">
-                <h3 class="font-cyber text-sm gold-glow uppercase mb-3 tracking-widest">Strategic Leaderboard</h3>
-                <p class="text-[10px] text-gray-400 italic leading-relaxed">Rankings based on optimal season-long C/VC decisions using Raw Points.</p>
+                <h3 class="font-cyber text-sm gold-glow uppercase mb-3 tracking-widest">The "Luckiest Manager" Board</h3>
+                <p class="text-[10px] text-gray-400 italic leading-relaxed">Ranking based on total Raw points (Col G/F) with the top 2 current players assigned as C & VC.</p>
                 <div id="strategy-list" class="mt-8 space-y-4"></div>
             </div>
         </div>
@@ -77,26 +103,16 @@
 
     <script>
         const SHEET_ID = '1xIRCNr0tteFfMk6l7inIkKeSJMb7WLBswsXepHRqjio';
+        const SEASON_ID = '1795';
         const lbUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Leaderboard`;
         const pcUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=PointsCalc`;
         const rosUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Roster`;
 
-        // SIGNATURE COLOR MAP
         const colorMap = {
-            "vedant": "#3498db", // Blue
-            "deep": "#e74c3c",   // Red
-            "shlok": "#2ecc71",  // Green
-            "rahul": "#9b59b6",  // Purple
-            "soni": "#f1c40f",   // Yellow
-            "dheer": "#e67e22",  // Orange
-            "kunal": "#1abc9c",  // Teal
-            "puneet": "#ff9f43", // Coral
-            "vivek": "#54a0ff",  // Sky
-            "bokaria": "#5f27cd",// Indigo
-            "prakshal": "#48dbfb",// Cyan
-            "rishi": "#ff6b6b",  // Pink
-            "aamer": "#1dd1a1",  // Mint
-            "yashshah": "#f368e0" // Magenta
+            "vedant": "#3498db", "deep": "#e74c3c", "shlok": "#2ecc71", "rahul": "#9b59b6",
+            "soni": "#f1c40f", "dheer": "#e67e22", "kunal": "#1abc9c", "puneet": "#ff9f43",
+            "vivek": "#54a0ff", "bokaria": "#5f27cd", "prakshal": "#48dbfb", "rishi": "#ff6b6b",
+            "aamer": "#1dd1a1", "yashshah": "#f368e0"
         };
 
         function parseCSV(text) {
@@ -118,6 +134,26 @@
             document.getElementById('view-strategy').classList.toggle('hidden', t !== 'strategy');
             document.getElementById('btn-main').classList.toggle('active', t === 'main');
             document.getElementById('btn-strat').classList.toggle('active', t === 'strategy');
+        }
+
+        async function fetchLiveScores() {
+            try {
+                const response = await fetch('/api/livescore');
+                const json = await response.json();
+                const matches = (json.data && Array.isArray(json.data)) ? json.data.filter(m => m.season_id == SEASON_ID) : [];
+                const iplMatch = matches[matches.length - 1];
+                if (iplMatch && (iplMatch.status === "Live" || iplMatch.status === "Innings Break")) {
+                    document.getElementById('status-indicator').className = "live-dot";
+                    document.getElementById('live-label').innerText = "Live Now";
+                    if (iplMatch.localteam?.image_path) document.getElementById('local-logo').src = iplMatch.localteam.image_path;
+                    if (iplMatch.visitorteam?.image_path) document.getElementById('visitor-logo').src = iplMatch.visitorteam.image_path;
+                    const score = iplMatch.runs ? iplMatch.runs[0] : null;
+                    if (score) {
+                        document.getElementById('live-score').innerText = `${score.score}/${score.wickets}`;
+                        document.getElementById('live-overs').innerText = `(${score.overs} ov)`;
+                    }
+                }
+            } catch (e) {}
         }
 
         async function updateData() {
@@ -142,10 +178,7 @@
                         masterRoster[owner].push({ 
                             name, 
                             currentRole: parseFloat(c[2]) === 2 ? 'C' : parseFloat(c[2]) === 1.5 ? 'VC' : '', 
-                            pts: 0, 
-                            rawSeason: 0, 
-                            team: c[4], 
-                            type: c[6] 
+                            pts: 0, seasonRaw: 0, team: c[4], type: c[6] 
                         });
                         playerSeasonRaw[name] = 0;
                     }
@@ -153,17 +186,16 @@
 
                 pcRows.forEach(c => {
                     const pName = c[1], owner = c[2]?.toLowerCase().trim();
-                    const actualG = parseFloat(c[6]) || 0, multF = parseFloat(c[5]) || 1;
+                    const actG = parseFloat(c[6]) || 0, multF = parseFloat(c[5]) || 1;
+                    const naked = actG / multF;
                     if (owner && masterRoster[owner]) {
                         let p = masterRoster[owner].find(x => x.name === pName);
-                        if (p) p.pts += actualG;
+                        if (p) p.pts += actG;
                     }
-                    if (playerSeasonRaw.hasOwnProperty(pName)) playerSeasonRaw[pName] += (actualG / multF);
+                    if (playerSeasonRaw.hasOwnProperty(pName)) playerSeasonRaw[pName] += naked;
                 });
 
-                Object.keys(masterRoster).forEach(o => {
-                    masterRoster[o].forEach(p => p.rawSeason = playerSeasonRaw[p.name] || 0);
-                });
+                Object.keys(masterRoster).forEach(o => masterRoster[o].forEach(p => p.seasonRaw = playerSeasonRaw[p.name] || 0));
 
                 const owners = lbRows.map(c => {
                     const n = c[0], s = Math.round(parseFloat(c[1])) || 0;
@@ -176,85 +208,84 @@
         }
 
         function renderUI(owners, squads, unsoldPts) {
+            // PODIUM
             const pod = document.getElementById('podium-area');
-            pod.innerHTML = `
-                <div class="flex flex-col items-center w-1/3"><div class="text-[10px] mb-3 uppercase text-gray-500 font-bold">${owners[1].name}</div><div class="w-full podium-pillar h-32 rounded-t-3xl flex items-center justify-center font-cyber text-2xl">${owners[1].score}</div></div>
-                <div class="flex flex-col items-center w-1/3"><div class="text-xs gold-glow mb-3 uppercase font-black tracking-widest">${owners[0].name}</div><div class="w-full podium-pillar rank-1-pillar h-48 rounded-t-3xl flex items-center justify-center font-cyber text-3xl gold-glow">${owners[0].score}</div></div>
-                <div class="flex flex-col items-center w-1/3"><div class="text-[10px] mb-3 uppercase text-gray-700 font-bold">${owners[2].name}</div><div class="w-full podium-pillar h-20 rounded-t-3xl flex items-center justify-center font-cyber text-xl text-gray-600">${owners[2].score}</div></div>`;
+            if (owners.length >= 3) {
+                pod.innerHTML = `
+                    <div class="flex flex-col items-center w-1/3"><div class="text-[10px] mb-3 uppercase text-gray-500 font-bold">${owners[1].name}</div><div class="w-full podium-pillar h-32 rounded-t-3xl flex items-center justify-center font-cyber text-2xl">${owners[1].score}</div></div>
+                    <div class="flex flex-col items-center w-1/3"><div class="text-xs gold-glow mb-3 uppercase font-black">${owners[0].name}</div><div class="w-full podium-pillar rank-1-pillar h-48 rounded-t-3xl flex items-center justify-center font-cyber text-3xl gold-glow">${owners[0].score}</div></div>
+                    <div class="flex flex-col items-center w-1/3"><div class="text-[10px] mb-3 uppercase text-gray-700 font-bold">${owners[2].name}</div><div class="w-full podium-pillar h-20 rounded-t-3xl flex items-center justify-center font-cyber text-xl text-gray-600">${owners[2].score}</div></div>`;
+            }
 
+            // LEADERBOARD
             document.getElementById('leaderboard').innerHTML = owners.map((o, i) => {
-                const brandColor = colorMap[o.id] || '#f1c40f';
+                const bColor = colorMap[o.id] || '#f1c40f';
                 return `
                 <div id="card-${o.id}" class="glass-card overflow-hidden">
-                    <div class="p-6 flex justify-between items-center cursor-pointer active:scale-95 transition-transform" onclick="toggleSquad('${o.id}', '${brandColor}')">
+                    <div class="p-6 flex justify-between items-center cursor-pointer active:scale-95 transition-transform" onclick="toggleSquad('${o.id}', '${bColor}')">
                         <div class="flex items-center gap-6"><span class="font-cyber text-xl ${i<3?'gold-glow':'text-gray-700'}">${i+1}</span><span class="font-black text-sm uppercase tracking-widest">${o.name}</span></div>
                         <span class="font-cyber text-2xl font-black">${o.score}</span>
                     </div>
-                    <div id="sq-${o.id}" class="squad-container" style="background: linear-gradient(180deg, rgba(0,0,0,0) 0%, ${brandColor}10 100%)">
+                    <div id="sq-${o.id}" class="squad-container" style="background: linear-gradient(180deg, transparent 0%, ${bColor}10 100%)">
                         ${(squads[o.id] || []).sort((a,b)=>b.pts-a.pts).map((p, idx) => `
                             <div class="player-card flex justify-between items-center py-3 border-b border-white/5 ${p.pts===0?'player-row-dim':''}" style="animation-delay: ${idx * 0.05}s">
                                 <div class="flex items-center gap-3">
                                     <span class="text-[10px] font-bold text-gray-500 w-4">${idx+1}</span>
                                     <span class="text-sm font-bold text-gray-200">${p.name} <span class="text-[10px] text-gray-500">(${p.team})</span></span>
                                     ${p.type ? `<span class="role-tag">${p.type}</span>` : ''}
-                                    ${p.currentRole ? `<span class="badge font-cyber" style="border-color:${brandColor}50; color:${brandColor}">${p.currentRole}</span>` : ''}
+                                    ${p.currentRole ? `<span class="badge font-cyber" style="color:${bColor}">${p.currentRole}</span>` : ''}
                                 </div>
-                                <span class="font-cyber font-bold text-sm" style="color:${p.pts > 0 ? brandColor : '#334155'}">${p.pts}</span>
+                                <span class="font-cyber font-bold text-sm" style="color:${p.pts>0?bColor:'#334155'}">${p.pts}</span>
                             </div>`).join('')}
                     </div>
                 </div>`}).join('');
 
+            // STRATEGY
             const stratData = owners.map(o => {
                 const s = squads[o.id] || [];
-                const sorted = [...s].sort((a,b) => b.rawSeason - a.rawSeason);
+                const sorted = [...s].sort((a,b) => b.seasonRaw - a.seasonRaw);
                 const t1 = sorted[0], t2 = sorted[1];
                 let potential = 0;
-                s.forEach(p => potential += (t1&&p.name===t1.name ? p.rawSeason*2 : t2&&p.name===t2.name ? p.rawSeason*1.5 : p.rawSeason));
-                const pVal = Math.round(potential);
-                return { name: o.name, id: o.id, pot: pVal, diff: pVal - o.score, c: t1?.name, vc: t2?.name };
+                s.forEach(p => {
+                    if (t1 && p.name === t1.name) potential += (p.seasonRaw * 2);
+                    else if (t2 && p.name === t2.name) potential += (p.rawSeason * 1.5);
+                    else potential += p.seasonRaw;
+                });
+                const potFinal = Math.round(potential);
+                return { name: o.name, id: o.id, pot: potFinal, diff: potFinal - o.score, c: t1?.name, vc: t2?.name };
             }).sort((a,b) => b.pot - a.pot);
 
             document.getElementById('strategy-list').innerHTML = stratData.map((d, i) => {
-                const brandColor = colorMap[d.id] || '#f1c40f';
+                const bColor = colorMap[d.id] || '#f1c40f';
                 return `
-                <div class="p-5 rounded-2xl bg-white/5 flex justify-between items-center border border-white/5" style="border-left: 4px solid ${brandColor}">
+                <div class="p-5 rounded-2xl bg-white/5 flex justify-between items-center border border-white/5" style="border-left: 4px solid ${bColor}">
                     <div>
                         <p class="text-xs font-black uppercase tracking-widest mb-1">${d.name}</p>
                         <div class="flex gap-3 text-[9px] font-bold opacity-60 uppercase">
-                            <span style="color:${brandColor}">C: ${d.c || '--'}</span><span class="text-purple-400">VC: ${d.vc || '--'}</span>
+                            <span style="color:${bColor}">C: ${d.c || '--'}</span><span class="text-purple-400">VC: ${d.vc || '--'}</span>
                         </div>
                     </div>
                     <div class="text-right">
-                        <p class="font-cyber text-xl" style="color:${brandColor}">${d.pot}</p>
+                        <p class="font-cyber text-xl" style="color:${bColor}">${d.pot}</p>
                         <p class="text-[9px] font-black uppercase ${d.diff>0?'text-green-400':'text-gray-600'}">${d.diff>0?`+${d.diff} Missed`:'Perfect'}</p>
                     </div>
                 </div>`}).join('');
 
             document.getElementById('unsold-total-val').innerText = unsoldPts;
+            document.getElementById('unsold-list').innerHTML = (squads['unsold'] || []).sort((a,b)=>b.pts-a.pts).map(p => `<div class="flex justify-between py-1 text-[10px] opacity-40"><span>${p.name} (${p.team})</span><span>${p.pts}</span></div>`).join('');
         }
 
         function toggleSquad(id, color) {
             const el = document.getElementById('sq-' + id);
             const card = document.getElementById('card-' + id);
             const isOpen = el.classList.contains('open');
-            
-            // Close others
             document.querySelectorAll('.squad-container').forEach(c => c.classList.remove('open'));
-            document.querySelectorAll('.glass-card').forEach(c => {
-                c.classList.remove('owner-card-open');
-                c.style.borderColor = 'rgba(255,255,255,0.1)';
-                c.style.boxShadow = 'none';
-            });
-
-            if (!isOpen) {
-                el.classList.add('open');
-                card.classList.add('owner-card-open');
-                card.style.borderColor = color;
-                card.style.boxShadow = `0 0 30px ${color}20`;
-            }
+            document.querySelectorAll('.glass-card').forEach(c => { c.style.borderColor = 'rgba(255,255,255,0.1)'; c.style.boxShadow = 'none'; });
+            if (!isOpen) { el.classList.add('open'); card.style.borderColor = color; card.style.boxShadow = `0 0 30px ${color}20`; }
         }
 
-        updateData(); setInterval(updateData, 60000);
+        updateData(); fetchLiveScores();
+        setInterval(updateData, 60000); setInterval(fetchLiveScores, 15000);
     </script>
 </body>
 </html>
