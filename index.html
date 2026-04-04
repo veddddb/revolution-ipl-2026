@@ -7,145 +7,192 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --accent: #f1c40f; --glass: rgba(17, 25, 40, 0.96); --border: rgba(255, 255, 255, 0.1); }
-        body { background: radial-gradient(circle at top, #111827 0%, #030508 100%) no-repeat; background-attachment: fixed; color: #f8fafc; font-family: 'Inter', sans-serif; min-height: 100vh; }
+        :root { --accent: #f1c40f; --glass: rgba(10, 15, 25, 0.98); --border: rgba(255, 255, 255, 0.08); }
+        body { background: radial-gradient(circle at top, #0f172a 0%, #020617 100%) no-repeat; background-attachment: fixed; color: #f8fafc; font-family: 'Inter', sans-serif; min-height: 100vh; }
         .font-cyber { font-family: 'Orbitron', sans-serif; }
-        .gold-glow { color: var(--accent); text-shadow: 0 0 20px rgba(241, 196, 15, 0.6); }
-        .glass-card { background: var(--glass); backdrop-filter: blur(25px); border: 1px solid var(--border); border-radius: 24px; transition: all 0.3s ease; }
+        .gold-glow { color: var(--accent); text-shadow: 0 0 15px rgba(241, 196, 15, 0.5); }
+        .glass-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 24px; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         
+        /* Podium Styles */
+        .podium-pillar { background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(0,0,0,0.8) 100%); border-top: 2px solid var(--border); transition: height 1s ease-in-out; }
+        
+        /* Player Rows */
         .squad-container { display: none; padding: 0 24px 24px 24px; border-top: 1px solid rgba(255,255,255,0.05); }
-        .squad-container.open { display: block; animation: slideIn 0.4s ease-out; }
+        .squad-container.open { display: block; animation: slideIn 0.3s ease-out; }
+        .player-row-active { opacity: 1; filter: drop-shadow(0 0 5px rgba(255,255,255,0.1)); }
+        .player-row-dim { opacity: 0.25; filter: grayscale(1); transition: opacity 0.3s; }
+        
         @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .badge { font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 900; border: 1px solid var(--accent); color: var(--accent); margin-left: 8px; }
-        .role-tag { font-size: 8px; padding: 2px 5px; border-radius: 4px; background: rgba(255,255,255,0.05); color: #94a3b8; text-transform: uppercase; font-weight: 700; margin-left: 5px; }
-        .live-dot { height: 6px; width: 6px; background: #2ecc71; border-radius: 50%; display: inline-block; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(2.5); opacity: 0; } }
+        
+        .badge { font-size: 8px; padding: 1px 5px; border-radius: 4px; font-weight: 900; border: 1px solid currentColor; margin-left: 6px; }
+        .live-indicator { height: 6px; width: 6px; background: #2ecc71; border-radius: 50%; display: inline-block; box-shadow: 0 0 10px #2ecc71; animation: blink 1.5s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
     </style>
 </head>
-<body class="p-4 md:p-10">
+<body class="p-4 md:p-10 font-sans">
     <div class="max-w-xl mx-auto pb-24">
         
-        <header class="text-center mb-10 flex flex-col items-center">
-            <h1 class="text-5xl font-black font-cyber gold-glow italic tracking-tighter mb-2 uppercase">REVOLUTION</h1>
-            <p class="text-gray-500 text-[10px] font-bold tracking-[0.4em] uppercase mb-8 text-center">IPL 2026 OFFICIAL STANDINGS</p>
+        <header class="text-center mb-12 flex flex-col items-center">
+            <h1 class="text-5xl font-black font-cyber gold-glow italic tracking-tighter mb-2 uppercase italic">REVOLUTION</h1>
+            <p class="text-gray-500 text-[10px] font-cyber tracking-[0.5em] uppercase">Championship Series 2026</p>
         </header>
 
-        <div id="leaderboard" class="space-y-6">
-            </div>
+        <div id="podium-area" class="flex justify-center items-end gap-3 mb-20 h-52 text-center px-2"></div>
 
-        <footer class="text-center py-16 opacity-20 font-cyber text-[8px] uppercase tracking-[0.5em]">
-            Live Sync: Active • Data via Google Gemini Engine
+        <div id="leaderboard" class="space-y-6"></div>
+
+        <footer class="text-center py-20 opacity-20 font-cyber text-[8px] uppercase tracking-[0.6em]">
+            Automated via Sportmonks API & Gemini
         </footer>
     </div>
 
     <script>
         const SHEET_ID = '1xIRCNr0tteFfMk6l7inIkKeSJMb7WLBswsXepHRqjio';
+        
+        const ownerColors = {
+            "vedant": "#3498db", "deep": "#e74c3c", "shlok": "#2ecc71", "rahul": "#9b59b6",
+            "soni": "#f1c40f", "dheer": "#e67e22", "kunal": "#1abc9c", "puneet": "#ff9f43",
+            "vivek": "#54a0ff", "bokaria": "#5f27cd", "prakshal": "#48dbfb", "rishi": "#ff6b6b",
+            "aamer": "#1dd1a1", "yashshah": "#f368e0"
+        };
 
-        async function fetchSheet(sheetName) {
+        async function fetchJSON(sheetName) {
             const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
-            const response = await fetch(url);
-            const text = await response.text();
+            const res = await fetch(url);
+            const text = await res.text();
             const json = JSON.parse(text.substr(47).slice(0, -2));
             return json.table.rows.map(row => row.c.map(cell => cell ? cell.v : ''));
         }
 
-        async function updateApp() {
+        async function updateEngine() {
             try {
-                const [lbData, rosData, lsData] = await Promise.all([
-                    fetchSheet('Leaderboard'),
-                    fetchSheet('Roster'),
-                    fetchSheet('Livescore')
+                const [lbData, rosData, lsData, pcData] = await Promise.all([
+                    fetchJSON('Leaderboard'),
+                    fetchJSON('Roster'),
+                    fetchJSON('Livescore'),
+                    fetchJSON('PointsCalc')
                 ]);
 
-                // 1. Get Live Player Names
-                const activePlayers = lsData.slice(1).map(r => r[1]);
+                // 1. Calculate Individual Player Points from PointsCalc
+                const playerPoints = {};
+                pcData.slice(1).forEach(row => {
+                    const pName = row[1];
+                    const pts = parseFloat(row[6]) || 0;
+                    playerPoints[pName] = (playerPoints[pName] || 0) + pts;
+                });
 
-                // 2. Map Roster to Owners
+                // 2. Map Active Players
+                const activeOnField = lsData.slice(1).map(r => r[1]);
+
+                // 3. Assemble Squads
                 const squadMap = {};
                 rosData.slice(1).forEach(row => {
                     const name = row[0];
                     const owner = row[1] ? row[1].toLowerCase().trim() : '';
+                    const fName = owner.split(' ')[0];
                     const multiplier = parseFloat(row[2]) || 1;
-                    const team = row[4] || '';
-                    const role = row[6] || '';
+                    const pts = Math.round(playerPoints[name] || 0);
 
                     if (owner) {
                         if (!squadMap[owner]) squadMap[owner] = [];
                         squadMap[owner].push({
-                            name,
-                            team,
-                            role,
+                            name, team: row[4], role: row[6], pts,
                             cvc: multiplier === 2 ? 'C' : multiplier === 1.5 ? 'VC' : '',
-                            isLive: activePlayers.includes(name)
+                            isLive: activeOnField.includes(name)
                         });
                     }
                 });
 
-                // 3. Process Leaderboard
+                // 4. Process Owners
                 const owners = lbData.slice(1).map(row => ({
-                    name: row[0],
+                    fullName: row[0],
                     score: Math.round(parseFloat(row[1])) || 0,
-                    id: row[0].toLowerCase().trim()
+                    id: row[0].toLowerCase().trim(),
+                    firstName: row[0].toLowerCase().trim().split(' ')[0]
                 })).sort((a, b) => b.score - a.score);
 
-                renderLeaderboard(owners, squadMap);
+                renderPodium(owners);
+                renderBoard(owners, squadMap);
 
-            } catch (e) {
-                console.error("Data Sync Error:", e);
-            }
+            } catch (e) { console.error(e); }
         }
 
-        function renderLeaderboard(owners, squads) {
+        function renderPodium(o) {
+            const pod = document.getElementById('podium-area');
+            if (o.length < 3) return;
+            pod.innerHTML = `
+                <div class="w-1/3 flex flex-col items-center">
+                    <span class="text-[9px] font-cyber mb-2 opacity-60">${o[1].firstName}</span>
+                    <div class="podium-pillar w-full h-28 rounded-t-2xl flex items-center justify-center font-cyber text-lg">${o[1].score}</div>
+                </div>
+                <div class="w-1/3 flex flex-col items-center">
+                    <span class="text-[10px] font-cyber mb-2 gold-glow">${o[0].firstName}</span>
+                    <div class="podium-pillar w-full h-44 rounded-t-2xl border-t-yellow-500 flex items-center justify-center font-cyber text-2xl gold-glow shadow-[0_-10px_30px_rgba(241,196,15,0.15)]">${o[0].score}</div>
+                </div>
+                <div class="w-1/3 flex flex-col items-center">
+                    <span class="text-[9px] font-cyber mb-2 opacity-40">${o[2].firstName}</span>
+                    <div class="podium-pillar w-full h-20 rounded-t-2xl flex items-center justify-center font-cyber text-base text-gray-500">${o[2].score}</div>
+                </div>`;
+        }
+
+        function renderBoard(owners, squads) {
             const container = document.getElementById('leaderboard');
             container.innerHTML = owners.map((o, i) => {
-                const ownerSquad = squads[o.id] || [];
-                const hasLive = ownerSquad.some(p => p.isLive);
+                const color = ownerColors[o.firstName] || '#ffffff';
+                const squad = squads[o.id] || [];
+                const hasLive = squad.some(p => p.isLive);
 
                 return `
-                <div class="glass-card overflow-hidden">
-                    <div class="p-6 flex justify-between items-center cursor-pointer active:opacity-80" onclick="toggleSquad('${o.id}')">
+                <div id="card-${o.id}" class="glass-card overflow-hidden">
+                    <div class="p-6 flex justify-between items-center cursor-pointer active:scale-95 transition-all" onclick="toggleSquad('${o.id}', '${color}')">
                         <div class="flex items-center gap-5">
-                            <span class="font-cyber text-lg ${i < 3 ? 'gold-glow' : 'text-gray-600'}">#${i + 1}</span>
+                            <span class="font-cyber text-lg ${i<3?'gold-glow':'text-gray-700'}">#${i+1}</span>
                             <div>
-                                <span class="font-black text-sm uppercase tracking-widest block">${o.name}</span>
-                                ${hasLive ? `<span class="text-[8px] text-green-500 font-bold uppercase flex items-center gap-1"><span class="live-dot"></span> Action Live</span>` : ''}
+                                <span class="font-black text-sm uppercase tracking-widest block">${o.fullName}</span>
+                                ${hasLive ? `<span class="flex items-center gap-1.5 text-[8px] font-bold text-green-500 uppercase mt-1"><span class="live-indicator"></span> Action Live</span>` : ''}
                             </div>
                         </div>
-                        <span class="font-cyber text-2xl font-black italic">${o.score}</span>
+                        <span class="font-cyber text-2xl font-black italic tracking-tighter">${o.score}</span>
                     </div>
                     
                     <div id="sq-${o.id}" class="squad-container">
-                        <div class="space-y-3 pt-2">
-                            ${ownerSquad.map(p => `
-                                <div class="flex justify-between items-center py-2 border-b border-white/5 opacity-80">
-                                    <div class="flex items-center">
-                                        <span class="text-xs font-bold text-gray-200">${p.name}</span>
-                                        <span class="role-tag">${p.role}</span>
-                                        <span class="text-[8px] opacity-40 ml-2 uppercase font-bold">${p.team}</span>
-                                        ${p.cvc ? `<span class="badge font-cyber">${p.cvc}</span>` : ''}
+                        <div class="space-y-4 pt-4">
+                            ${squad.sort((a,b)=>b.pts-a.pts).map(p => `
+                                <div class="flex justify-between items-center ${p.pts === 0 && !p.isLive ? 'player-row-dim' : 'player-row-active'}">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-[11px] font-bold text-gray-100">${p.name}</span>
+                                        <span class="text-[7px] px-1.5 py-0.5 rounded bg-white/5 text-gray-500 font-bold uppercase tracking-widest">${p.team}</span>
+                                        ${p.cvc ? `<span class="badge font-cyber" style="color:${color}">${p.cvc}</span>` : ''}
                                     </div>
-                                    ${p.isLive ? `<span class="live-dot"></span>` : ''}
+                                    <div class="flex items-center gap-3">
+                                        ${p.isLive ? `<span class="live-indicator"></span>` : ''}
+                                        <span class="font-cyber text-xs font-bold" style="color:${p.pts > 0 ? color : '#334155'}">${p.pts}</span>
+                                    </div>
                                 </div>
                             `).join('')}
                         </div>
                     </div>
-                </div>
-                `;
+                </div>`;
             }).join('');
         }
 
-        function toggleSquad(id) {
+        function toggleSquad(id, color) {
             const el = document.getElementById('sq-' + id);
-            const all = document.querySelectorAll('.squad-container');
+            const card = document.getElementById('card-' + id);
             const wasOpen = el.classList.contains('open');
             
-            all.forEach(s => s.classList.remove('open'));
-            if (!wasOpen) el.classList.add('open');
+            document.querySelectorAll('.squad-container').forEach(s => s.classList.remove('open'));
+            document.querySelectorAll('.glass-card').forEach(c => { c.style.borderColor = 'rgba(255,255,255,0.08)'; c.style.boxShadow = 'none'; });
+
+            if (!wasOpen) {
+                el.classList.add('open');
+                card.style.borderColor = color;
+                card.style.boxShadow = `0 0 40px ${color}15`;
+            }
         }
 
-        updateApp();
-        setInterval(updateApp, 60000);
+        updateEngine();
+        setInterval(updateEngine, 60000);
     </script>
 </body>
 </html>
