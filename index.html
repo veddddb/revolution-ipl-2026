@@ -11,7 +11,7 @@
         body { background: radial-gradient(circle at top, #111827 0%, #030508 100%) no-repeat; background-attachment: fixed; color: #f8fafc; font-family: 'Inter', sans-serif; min-height: 100vh; margin: 0; }
         .font-cyber { font-family: 'Orbitron', sans-serif; }
         .gold-glow { color: var(--accent); text-shadow: 0 0 20px rgba(241, 196, 15, 0.5); }
-        .glass-card { background: var(--glass); backdrop-filter: blur(16px); border: 1px solid var(--border); border-radius: 24px; transition: transform 0.3s; }
+        .glass-card { background: var(--glass); backdrop-filter: blur(16px); border: 1px solid var(--border); border-radius: 24px; }
         .podium-pillar { background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.8) 100%); border-top: 2px solid var(--border); transition: height 1s ease; }
         .rank-1-pillar { border-top-color: var(--accent); box-shadow: 0 -15px 40px rgba(241, 196, 15, 0.15); }
         .squad-view { max-height: 0; overflow: hidden; transition: all 0.6s ease; opacity: 0; }
@@ -23,17 +23,15 @@
         .win-prob-bar { height: 8px; border-radius: 4px; background: rgba(255,255,255,0.1); overflow: hidden; display: flex; margin-top: 10px; border: 1px solid rgba(255, 255, 255, 0.05); }
         .team-a-prob { background: #2563eb; transition: width 1s ease; box-shadow: 0 0 10px rgba(37, 99, 235, 0.5); }
         .team-b-prob { background: #1e3a8a; transition: width 1s ease; }
-        
-        /* Watermark Styles */
-        .watermark { position: fixed; bottom: 20px; right: 20px; opacity: 0.2; pointer-events: none; z-index: 100; text-align: right; }
-        
+        .watermark { position: fixed; bottom: 20px; right: 20px; opacity: 0.15; pointer-events: none; z-index: 100; text-align: right; }
         img:not([src]), img[src=""] { opacity: 0 !important; }
+        .impact-glow { color: #f1c40f; font-weight: 900; text-shadow: 0 0 8px rgba(241, 196, 15, 0.8); }
     </style>
 </head>
 <body class="p-4 md:p-10">
     <div class="watermark hidden md:block">
-        <p class="font-cyber text-[12px] font-black gold-glow tracking-tighter uppercase">Revolution</p>
-        <p class="text-[8px] font-bold text-gray-500 tracking-[0.3em]">IPL 2026</p>
+        <p class="font-cyber text-[14px] font-black gold-glow tracking-tighter uppercase">Revolution</p>
+        <p class="text-[8px] font-bold text-gray-500 tracking-[0.4em]">SEASON 2026</p>
     </div>
 
     <div class="max-w-xl mx-auto pb-20">
@@ -42,10 +40,10 @@
             <div id="countdown" class="text-[10px] font-bold text-gray-500 uppercase tracking-[0.5em]">Live Data Feed Active</div>
         </header>
 
-        <div id="live-ticker" class="glass-card mb-10 p-6 border-l-4 border-yellow-500">
+        <div id="live-ticker" class="glass-card mb-10 p-6 border-l-4 border-yellow-500 relative">
             <div class="flex justify-between items-center mb-6">
                 <div class="flex flex-col items-center w-1/3 relative">
-                    <div class="w-12 h-12 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center overflow-hidden relative shadow-inner">
+                    <div class="w-12 h-12 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center overflow-hidden relative">
                         <span class="absolute font-black text-[10px] text-blue-400">DC</span>
                         <img id="local-logo" src="" onerror="this.style.opacity='0'" class="w-full h-full object-contain relative z-20">
                     </div>
@@ -53,16 +51,16 @@
                 </div>
 
                 <div class="text-center w-1/3">
-                    <div id="live-score" class="font-cyber text-2xl font-black gold-glow mb-1 italic tracking-widest">Match 8</div>
-                    <div id="live-overs" class="text-[10px] font-bold text-gray-500 tracking-tighter">Starts 3:30 PM IST</div>
-                    <div id="status-container" class="mt-3 flex items-center justify-center gap-2">
+                    <div id="live-score" class="font-cyber text-2xl font-black gold-glow mb-1">Match 8</div>
+                    <div id="live-overs" class="text-[10px] font-bold text-gray-500 tracking-widest">Starts 3:30 PM</div>
+                    <div id="status-container" class="mt-2 flex items-center justify-center gap-2">
                         <div id="status-indicator" class="h-2 w-2 rounded-full bg-gray-600"></div>
-                        <span id="live-label" class="font-cyber text-[8px] text-gray-600 uppercase tracking-[0.2em]">Standby</span>
+                        <span id="live-label" class="font-cyber text-[8px] text-gray-600 uppercase tracking-widest">Standby</span>
                     </div>
                 </div>
 
                 <div class="flex flex-col items-center w-1/3 relative">
-                    <div class="w-12 h-12 rounded-full bg-blue-900/20 border border-blue-800/30 flex items-center justify-center overflow-hidden relative shadow-inner">
+                    <div class="w-12 h-12 rounded-full bg-blue-900/20 border border-blue-800/30 flex items-center justify-center overflow-hidden relative">
                         <span class="absolute font-black text-[10px] text-blue-700">MI</span>
                         <img id="visitor-logo" src="" onerror="this.style.opacity='0'" class="w-full h-full object-contain relative z-20">
                     </div>
@@ -70,7 +68,11 @@
                 </div>
             </div>
 
-            <div id="win-prob-section">
+            <div id="live-commentary" class="hidden text-center py-2 border-t border-white/5 mb-4 animate-fade-in">
+                <p id="match-comment" class="text-[9px] font-medium text-gray-400 italic">"Waiting for the first ball at Arun Jaitley Stadium..."</p>
+            </div>
+
+            <div id="win-prob-section" class="pt-2">
                 <div class="flex justify-between text-[9px] font-black uppercase tracking-widest mb-1">
                     <span id="prob-a-label" class="text-blue-500">DC 50%</span>
                     <span id="prob-b-label" class="text-blue-700">MI 50%</span>
@@ -86,7 +88,7 @@
         <div id="leaderboard" class="space-y-4"></div>
 
         <footer class="text-center py-10 opacity-30 mt-10">
-            <p class="font-cyber text-[10px] uppercase tracking-[0.5em]">System by Vedant Bhansali</p>
+            <p class="font-cyber text-[9px] uppercase tracking-[0.5em]">Dashboard by Vedant Bhansali</p>
         </footer>
     </div>
 
@@ -98,6 +100,8 @@
         const pcUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=PointsCalc`;
         const rosUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Roster`;
 
+        let currentlyPlaying = []; // Global list of batters/bowlers on field
+
         async function fetchLiveScores() {
             try {
                 const response = await fetch('/api/livescore');
@@ -108,6 +112,12 @@
                     document.getElementById('status-indicator').className = "live-dot";
                     document.getElementById('live-label').innerText = "Live Now";
                     document.getElementById('live-label').style.color = "#ef4444";
+                    document.getElementById('live-commentary').classList.remove('hidden');
+
+                    // Extract currently on field
+                    currentlyPlaying = [];
+                    if (iplMatch.batting) iplMatch.batting.forEach(b => currentlyPlaying.push(b.player?.data?.fullname));
+                    if (iplMatch.bowling) iplMatch.bowling.forEach(bw => currentlyPlaying.push(bw.player?.data?.fullname));
 
                     if (iplMatch.localteam?.image_path) document.getElementById('local-logo').src = iplMatch.localteam.image_path;
                     if (iplMatch.visitorteam?.image_path) document.getElementById('visitor-logo').src = iplMatch.visitorteam.image_path;
@@ -116,6 +126,7 @@
                     if (score) {
                         document.getElementById('live-score').innerText = `${score.score}/${score.wickets}`;
                         document.getElementById('live-overs').innerText = `(${score.overs} ov)`;
+                        document.getElementById('match-comment').innerText = `Current Innings: ${iplMatch.localteam.name} batting at ${score.overs} overs.`;
                     }
 
                     const prob = iplMatch.win_probability || { local_team_charge: 50, visitor_team_charge: 50 };
@@ -124,7 +135,7 @@
                     document.getElementById('prob-a-label').innerText = `DC ${prob.local_team_charge}%`;
                     document.getElementById('prob-b-label').innerText = `MI ${prob.visitor_team_charge}%`;
                 }
-            } catch (e) { console.log("Live Sync..."); }
+            } catch (e) { console.log("Sync..."); }
         }
 
         async function updateData() {
@@ -144,7 +155,6 @@
                     const owner = c[1].replace(/"/g, '').trim().toLowerCase();
                     const mult = parseFloat(c[2].replace(/"/g, '')) || 1;
                     const role = mult === 2 ? 'C' : mult === 1.5 ? 'VC' : '';
-                    
                     if (owner) {
                         if (!masterRoster[owner]) masterRoster[owner] = [];
                         masterRoster[owner].push({ name: pName, role: role, pts: 0 });
@@ -182,7 +192,7 @@
                 pod.innerHTML = `
                     <div class="flex flex-col items-center w-1/3">
                         <div class="text-[9px] font-bold text-gray-500 mb-2 h-8 uppercase">${owners[1].displayName}</div>
-                        <div class="w-full podium-pillar h-24 rounded-t-2xl flex flex-col justify-center items-center text-gray-400">
+                        <div class="w-full podium-pillar h-24 rounded-t-2xl flex flex-col justify-center items-center text-gray-400 border border-white/5">
                             <span class="font-cyber text-xl font-bold">${owners[1].score}</span>
                         </div>
                     </div>
@@ -194,7 +204,7 @@
                     </div>
                     <div class="flex flex-col items-center w-1/3">
                         <div class="text-[9px] font-bold text-gray-600 mb-2 h-8 uppercase">${owners[2].displayName}</div>
-                        <div class="w-full podium-pillar h-16 rounded-t-2xl flex flex-col justify-center items-center text-gray-600">
+                        <div class="w-full podium-pillar h-16 rounded-t-2xl flex flex-col justify-center items-center text-gray-600 border border-white/5">
                             <span class="font-cyber text-lg font-bold">${owners[2].score}</span>
                         </div>
                     </div>`;
@@ -206,22 +216,23 @@
                     <div class="p-5 flex justify-between items-center cursor-pointer" onclick="toggleSection('sq-${i}')">
                         <div class="flex items-center gap-6">
                             <span class="font-cyber text-lg ${i < 3 ? 'gold-glow' : 'text-gray-700'}">${i+1}</span>
-                            <span class="font-bold text-sm tracking-tighter uppercase tracking-widest">${o.displayName}</span>
+                            <span class="font-bold text-sm tracking-widest uppercase">${o.displayName}</span>
                         </div>
                         <span class="text-xl font-cyber font-black ${i === 0 ? 'gold-glow' : ''}">${o.score}</span>
                     </div>
                     <div id="sq-${i}" class="squad-view">
-                        ${(squads[o.cleanName] || []).sort((a,b)=>b.pts-a.pts).map(p => `
+                        ${(squads[o.cleanName] || []).sort((a,b)=>b.pts-a.pts).map(p => {
+                            const isLive = currentlyPlaying.includes(p.name);
+                            return `
                             <div class="flex justify-between items-center text-[11px] py-1.5 border-b border-white/5">
                                 <div class="flex items-center">
-                                    <span class="${p.pts > 0 ? 'text-gray-200 font-semibold' : 'text-gray-600'}">${p.name}</span>
+                                    <span class="${isLive ? 'impact-glow' : (p.pts > 0 ? 'text-gray-300' : 'text-gray-600')}">${p.name}</span>
                                     ${p.role ? `<span class="badge font-cyber">${p.role}</span>` : ''}
+                                    ${isLive ? `<span class="ml-2 h-1.5 w-1.5 rounded-full bg-yellow-500 animate-ping"></span>` : ''}
                                 </div>
-                                <div class="flex items-center gap-3">
-                                    <span class="font-cyber ${p.pts > 0 ? 'text-yellow-500' : 'text-gray-700'}">${p.pts}</span>
-                                </div>
+                                <span class="font-cyber ${p.pts > 0 ? 'text-yellow-500' : 'text-gray-700'}">${p.pts}</span>
                             </div>
-                        `).join('')}
+                        `}).join('')}
                     </div>
                 </div>`).join('');
         }
