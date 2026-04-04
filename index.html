@@ -142,7 +142,7 @@
 
         async function fetchLiveScores() {
             try {
-                const response = await fetch('/api/livescore');
+                const response = await fetch('https://script.google.com/macros/s/AKfycbxMDDZ0cDjAuwVWEA6kdDz81gvg3Ip4Bn9wLD4ohDCLoVDiAPtk4wVHAZfmF6D5uy5iFw/exec');
                 const json = await response.json();
                 const matches = (json.data && Array.isArray(json.data)) ? json.data.filter(m => m.season_id == SEASON_ID) : [];
                 const iplMatch = matches[matches.length - 1];
