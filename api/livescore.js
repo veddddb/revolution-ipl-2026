@@ -3,8 +3,7 @@ export default async function handler(req, res) {
   
   try {
     // We explicitly ask for localteam and visitorteam details
-    const url = `https://cricket.sportmonks.com/api/v2.0/livescores?api_token=${token}&include=localteam,visitorteam,runs,batting.player,bowling.player`;
-    const response = await fetch(url);
+    const url = `https://cricket.sportmonks.com/api/v2.0/livescores?api_token=${token}&include=localteam,visitorteam,runs,batting.player,bowling.player,venue`;    const response = await fetch(url);
     const data = await response.json();
     
     res.status(200).json(data);
