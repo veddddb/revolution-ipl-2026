@@ -7,7 +7,7 @@ export default async function handler(req, res) {
 
   try {
     const url = `https://cricket.sportmonks.com/api/v2.0/livescores?api_token=${token}&include=localteam,visitorteam,runs`;
-    const response = await fetch(url);
+    const response = await fetch(`https://cricket.sportmonks.com/api/v2.0/livescores?api_token=${token}&include=localteam,visitorteam,runs,batting.player,bowling.player`);
     const data = await response.json();
 
     // If Sportmonks returns an error (like expired token), pass it through
