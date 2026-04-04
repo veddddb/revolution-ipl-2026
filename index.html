@@ -184,19 +184,35 @@
                     </div>
                 </div>`).join('');
 
-            // Strategy (Luckiest Manager Logic)
-            const stratData = owners.map(o => {
-                const s = squads[o.cleanName] || [];
-                const sorted = [...s].sort((a, b) => b.seasonRaw - a.seasonRaw);
-                const t1 = sorted[0], t2 = sorted[1];
-                let potential = 0;
-                s.forEach(p => {
-                    if (t1 && p.name === t1.name) potential += (p.seasonRaw * 2);
-                    else if (t2 && p.name === t2.name) potential += (p.seasonRaw * 1.5);
-                    else potential += p.seasonRaw;
-                });
-                return { name: o.displayName, potential: Math.round(potential), current: o.score, t1: t1?.name, t2: t2?.name };
-            }).sort((a, b) => b.potential - a.potential);
+/* REPLACE ONLY THE STRATEGY MAPPING SECTION IN YOUR SCRIPT */
+
+const stratData = owners.map(o => {
+    const s = squads[o.cleanName] || [];
+    // Sorting by the RAW total we calculated (Col G / Col F)
+    const sorted = [...s].sort((a, b) => b.seasonRaw - a.seasonRaw);
+    const t1 = sorted[0], t2 = sorted[1];
+    
+    let potential = 0;
+    s.forEach(p => {
+        if (t1 && p.name === t1.name) potential += (p.seasonRaw * 2);
+        else if (t2 && p.name === t2.name) potential += (p.seasonRaw * 1.5);
+        else potential += p.seasonRaw;
+    });
+
+    const potFinal = Math.round(potential);
+    const diff = potFinal - o.score;
+    
+    return { 
+        name: o.displayName, 
+        potential: potFinal, 
+        current: o.score, 
+        t1: t1 ? t1.name : 'N/A', 
+        t2: t2 ? t2.name : 'N/A',
+        diff: diff
+    };
+}).sort((a, b) => b.potential - a.potential);
+
+/* THIS WILL NOW SHOW THE NAMES THE SCRIPT THINKS ARE BEST */
 
             document.getElementById('strategy-list').innerHTML = stratData.map((d, i) => {
                 const diff = d.potential - d.current;
