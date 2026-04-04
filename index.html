@@ -12,19 +12,17 @@
         .font-cyber { font-family: 'Orbitron', sans-serif; }
         .gold-glow { color: var(--accent); text-shadow: 0 0 20px rgba(241, 196, 15, 0.5); }
         .glass-card { background: var(--glass); backdrop-filter: blur(16px); border: 1px solid var(--border); border-radius: 24px; }
+        .tab-btn { padding: 8px 16px; border-radius: 12px; font-size: 10px; font-weight: 800; text-transform: uppercase; transition: 0.3s; border: 1px solid var(--border); background: rgba(255,255,255,0.05); }
+        .tab-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
         .podium-pillar { background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.8) 100%); border-top: 2px solid var(--border); transition: height 1s ease; }
         .rank-1-pillar { border-top-color: var(--accent); box-shadow: 0 -15px 40px rgba(241, 196, 15, 0.15); }
-        .squad-view { max-height: 0; overflow: hidden; transition: all 0.6s ease; opacity: 0; }
-        .squad-view.open { max-height: 2000px; opacity: 1; padding: 20px; border-top: 1px solid var(--border); }
+        .squad-view { max-height: 0; overflow: hidden; transition: all 0.5s ease; opacity: 0; }
+        .squad-view.open { max-height: 2000px; opacity: 1; padding: 15px 20px; border-top: 1px solid var(--border); }
         .badge { font-size: 8px; padding: 2px 6px; border-radius: 4px; font-weight: 900; margin-left: 6px; background: rgba(241, 196, 15, 0.15); border: 1px solid rgba(241, 196, 15, 0.3); color: var(--accent); }
         .role-tag { font-size: 7px; padding: 1px 4px; border-radius: 3px; background: rgba(255, 255, 255, 0.05); color: #94a3b8; text-transform: uppercase; margin-left: 5px; font-weight: 700; border: 1px solid rgba(255,255,255,0.1); }
-        .team-tag { font-size: 9px; color: #64748b; margin-left: 4px; font-weight: 800; }
         .live-dot { height: 8px; width: 8px; background: #ef4444; border-radius: 50%; display: inline-block; position: relative; }
         .live-dot::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 50%; background: #ef4444; animation: live-pulse 2s infinite; }
         @keyframes live-pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(3); opacity: 0; } }
-        .win-prob-bar { height: 8px; border-radius: 4px; background: rgba(255,255,255,0.1); overflow: hidden; display: flex; margin-top: 10px; border: 1px solid rgba(255, 255, 255, 0.05); }
-        .team-a-prob { background: #2563eb; transition: width 1s ease; box-shadow: 0 0 10px rgba(37, 99, 235, 0.5); }
-        .team-b-prob { background: #1e3a8a; transition: width 1s ease; }
         .impact-glow { color: #f1c40f !important; font-weight: 900 !important; text-shadow: 0 0 12px rgba(241, 196, 15, 0.9); }
         img:not([src]), img[src=""] { opacity: 0 !important; }
     </style>
@@ -32,8 +30,11 @@
 <body class="p-4 md:p-10">
     <div class="max-w-xl mx-auto pb-20">
         <header class="text-center mb-8">
-            <h1 class="text-4xl font-black font-cyber gold-glow italic tracking-tighter mb-2 uppercase">REVOLUTION IPL 2026</h1>
-            <div id="countdown" class="text-[10px] font-bold text-gray-500 uppercase tracking-[0.5em]">Live Intelligence Active</div>
+            <h1 class="text-4xl font-black font-cyber gold-glow italic tracking-tighter mb-2 uppercase">REVOLUTION</h1>
+            <div class="flex justify-center gap-2 mt-4">
+                <button onclick="switchTab('main')" id="btn-main" class="tab-btn active">Live Ranks</button>
+                <button onclick="switchTab('strategy')" id="btn-strat" class="tab-btn">Strategic Insights</button>
+            </div>
         </header>
 
         <div id="live-ticker" class="glass-card mb-10 p-6 border-l-4 border-yellow-500 relative">
@@ -65,32 +66,30 @@
                     <span id="visitor-name" class="mt-2 font-black text-[10px] uppercase text-gray-500 tracking-tighter">Mumbai</span>
                 </div>
             </div>
+        </div>
 
-            <div id="win-prob-section" class="pt-2">
-                <div class="flex justify-between text-[9px] font-black uppercase tracking-widest mb-1">
-                    <span id="prob-a-label" class="text-blue-500">DC 50%</span>
-                    <span id="prob-b-label" class="text-blue-900">MI 50%</span>
+        <div id="view-main">
+            <div id="podium-area" class="flex justify-center items-end gap-3 mb-14 h-48 text-center"></div>
+            <div id="leaderboard" class="space-y-4"></div>
+            <div id="unsold-container" class="mt-12 glass-card overflow-hidden opacity-50">
+                <div class="p-4 flex justify-between items-center cursor-pointer" onclick="toggleSection('sq-unsold')">
+                    <div class="flex items-center gap-3">
+                        <span class="text-gray-600 font-cyber text-[10px]">--</span>
+                        <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Unsold Player Pool</span>
+                    </div>
+                    <span id="unsold-total-val" class="font-cyber text-sm text-gray-600">0</span>
                 </div>
-                <div class="win-prob-bar">
-                    <div id="bar-a" class="team-a-prob" style="width: 50%"></div>
-                    <div id="bar-b" class="team-b-prob" style="width: 50%"></div>
+                <div id="sq-unsold" class="squad-view">
+                    <div id="unsold-items-list" class="space-y-1"></div>
                 </div>
             </div>
         </div>
 
-        <div id="podium-area" class="flex justify-center items-end gap-3 mb-14 h-48 text-center"></div>
-        <div id="leaderboard" class="space-y-4"></div>
-
-        <div id="unsold-container" class="mt-12 opacity-50">
-            <div class="glass-card p-4 flex justify-between items-center cursor-pointer" onclick="toggleSection('sq-unsold-id')">
-                <div class="flex items-center gap-3">
-                    <span class="text-gray-600 font-cyber text-[10px]">--</span>
-                    <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Unsold Player Pool</span>
-                </div>
-                <span id="unsold-total-val" class="font-cyber text-sm text-gray-600">0</span>
-            </div>
-            <div id="sq-unsold-id" class="squad-view">
-                <div id="unsold-items-list" class="space-y-1"></div>
+        <div id="view-strategy" class="hidden space-y-6">
+            <div class="glass-card p-6 border-b-2 border-yellow-500/30">
+                <h3 class="font-cyber text-xs gold-glow uppercase mb-2 tracking-widest">The "What If" Index</h3>
+                <p class="text-[9px] text-gray-400 italic mb-6">Calculating optimal scores based on the top 2 field performers as C/VC.</p>
+                <div id="strategy-list" class="space-y-4"></div>
             </div>
         </div>
 
@@ -107,6 +106,28 @@
         const rosUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Roster`;
 
         let activePlayers = [];
+
+        function parseCSV(text) {
+            const lines = text.split('\n');
+            return lines.map(line => {
+                const result = [];
+                let current = '', inQuotes = false;
+                for (let i = 0; i < line.length; i++) {
+                    if (line[i] === '"') inQuotes = !inQuotes;
+                    else if (line[i] === ',' && !inQuotes) { result.push(current.trim()); current = ''; }
+                    else current += line[i];
+                }
+                result.push(current.trim());
+                return result;
+            }).filter(row => row.length > 1);
+        }
+
+        function switchTab(tab) {
+            document.getElementById('view-main').style.display = tab === 'main' ? 'block' : 'none';
+            document.getElementById('view-strategy').style.display = tab === 'strategy' ? 'block' : 'none';
+            document.getElementById('btn-main').classList.toggle('active', tab === 'main');
+            document.getElementById('btn-strat').classList.toggle('active', tab === 'strategy');
+        }
 
         async function fetchLiveScores() {
             try {
@@ -135,116 +156,94 @@
 
         async function updateData() {
             try {
-                const [lbRes, pcRes, rosRes] = await Promise.all([
-                    fetch(lbUrl + '&t=' + Date.now()), fetch(pcUrl + '&t=' + Date.now()), fetch(rosUrl + '&t=' + Date.now())
+                const [lbData, pcData, rosData] = await Promise.all([
+                    fetch(lbUrl + '&t=' + Date.now()).then(r => r.text()),
+                    fetch(pcUrl + '&t=' + Date.now()).then(r => r.text()),
+                    fetch(rosUrl + '&t=' + Date.now()).then(r => r.text())
                 ]);
-                const lbRows = (await lbRes.text()).split('\n').slice(1);
-                const pcRows = (await pcRes.text()).split('\n').slice(1);
-                const rosRows = (await rosRes.text()).split('\n').slice(1);
+
+                const lbRows = parseCSV(lbData).slice(1);
+                const pcRows = parseCSV(pcData).slice(1);
+                const rosRows = parseCSV(rosData).slice(1);
 
                 const masterRoster = {};
-                rosRows.forEach(r => {
-                    const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                    if (c.length < 2) return;
-                    const pName = c[0].replace(/"/g, '').trim();
-                    const owner = c[1].replace(/"/g, '').trim().toLowerCase();
-                    const mult = parseFloat(c[2].replace(/"/g, '')) || 1;
-                    const realTeam = c[4] ? c[4].replace(/"/g, '').trim() : "";
-                    const pRole = c[6] ? c[6].replace(/"/g, '').trim() : ""; // Column G is Index 6
-                    const role = mult === 2 ? 'C' : mult === 1.5 ? 'VC' : '';
+                rosRows.forEach(c => {
+                    const name = c[0], owner = c[1]?.toLowerCase(), mult = parseFloat(c[2]) || 1;
+                    const team = c[4] || "", type = c[6] || "";
                     if (owner) {
                         if (!masterRoster[owner]) masterRoster[owner] = [];
-                        masterRoster[owner].push({ name: pName, role: role, pts: 0, team: realTeam, type: pRole });
+                        masterRoster[owner].push({ name, role: mult === 2 ? 'C' : mult === 1.5 ? 'VC' : '', pts: 0, team, type, mult });
                     }
                 });
 
-                pcRows.forEach(r => {
-                    const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                    if (c.length < 7) return;
-                    const pName = c[1].replace(/"/g, '').trim();
-                    const owner = c[2].replace(/"/g, '').trim().toLowerCase();
-                    const pts = Math.round(parseFloat(c[6].replace(/"/g, '')) || 0);
+                pcRows.forEach(c => {
+                    const name = c[1], owner = c[2]?.toLowerCase(), pts = Math.round(parseFloat(c[6])) || 0;
                     if (owner && masterRoster[owner]) {
-                        let pObj = masterRoster[owner].find(p => p.name === pName);
-                        if (pObj) pObj.pts += pts;
+                        let p = masterRoster[owner].find(x => x.name === name);
+                        if (p) p.pts += pts;
                     }
                 });
 
-                let usPts = 0;
-                const owners = lbRows.map(r => {
-                    const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                    if (!c[0]) return null;
-                    const n = c[0].replace(/"/g, '').trim();
-                    const s = Math.round(parseFloat(c[1].replace(/"/g, '')) || 0);
-                    if (n.toLowerCase() === "unsold") { usPts = s; return null; }
-                    return { displayName: n, cleanName: n.toLowerCase(), score: s };
+                let usTotal = 0;
+                const owners = lbRows.map(c => {
+                    const n = c[0], s = Math.round(parseFloat(c[1])) || 0;
+                    if (n?.toLowerCase() === 'unsold') { usTotal = s; return null; }
+                    return { displayName: n, cleanName: n?.toLowerCase(), score: s };
                 }).filter(o => o !== null).sort((a,b) => b.score - a.score);
 
-                renderDashboard(owners, masterRoster, usPts);
-            } catch (e) { console.error(e); }
+                renderDashboard(owners, masterRoster, usTotal);
+            } catch (e) { console.error("Data Load Error:", e); }
         }
 
         function renderDashboard(owners, squads, unsoldPts) {
             const pod = document.getElementById('podium-area');
             if (owners.length >= 3) {
                 pod.innerHTML = `
-                    <div class="flex flex-col items-center w-1/3">
-                        <div class="text-[9px] font-bold text-gray-500 mb-2 h-8 uppercase">${owners[1].displayName}</div>
-                        <div class="w-full podium-pillar h-24 rounded-t-2xl flex flex-col justify-center items-center text-gray-400 border border-white/5">
-                            <span class="font-cyber text-xl font-bold">${owners[1].score}</span>
-                        </div>
-                    </div>
-                    <div class="flex flex-col items-center w-1/3">
-                        <div class="text-[10px] font-black gold-glow uppercase mb-2 h-8 tracking-tighter">${owners[0].displayName}</div>
-                        <div class="w-full podium-pillar rank-1-pillar h-36 rounded-t-2xl flex flex-col justify-center items-center">
-                            <span class="font-cyber text-2xl font-black gold-glow">${owners[0].score}</span>
-                        </div>
-                    </div>
-                    <div class="flex flex-col items-center w-1/3">
-                        <div class="text-[9px] font-bold text-gray-600 mb-2 h-8 uppercase">${owners[2].displayName}</div>
-                        <div class="w-full podium-pillar h-16 rounded-t-2xl flex flex-col justify-center items-center text-gray-600 border border-white/5">
-                            <span class="font-cyber text-lg font-bold">${owners[2].score}</span>
-                        </div>
-                    </div>`;
+                    <div class="flex flex-col items-center w-1/3"><div class="text-[9px] mb-2 uppercase">${owners[1].displayName}</div><div class="w-full podium-pillar h-24 rounded-t-2xl flex flex-col justify-center items-center text-gray-400 border border-white/5"><span class="font-cyber text-xl font-bold">${owners[1].score}</span></div></div>
+                    <div class="flex flex-col items-center w-1/3"><div class="text-[10px] gold-glow mb-2 uppercase font-black">${owners[0].displayName}</div><div class="w-full podium-pillar rank-1-pillar h-36 rounded-t-2xl flex flex-col justify-center items-center"><span class="font-cyber text-2xl font-black gold-glow">${owners[0].score}</span></div></div>
+                    <div class="flex flex-col items-center w-1/3"><div class="text-[9px] mb-2 text-gray-600 uppercase">${owners[2].displayName}</div><div class="w-full podium-pillar h-16 rounded-t-2xl flex flex-col justify-center items-center text-gray-600 border border-white/5"><span class="font-cyber text-lg font-bold">${owners[2].score}</span></div></div>`;
             }
 
             const lb = document.getElementById('leaderboard');
             lb.innerHTML = owners.map((o, i) => `
                 <div class="glass-card overflow-hidden">
                     <div class="p-5 flex justify-between items-center cursor-pointer" onclick="toggleSection('sq-${i}')">
-                        <div class="flex items-center gap-6">
-                            <span class="font-cyber text-lg ${i < 3 ? 'gold-glow' : 'text-gray-700'}">${i+1}</span>
-                            <span class="font-bold text-sm tracking-widest uppercase">${o.displayName}</span>
-                        </div>
+                        <div class="flex items-center gap-6"><span class="font-cyber text-lg ${i < 3 ? 'gold-glow' : 'text-gray-700'}">${i+1}</span><span class="font-bold text-sm tracking-widest uppercase">${o.displayName}</span></div>
                         <span class="text-xl font-cyber font-black ${i === 0 ? 'gold-glow' : ''}">${o.score}</span>
                     </div>
                     <div id="sq-${i}" class="squad-view">
                         ${(squads[o.cleanName] || []).sort((a,b)=>b.pts-a.pts).map((p, idx) => {
                             const isLive = activePlayers.some(name => name && name.includes(p.name));
-                            return `
-                            <div class="flex justify-between items-center text-[11px] py-1.5 border-b border-white/5">
-                                <div class="flex items-center">
-                                    <span class="text-[9px] font-bold text-gray-500 mr-2 w-4">${idx + 1}.</span>
-                                    <span class="${isLive ? 'impact-glow' : (p.pts > 0 ? 'text-gray-200' : 'text-gray-600')} font-medium">${p.name}</span>
-                                    ${p.team ? `<span class="team-tag">(${p.team})</span>` : ''}
-                                    ${p.type ? `<span class="role-tag">${p.type}</span>` : ''}
-                                    ${p.role ? `<span class="badge font-cyber">${p.role}</span>` : ''}
-                                    ${isLive ? `<span class="ml-2 h-1.5 w-1.5 rounded-full bg-yellow-500 animate-ping"></span>` : ''}
-                                </div>
+                            return `<div class="flex justify-between items-center text-[11px] py-1.5 border-b border-white/5">
+                                <div class="flex items-center"><span class="text-[9px] font-bold text-gray-500 mr-2 w-4">${idx+1}.</span><span class="${isLive ? 'impact-glow' : 'text-gray-300'}">${p.name} (${p.team})</span>${p.type ? `<span class="role-tag">${p.type}</span>` : ''}${p.role ? `<span class="badge font-cyber">${p.role}</span>` : ''}${isLive ? `<span class="ml-2 h-1.5 w-1.5 rounded-full bg-yellow-500 animate-ping"></span>` : ''}</div>
                                 <span class="font-cyber ${p.pts > 0 ? 'text-yellow-500' : 'text-gray-700'}">${p.pts}</span>
                             </div>`}).join('')}
                     </div>
                 </div>`).join('');
 
+            const stratList = document.getElementById('strategy-list');
+            stratList.innerHTML = owners.map(o => {
+                const s = (squads[o.cleanName] || []).map(p => ({ ...p, raw: p.pts / p.mult }));
+                const sorted = [...s].sort((a,b) => b.raw - a.raw);
+                const top1 = sorted[0], top2 = sorted[1];
+                let prob = 0;
+                s.forEach(p => {
+                    if (top1 && p.name === top1.name) prob += (p.raw * 2);
+                    else if (top2 && p.name === top2.name) prob += (p.raw * 1.5);
+                    else prob += p.raw;
+                });
+                const diff = Math.round(prob - o.score);
+                return `<div class="p-4 rounded-xl bg-white/5 border border-white/5 mb-3 flex justify-between items-center">
+                    <div><p class="text-[11px] font-black uppercase tracking-widest">${o.displayName}</p><div class="flex gap-2 mt-1"><span class="text-[8px] text-blue-500 font-bold uppercase">C: ${top1 ? top1.name : '--'}</span><span class="text-[8px] text-purple-500 font-bold uppercase">VC: ${top2 ? top2.name : '--'}</span></div></div>
+                    <div class="text-right"><p class="font-cyber text-sm gold-glow">${Math.round(prob)}</p><p class="text-[8px] uppercase font-black ${diff > 0 ? 'text-green-500' : 'text-gray-600'}">${diff > 0 ? `+${diff} Missed` : 'Perfect'}</p></div>
+                </div>`;
+            }).join('');
+
             document.getElementById('unsold-total-val').innerText = unsoldPts;
-            const unsoldPlayers = squads["unsold"] || [];
-            document.getElementById('unsold-items-list').innerHTML = unsoldPlayers.map((p, idx) => `
+            const unsoldPlayers = squads['unsold'] || [];
+            document.getElementById('unsold-items-list').innerHTML = unsoldPlayers.sort((a,b)=>b.pts-a.pts).map((p, idx) => `
                 <div class="flex justify-between items-center text-[11px] py-1.5 border-b border-white/5 opacity-80">
-                    <div class="flex items-center">
-                         <span class="text-[9px] font-bold text-gray-700 mr-2 w-4">${idx + 1}.</span>
-                        <span class="text-gray-400 font-medium">${p.name} ${p.team ? `(${p.team})` : ''}</span>
-                        ${p.type ? `<span class="role-tag">${p.type}</span>` : ''}
-                    </div>
+                    <div class="flex items-center"><span class="text-[9px] font-bold text-gray-700 mr-2 w-4">${idx+1}.</span><span class="text-gray-400 font-medium">${p.name} (${p.team})</span>${p.type ? `<span class="role-tag">${p.type}</span>` : ''}</div>
                     <span class="font-cyber text-gray-500">${p.pts}</span>
                 </div>`).join('') || '<div class="text-[10px] text-center py-4 italic text-gray-700">Empty</div>';
         }
@@ -256,10 +255,8 @@
             if (!isOpen) el.classList.add('open');
         }
 
-        updateData();
-        fetchLiveScores();
-        setInterval(updateData, 60000);
-        setInterval(fetchLiveScores, 15000);
+        updateData(); fetchLiveScores();
+        setInterval(updateData, 60000); setInterval(fetchLiveScores, 15000);
     </script>
 </body>
 </html>
