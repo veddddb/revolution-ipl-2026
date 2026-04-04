@@ -16,8 +16,9 @@
         .rank-1-pillar { border-top-color: var(--accent); box-shadow: 0 -15px 40px rgba(241, 196, 15, 0.15); }
         .squad-view { max-height: 0; overflow: hidden; transition: all 0.6s ease; opacity: 0; }
         .squad-view.open { max-height: 2000px; opacity: 1; padding: 20px; border-top: 1px solid var(--border); }
-        .badge { font-size: 8px; padding: 2px 6px; border-radius: 4px; font-weight: 900; margin-left: 8px; background: rgba(241, 196, 15, 0.15); border: 1px solid rgba(241, 196, 15, 0.3); color: var(--accent); }
-        .team-tag { font-size: 9px; color: #94a3b8; margin-left: 4px; font-weight: 800; }
+        .badge { font-size: 8px; padding: 2px 6px; border-radius: 4px; font-weight: 900; margin-left: 6px; background: rgba(241, 196, 15, 0.15); border: 1px solid rgba(241, 196, 15, 0.3); color: var(--accent); }
+        .role-tag { font-size: 7px; padding: 1px 4px; border-radius: 3px; background: rgba(255, 255, 255, 0.05); color: #94a3b8; text-transform: uppercase; margin-left: 5px; font-weight: 700; border: 1px solid rgba(255,255,255,0.1); }
+        .team-tag { font-size: 9px; color: #64748b; margin-left: 4px; font-weight: 800; }
         .live-dot { height: 8px; width: 8px; background: #ef4444; border-radius: 50%; display: inline-block; position: relative; }
         .live-dot::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 50%; background: #ef4444; animation: live-pulse 2s infinite; }
         @keyframes live-pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(3); opacity: 0; } }
@@ -122,8 +123,6 @@
                         activePlayers = [];
                         if (iplMatch.batting) iplMatch.batting.forEach(b => activePlayers.push(b.player?.data?.fullname));
                         if (iplMatch.bowling) iplMatch.bowling.forEach(bw => activePlayers.push(bw.player?.data?.fullname));
-                        if (iplMatch.localteam?.image_path) document.getElementById('local-logo').src = iplMatch.localteam.image_path;
-                        if (iplMatch.visitorteam?.image_path) document.getElementById('visitor-logo').src = iplMatch.visitorteam.image_path;
                         const score = iplMatch.runs ? iplMatch.runs[0] : null;
                         if (score) {
                             document.getElementById('live-score').innerText = `${score.score}/${score.wickets}`;
@@ -151,10 +150,11 @@
                     const owner = c[1].replace(/"/g, '').trim().toLowerCase();
                     const mult = parseFloat(c[2].replace(/"/g, '')) || 1;
                     const realTeam = c[4] ? c[4].replace(/"/g, '').trim() : "";
+                    const pRole = c[6] ? c[6].replace(/"/g, '').trim() : ""; // Column G is Index 6
                     const role = mult === 2 ? 'C' : mult === 1.5 ? 'VC' : '';
                     if (owner) {
                         if (!masterRoster[owner]) masterRoster[owner] = [];
-                        masterRoster[owner].push({ name: pName, role: role, pts: 0, team: realTeam });
+                        masterRoster[owner].push({ name: pName, role: role, pts: 0, team: realTeam, type: pRole });
                     }
                 });
 
@@ -225,7 +225,9 @@
                             <div class="flex justify-between items-center text-[11px] py-1.5 border-b border-white/5">
                                 <div class="flex items-center">
                                     <span class="text-[9px] font-bold text-gray-500 mr-2 w-4">${idx + 1}.</span>
-                                    <span class="${isLive ? 'impact-glow' : (p.pts > 0 ? 'text-gray-300' : 'text-gray-600')} font-medium">${p.name} ${p.team ? `(${p.team})` : ''}</span>
+                                    <span class="${isLive ? 'impact-glow' : (p.pts > 0 ? 'text-gray-200' : 'text-gray-600')} font-medium">${p.name}</span>
+                                    ${p.team ? `<span class="team-tag">(${p.team})</span>` : ''}
+                                    ${p.type ? `<span class="role-tag">${p.type}</span>` : ''}
                                     ${p.role ? `<span class="badge font-cyber">${p.role}</span>` : ''}
                                     ${isLive ? `<span class="ml-2 h-1.5 w-1.5 rounded-full bg-yellow-500 animate-ping"></span>` : ''}
                                 </div>
@@ -235,28 +237,4 @@
                 </div>`).join('');
 
             document.getElementById('unsold-total-val').innerText = unsoldPts;
-            const unsoldPlayers = squads["unsold"] || [];
-            document.getElementById('unsold-items-list').innerHTML = unsoldPlayers.length > 0 ? unsoldPlayers.sort((a,b)=>b.pts-a.pts).map((p, idx) => `
-                <div class="flex justify-between items-center text-[11px] py-1.5 border-b border-white/5 opacity-80">
-                    <div class="flex items-center">
-                        <span class="text-[9px] font-bold text-gray-700 mr-2 w-4">${idx + 1}.</span>
-                        <span class="text-gray-400 font-medium">${p.name} ${p.team ? `(${p.team})` : ''}</span>
-                    </div>
-                    <span class="font-cyber text-gray-500">${p.pts}</span>
-                </div>`).join('') : '<div class="text-[10px] text-center py-4 italic text-gray-700">Empty</div>';
-        }
-
-        function toggleSection(id) {
-            const el = document.getElementById(id);
-            const isOpen = el.classList.contains('open');
-            document.querySelectorAll('.squad-view').forEach(s => s.classList.remove('open'));
-            if (!isOpen) el.classList.add('open');
-        }
-
-        updateData();
-        fetchLiveScores();
-        setInterval(updateData, 60000);
-        setInterval(fetchLiveScores, 15000);
-    </script>
-</body>
-</html>
+            const
