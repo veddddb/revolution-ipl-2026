@@ -41,25 +41,21 @@
                 </div>
                 <div id="match-venue">Arun Jaitley Stadium</div>
             </div>
-
             <div class="flex justify-between items-center mb-6 text-center">
                 <div class="w-1/3 flex flex-col items-center">
                     <div class="w-12 h-12 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center overflow-hidden relative">
-                        <span class="absolute font-black text-[10px] text-blue-400">DC</span>
+                        <span class="absolute font-black text-[10px] text-blue-400 uppercase">DC</span>
                         <img id="local-logo" src="" class="w-full h-full object-contain relative z-20">
                     </div>
-                    <span class="mt-2 font-black text-[10px] uppercase text-gray-500">Delhi</span>
                 </div>
                 <div class="w-1/3">
                     <div id="live-score" class="font-cyber text-2xl font-black gold-glow mb-1 italic">Match 8</div>
-                    <div id="live-overs" class="text-[10px] font-bold text-gray-400 tracking-widest">Starts 3:30 PM</div>
                 </div>
                 <div class="w-1/3 flex flex-col items-center">
                     <div class="w-12 h-12 rounded-full bg-blue-900/20 border border-blue-800/30 flex items-center justify-center overflow-hidden relative">
-                        <span class="absolute font-black text-[10px] text-blue-700">MI</span>
+                        <span class="absolute font-black text-[10px] text-blue-700 uppercase">MI</span>
                         <img id="visitor-logo" src="" class="w-full h-full object-contain relative z-20">
                     </div>
-                    <span class="mt-2 font-black text-[10px] uppercase text-gray-500">Mumbai</span>
                 </div>
             </div>
         </div>
@@ -71,8 +67,8 @@
 
         <div id="view-strategy" class="hidden space-y-6">
             <div class="glass-card p-6 border-b-2 border-yellow-500/30">
-                <h3 class="font-cyber text-xs gold-glow uppercase mb-2">Strategic Leaderboard</h3>
-                <p class="text-[9px] text-gray-400 italic mb-6">Ranking based on optimal Season-long C/VC picks (Raw Points).</p>
+                <h3 class="font-cyber text-xs gold-glow uppercase mb-2">Luckiest Manager Index</h3>
+                <p class="text-[9px] text-gray-400 italic mb-6">What if you picked your Top 2 Overall performers as C & VC.</p>
                 <div id="strategy-list" class="space-y-4"></div>
             </div>
         </div>
@@ -87,8 +83,7 @@
         function parseCSV(text) {
             const lines = text.split('\n');
             return lines.map(line => {
-                const res = [];
-                let cur = '', q = false;
+                const res = []; let cur = '', q = false;
                 for (let i = 0; i < line.length; i++) {
                     if (line[i] === '"') q = !q;
                     else if (line[i] === ',' && !q) { res.push(cur.trim()); cur = ''; }
@@ -121,6 +116,7 @@
                 const playerSeasonRaw = {};
                 const masterRoster = {};
 
+                // 1. Initialize Roster
                 rosRows.forEach(c => {
                     const name = c[0], owner = c[1]?.toLowerCase().trim(), mult = parseFloat(c[2]) || 1;
                     if (owner) {
@@ -130,18 +126,20 @@
                     }
                 });
 
+                // 2. Calculation: RAW = Col G (Index 6) / Col F (Index 5)
                 pcRows.forEach(c => {
                     const pName = c[1], ownerKey = c[2]?.toLowerCase().trim();
                     const actualG = parseFloat(c[6]) || 0, multF = parseFloat(c[5]) || 1;
-                    const rawVal = actualG / multF;
+                    const nakedPoints = actualG / multF; // THIS IS THE KEY RAW POINT LOGIC
                     
                     if (ownerKey && masterRoster[ownerKey]) {
                         let p = masterRoster[ownerKey].find(x => x.name === pName);
                         if (p) p.pts += actualG;
                     }
-                    if (playerSeasonRaw.hasOwnProperty(pName)) playerSeasonRaw[pName] += rawVal;
+                    if (playerSeasonRaw.hasOwnProperty(pName)) playerSeasonRaw[pName] += nakedPoints;
                 });
 
+                // 3. Attach season-long Raw totals back to owner squads
                 Object.keys(masterRoster).forEach(owner => {
                     masterRoster[owner].forEach(p => { p.seasonRaw = playerSeasonRaw[p.name] || 0; });
                 });
@@ -153,23 +151,23 @@
                 }).filter(o => o !== null).sort((a,b) => b.score - a.score);
 
                 renderDashboard(owners, masterRoster);
-            } catch (e) { console.error(e); }
+            } catch (e) {}
         }
 
         function renderDashboard(owners, squads) {
-            // PODIUM AREA
+            // Podium
             const pod = document.getElementById('podium-area');
             if (owners.length >= 3) {
                 pod.innerHTML = `
-                    <div class="flex flex-col items-center w-1/3"><div class="text-[9px] mb-2 uppercase text-gray-500 font-bold">${owners[1].displayName}</div>
+                    <div class="flex flex-col items-center w-1/3"><div class="text-[9px] mb-2 uppercase font-bold">${owners[1].displayName}</div>
                     <div class="w-full podium-pillar h-24 rounded-t-2xl flex flex-col justify-center items-center border border-white/5"><span class="font-cyber text-xl font-bold">${owners[1].score}</span></div></div>
-                    <div class="flex flex-col items-center w-1/3"><div class="text-[10px] gold-glow mb-2 uppercase font-black">${owners[0].displayName}</div>
+                    <div class="flex flex-col items-center w-1/3"><div class="text-[10px] gold-glow mb-2 uppercase font-black tracking-tighter">${owners[0].displayName}</div>
                     <div class="w-full podium-pillar rank-1-pillar h-36 rounded-t-2xl flex flex-col justify-center items-center"><span class="font-cyber text-2xl font-black gold-glow">${owners[0].score}</span></div></div>
                     <div class="flex flex-col items-center w-1/3"><div class="text-[9px] mb-2 text-gray-700 uppercase font-bold">${owners[2].displayName}</div>
-                    <div class="w-full podium-pillar h-16 rounded-t-2xl flex flex-col justify-center items-center border border-white/5"><span class="font-cyber text-lg font-bold text-gray-600">${owners[2].score}</span></div></div>`;
+                    <div class="w-full podium-pillar h-16 rounded-t-2xl flex flex-col justify-center items-center border border-white/5"><span class="font-cyber text-lg font-bold">${owners[2].score}</span></div></div>`;
             }
 
-            // LEADERBOARD
+            // Leaderboard
             const lb = document.getElementById('leaderboard');
             lb.innerHTML = owners.map((o, i) => `
                 <div class="glass-card">
@@ -186,7 +184,7 @@
                     </div>
                 </div>`).join('');
 
-            // STRATEGY (FIXED NaN TYPO)
+            // Strategy (Luckiest Manager Logic)
             const stratData = owners.map(o => {
                 const s = squads[o.cleanName] || [];
                 const sorted = [...s].sort((a, b) => b.seasonRaw - a.seasonRaw);
@@ -205,7 +203,7 @@
                 return `<div class="p-4 rounded-xl bg-white/5 mb-3 flex justify-between items-center">
                     <div class="flex items-center gap-4"><span class="font-cyber text-xs text-gray-600">${i+1}</span>
                     <div><p class="text-[11px] font-black uppercase">${d.name}</p><div class="flex gap-2 text-[8px] font-bold uppercase"><span class="text-blue-500">C: ${d.t1 || '--'}</span><span class="text-purple-500">VC: ${d.t2 || '--'}</span></div></div></div>
-                    <div class="text-right"><p class="font-cyber text-sm gold-glow">${d.potential}</p><p class="text-[8px] font-black uppercase ${diff > 0 ? 'text-green-500' : 'text-gray-600'}">${diff > 0 ? `+${diff} Missed` : 'Perfect'}</p></div>
+                    <div class="text-right"><p class="font-cyber text-sm gold-glow">${d.potential}</p><p class="text-[8px] font-black uppercase ${diff > 0 ? 'text-green-500' : 'text-gray-600'}">${diff > 0 ? `+${diff} Potential` : 'Perfect'}</p></div>
                 </div>`;
             }).join('');
         }
