@@ -1,281 +1,161 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>REVOLUTION IPL 2026</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    <style>
-        :root { --accent: #f1c40f; --glass: rgba(17, 25, 40, 0.85); --border: rgba(255, 255, 255, 0.1); }
-        body { background: radial-gradient(circle at top, #111827 0%, #030508 100%) no-repeat; background-attachment: fixed; color: #f8fafc; font-family: 'Inter', sans-serif; min-height: 100vh; margin: 0; }
-        .font-cyber { font-family: 'Orbitron', sans-serif; }
-        .gold-glow { color: var(--accent); text-shadow: 0 0 20px rgba(241, 196, 15, 0.5); }
-        .glass-card { background: var(--glass); backdrop-filter: blur(16px); border: 1px solid var(--border); border-radius: 24px; }
-        .podium-pillar { background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.8) 100%); border-top: 2px solid var(--border); transition: height 1s ease; }
-        .rank-1-pillar { border-top-color: var(--accent); box-shadow: 0 -15px 40px rgba(241, 196, 15, 0.15); }
-        .squad-view { max-height: 0; overflow: hidden; transition: all 0.6s ease; opacity: 0; }
-        .squad-view.open { max-height: 2000px; opacity: 1; padding: 20px; border-top: 1px solid var(--border); }
-        .badge { font-size: 8px; padding: 2px 6px; border-radius: 4px; font-weight: 900; margin-left: 8px; background: rgba(241, 196, 15, 0.15); border: 1px solid rgba(241, 196, 15, 0.3); color: var(--accent); }
-        .live-dot { height: 8px; width: 8px; background: #ef4444; border-radius: 50%; display: inline-block; position: relative; }
-        .live-dot::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 50%; background: #ef4444; animation: live-pulse 2s infinite; }
-        @keyframes live-pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(3); opacity: 0; } }
-        .win-prob-bar { height: 8px; border-radius: 4px; background: rgba(255,255,255,0.1); overflow: hidden; display: flex; margin-top: 10px; border: 1px solid rgba(255, 255, 255, 0.05); }
-        .team-a-prob { background: #2563eb; transition: width 1s ease; box-shadow: 0 0 10px rgba(37, 99, 235, 0.5); }
-        .team-b-prob { background: #1e3a8a; transition: width 1s ease; }
-        .watermark { position: fixed; bottom: 20px; right: 20px; opacity: 0.15; pointer-events: none; z-index: 100; text-align: right; }
-        .impact-glow { color: #f1c40f !important; font-weight: 900 !important; text-shadow: 0 0 12px rgba(241, 196, 15, 0.9); }
-        img:not([src]), img[src=""] { opacity: 0 !important; }
-    </style>
-</head>
-<body class="p-4 md:p-10">
-    <div class="watermark hidden md:block">
-        <p class="font-cyber text-[14px] font-black gold-glow tracking-tighter uppercase">Revolution</p>
-        <p class="text-[8px] font-bold text-gray-500 tracking-[0.4em]">SEASON 2026</p>
-    </div>
+<script>
+    const SHEET_ID = '1xIRCNr0tteFfMk6l7inIkKeSJMb7WLBswsXepHRqjio';
+    const SEASON_ID = '1795';
+    
+    const lbUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Leaderboard`;
+    const pcUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=PointsCalc`;
+    const rosUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Roster`;
 
-    <div class="max-w-xl mx-auto pb-20">
-        <header class="text-center mb-8">
-            <h1 class="text-4xl font-black font-cyber gold-glow italic tracking-tighter mb-2 uppercase">REVOLUTION</h1>
-            <div id="countdown" class="text-[10px] font-bold text-gray-500 uppercase tracking-[0.5em]">Live Intelligence Active</div>
-        </header>
+    let activePlayers = []; 
 
-        <div id="live-ticker" class="glass-card mb-10 p-6 border-l-4 border-yellow-500 relative">
-            <div class="flex justify-between items-center mb-4">
-                <div class="flex items-center gap-2">
-                    <div id="status-indicator" class="h-2 w-2 rounded-full bg-gray-600"></div>
-                    <span id="live-label" class="font-cyber text-[8px] text-gray-500 uppercase tracking-widest">Standby</span>
-                </div>
-                <div id="match-venue" class="text-[9px] font-bold text-gray-500 uppercase tracking-tighter">Scanning Venue...</div>
-            </div>
-
-            <div class="flex justify-between items-center mb-6">
-                <div class="flex flex-col items-center w-1/3 text-center">
-                    <div class="w-12 h-12 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center overflow-hidden relative">
-                        <span id="local-code" class="absolute font-black text-[10px] text-blue-400">HOME</span>
-                        <img id="local-logo" src="" onerror="this.style.opacity='0'" class="w-full h-full object-contain relative z-20">
-                    </div>
-                    <span id="local-name" class="mt-2 font-black text-[10px] uppercase text-gray-500 tracking-tighter">Home Team</span>
-                </div>
-                <div class="text-center w-1/3">
-                    <div id="live-score" class="font-cyber text-2xl font-black gold-glow mb-1 italic">Match 8</div>
-                    <div id="live-overs" class="text-[10px] font-bold text-gray-500 tracking-widest">Starts 3:30 PM</div>
-                </div>
-                <div class="flex flex-col items-center w-1/3 text-center">
-                    <div class="w-12 h-12 rounded-full bg-blue-900/20 border border-blue-800/30 flex items-center justify-center overflow-hidden relative">
-                        <span id="visitor-code" class="absolute font-black text-[10px] text-blue-700">AWAY</span>
-                        <img id="visitor-logo" src="" onerror="this.style.opacity='0'" class="w-full h-full object-contain relative z-20">
-                    </div>
-                    <span id="visitor-name" class="mt-2 font-black text-[10px] uppercase text-gray-500 tracking-tighter">Away Team</span>
-                </div>
-            </div>
-
-            <div id="win-prob-section" class="pt-2">
-                <div class="flex justify-between text-[9px] font-black uppercase tracking-widest mb-1">
-                    <span id="prob-a-label" class="text-blue-500">HOME 50%</span>
-                    <span id="prob-b-label" class="text-blue-900">AWAY 50%</span>
-                </div>
-                <div class="win-prob-bar">
-                    <div id="bar-a" class="team-a-prob" style="width: 50%"></div>
-                    <div id="bar-b" class="team-b-prob" style="width: 50%"></div>
-                </div>
-            </div>
-        </div>
-
-        <div id="podium-area" class="flex justify-center items-end gap-3 mb-14 h-48 text-center"></div>
-        <div id="leaderboard" class="space-y-4"></div>
-
-        <div id="unsold-container" class="mt-12 opacity-50">
-            <div class="glass-card p-4 flex justify-between items-center cursor-pointer" onclick="toggleSection('sq-unsold-id')">
-                <div class="flex items-center gap-3">
-                    <span class="text-gray-600 font-cyber text-[10px]">--</span>
-                    <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Unsold Player Pool</span>
-                </div>
-                <span id="unsold-total-val" class="font-cyber text-sm text-gray-600">0</span>
-            </div>
-            <div id="sq-unsold-id" class="squad-view">
-                <div id="unsold-items-list" class="space-y-1"></div>
-            </div>
-        </div>
-
-        <footer class="text-center py-10 opacity-30 mt-10">
-            <p class="font-cyber text-[9px] uppercase tracking-[0.5em]">Dashboard by Vedant Bhansali</p>
-        </footer>
-    </div>
-
-    <script>
-        const SHEET_ID = '1xIRCNr0tteFfMk6l7inIkKeSJMb7WLBswsXepHRqjio';
-        const SEASON_ID = '1795';
-        
-        const lbUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Leaderboard`;
-        const pcUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=PointsCalc`;
-        const rosUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Roster`;
-
-        let activePlayers = []; 
-
-        async function fetchLiveScores() {
-            try {
-                const response = await fetch('/api/livescore');
-                const json = await response.json();
-                const matches = (json.data && Array.isArray(json.data)) ? json.data.filter(m => m.season_id == SEASON_ID) : [];
-                const iplMatch = matches.length > 0 ? matches[matches.length - 1] : null;
-                
-                if (iplMatch) {
-                    document.getElementById('match-venue').innerText = iplMatch.venue?.data?.name || "Arun Jaitley Stadium";
-                    document.getElementById('local-name').innerText = iplMatch.localteam?.name || "Delhi";
-                    document.getElementById('visitor-name').innerText = iplMatch.visitorteam?.name || "Mumbai";
-                    document.getElementById('local-code').innerText = iplMatch.localteam?.code || "DC";
-                    document.getElementById('visitor-code').innerText = iplMatch.visitorteam?.code || "MI";
-
-                    if (iplMatch.status === "Live" || iplMatch.status === "Innings Break") {
-                        document.getElementById('status-indicator').className = "live-dot";
-                        document.getElementById('live-label').innerText = "Live Now";
-                        document.getElementById('live-label').style.color = "#ef4444";
-                        activePlayers = [];
-                        if (iplMatch.batting) iplMatch.batting.forEach(b => activePlayers.push(b.player?.data?.fullname));
-                        if (iplMatch.bowling) iplMatch.bowling.forEach(bw => activePlayers.push(bw.player?.data?.fullname));
-                        if (iplMatch.localteam?.image_path) document.getElementById('local-logo').src = iplMatch.localteam.image_path;
-                        if (iplMatch.visitorteam?.image_path) document.getElementById('visitor-logo').src = iplMatch.visitorteam.image_path;
-                        const score = iplMatch.runs ? iplMatch.runs[0] : null;
-                        if (score) {
-                            document.getElementById('live-score').innerText = `${score.score}/${score.wickets}`;
-                            document.getElementById('live-overs').innerText = `(${score.overs} ov)`;
-                        }
-                        const prob = iplMatch.win_probability || { local_team_charge: 50, visitor_team_charge: 50 };
-                        document.getElementById('bar-a').style.width = prob.local_team_charge + "%";
-                        document.getElementById('bar-b').style.width = prob.visitor_team_charge + "%";
-                        document.getElementById('prob-a-label').innerText = `${iplMatch.localteam?.code || 'DC'} ${prob.local_team_charge}%`;
-                        document.getElementById('prob-b-label').innerText = `${iplMatch.visitorteam?.code || 'MI'} ${prob.visitor_team_charge}%`;
+    async function fetchLiveScores() {
+        try {
+            const response = await fetch('/api/livescore');
+            const json = await response.json();
+            const matches = (json.data && Array.isArray(json.data)) ? json.data.filter(m => m.season_id == SEASON_ID) : [];
+            const iplMatch = matches.length > 0 ? matches[matches.length - 1] : null;
+            
+            if (iplMatch) {
+                document.getElementById('match-venue').innerText = iplMatch.venue?.data?.name || "Arun Jaitley Stadium";
+                if (iplMatch.status === "Live" || iplMatch.status === "Innings Break") {
+                    document.getElementById('status-indicator').className = "live-dot";
+                    document.getElementById('live-label').innerText = "Live Now";
+                    
+                    activePlayers = [];
+                    if (iplMatch.batting) iplMatch.batting.forEach(b => activePlayers.push(b.player?.data?.fullname));
+                    if (iplMatch.bowling) iplMatch.bowling.forEach(bw => activePlayers.push(bw.player?.data?.fullname));
+                    
+                    const score = iplMatch.runs ? iplMatch.runs[0] : null;
+                    if (score) {
+                        document.getElementById('live-score').innerText = `${score.score}/${score.wickets}`;
+                        document.getElementById('live-overs').innerText = `(${score.overs} ov)`;
                     }
                 }
-            } catch (e) { console.log("Sync Error..."); }
-        }
-
-        async function updateData() {
-            try {
-                const [lbRes, pcRes, rosRes] = await Promise.all([
-                    fetch(lbUrl + '&t=' + Date.now()), fetch(pcUrl + '&t=' + Date.now()), fetch(rosUrl + '&t=' + Date.now())
-                ]);
-                const lbRows = (await lbRes.text()).split('\n').slice(1);
-                const pcRows = (await pcRes.text()).split('\n').slice(1);
-                const rosRows = (await rosRes.text()).split('\n').slice(1);
-
-                const masterRoster = {};
-                rosRows.forEach(r => {
-                    const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                    if (c.length < 2) return;
-                    const pName = c[0].replace(/"/g, '').trim();
-                    const owner = c[1].replace(/"/g, '').trim().toLowerCase();
-                    const mult = parseFloat(c[2].replace(/"/g, '')) || 1;
-                    const role = mult === 2 ? 'C' : mult === 1.5 ? 'VC' : '';
-                    if (owner) {
-                        if (!masterRoster[owner]) masterRoster[owner] = [];
-                        masterRoster[owner].push({ name: pName, role: role, pts: 0 });
-                    }
-                });
-
-                pcRows.forEach(r => {
-                    const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                    if (c.length < 7) return;
-                    const pName = c[1].replace(/"/g, '').trim();
-                    const owner = c[2].replace(/"/g, '').trim().toLowerCase();
-                    const pts = Math.round(parseFloat(c[6].replace(/"/g, '')) || 0);
-                    if (owner && masterRoster[owner]) {
-                        let pObj = masterRoster[owner].find(p => p.name === pName);
-                        if (pObj) pObj.pts += pts;
-                    }
-                });
-
-                let usPtsTotal = 0;
-                const owners = lbRows.map(r => {
-                    const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                    if (!c[0]) return null;
-                    const n = c[0].replace(/"/g, '').trim();
-                    const s = Math.round(parseFloat(c[1].replace(/"/g, '')) || 0);
-                    if (n.toLowerCase() === "unsold") { usPtsTotal = s; return null; }
-                    return { displayName: n, cleanName: n.toLowerCase(), score: s };
-                }).filter(o => o !== null).sort((a,b) => b.score - a.score);
-
-                renderDashboard(owners, masterRoster, usPtsTotal);
-            } catch (e) { console.error(e); }
-        }
-
-        function renderDashboard(owners, squads, unsoldPts) {
-            const pod = document.getElementById('podium-area');
-            if (owners.length >= 3) {
-                pod.innerHTML = `
-                    <div class="flex flex-col items-center w-1/3">
-                        <div class="text-[9px] font-bold text-gray-500 mb-2 h-8 uppercase">${owners[1].displayName}</div>
-                        <div class="w-full podium-pillar h-24 rounded-t-2xl flex flex-col justify-center items-center text-gray-400 border border-white/5">
-                            <span class="font-cyber text-xl font-bold">${owners[1].score}</span>
-                        </div>
-                    </div>
-                    <div class="flex flex-col items-center w-1/3">
-                        <div class="text-[10px] font-black gold-glow uppercase mb-2 h-8 tracking-tighter">${owners[0].displayName}</div>
-                        <div class="w-full podium-pillar rank-1-pillar h-36 rounded-t-2xl flex flex-col justify-center items-center">
-                            <span class="font-cyber text-2xl font-black gold-glow">${owners[0].score}</span>
-                        </div>
-                    </div>
-                    <div class="flex flex-col items-center w-1/3">
-                        <div class="text-[9px] font-bold text-gray-600 mb-2 h-8 uppercase">${owners[2].displayName}</div>
-                        <div class="w-full podium-pillar h-16 rounded-t-2xl flex flex-col justify-center items-center text-gray-600 border border-white/5">
-                            <span class="font-cyber text-lg font-bold">${owners[2].score}</span>
-                        </div>
-                    </div>`;
             }
+        } catch (e) { console.log("Sync..."); }
+    }
 
-            const lb = document.getElementById('leaderboard');
-            lb.innerHTML = owners.map((o, i) => `
-                <div class="glass-card overflow-hidden">
-                    <div class="p-5 flex justify-between items-center cursor-pointer" onclick="toggleSection('sq-${i}')">
-                        <div class="flex items-center gap-6">
-                            <span class="font-cyber text-lg ${i < 3 ? 'gold-glow' : 'text-gray-700'}">${i+1}</span>
-                            <span class="font-bold text-sm tracking-widest uppercase">${o.displayName}</span>
-                        </div>
-                        <span class="text-xl font-cyber font-black ${i === 0 ? 'gold-glow' : ''}">${o.score}</span>
-                    </div>
-                    <div id="sq-${i}" class="squad-view">
-                        ${(squads[o.cleanName] || []).sort((a,b)=>b.pts-a.pts).map(p => {
-                            const isLive = activePlayers.some(name => name && name.includes(p.name));
-                            return `
-                            <div class="flex justify-between items-center text-[11px] py-1.5 border-b border-white/5">
-                                <div class="flex items-center">
-                                    <span class="${isLive ? 'impact-glow' : (p.pts > 0 ? 'text-gray-300' : 'text-gray-600')} font-medium">${p.name}</span>
-                                    ${p.role ? `<span class="badge font-cyber">${p.role}</span>` : ''}
-                                    ${isLive ? `<span class="ml-2 h-1.5 w-1.5 rounded-full bg-yellow-500 animate-ping"></span>` : ''}
-                                </div>
-                                <span class="font-cyber ${p.pts > 0 ? 'text-yellow-500' : 'text-gray-700'}">${p.pts}</span>
-                            </div>`}).join('')}
-                    </div>
-                </div>`).join('');
+    async function updateData() {
+        try {
+            const [lbRes, pcRes, rosRes] = await Promise.all([
+                fetch(lbUrl + '&t=' + Date.now()), fetch(pcUrl + '&t=' + Date.now()), fetch(rosUrl + '&t=' + Date.now())
+            ]);
+            const lbRows = (await lbRes.text()).split('\n').slice(1);
+            const pcRows = (await pcRes.text()).split('\n').slice(1);
+            const rosRows = (await rosRes.text()).split('\n').slice(1);
 
-            // FORCE RENDER OF UNSOLD LIST
-            document.getElementById('unsold-total-val').innerText = unsoldPts;
-            const unsoldPlayers = squads["unsold"] || [];
-            const listEl = document.getElementById('unsold-items-list');
-            
-            if (unsoldPlayers.length > 0) {
-                listEl.innerHTML = unsoldPlayers.sort((a,b)=>b.pts-a.pts).map(p => `
-                    <div class="flex justify-between items-center text-[11px] py-1.5 border-b border-white/5 opacity-80">
-                        <span class="text-gray-400 font-medium">${p.name}</span>
-                        <span class="font-cyber text-gray-500">${p.pts}</span>
-                    </div>`).join('');
-            } else {
-                listEl.innerHTML = '<div class="text-[10px] text-center py-4 italic text-gray-700 font-bold">Waiting for Sheet Sync...</div>';
-            }
+            const masterRoster = {};
+            rosRows.forEach(r => {
+                const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                if (c.length < 2) return;
+                const pName = c[0].replace(/"/g, '').trim();
+                const owner = c[1].replace(/"/g, '').trim().toLowerCase();
+                const mult = parseFloat(c[2].replace(/"/g, '')) || 1;
+                // Column E is index 4 (A=0, B=1, C=2, D=3, E=4)
+                const realTeam = c[4] ? c[4].replace(/"/g, '').trim() : ""; 
+                const role = mult === 2 ? 'C' : mult === 1.5 ? 'VC' : '';
+                
+                if (owner) {
+                    if (!masterRoster[owner]) masterRoster[owner] = [];
+                    masterRoster[owner].push({ name: pName, role: role, pts: 0, team: realTeam });
+                }
+            });
+
+            pcRows.forEach(r => {
+                const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                if (c.length < 7) return;
+                const pName = c[1].replace(/"/g, '').trim();
+                const owner = c[2].replace(/"/g, '').trim().toLowerCase();
+                const pts = Math.round(parseFloat(c[6].replace(/"/g, '')) || 0);
+                if (owner && masterRoster[owner]) {
+                    let pObj = masterRoster[owner].find(p => p.name === pName);
+                    if (pObj) pObj.pts += pts;
+                }
+            });
+
+            let usPts = 0;
+            const owners = lbRows.map(r => {
+                const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                if (!c[0]) return null;
+                const n = c[0].replace(/"/g, '').trim();
+                const s = Math.round(parseFloat(c[1].replace(/"/g, '')) || 0);
+                if (n.toLowerCase() === "unsold") { usPts = s; return null; }
+                return { displayName: n, cleanName: n.toLowerCase(), score: s };
+            }).filter(o => o !== null).sort((a,b) => b.score - a.score);
+
+            renderDashboard(owners, masterRoster, usPts);
+        } catch (e) { console.error(e); }
+    }
+
+    function renderDashboard(owners, squads, unsoldPts) {
+        const pod = document.getElementById('podium-area');
+        if (owners.length >= 3) {
+            pod.innerHTML = `
+                <div class="flex flex-col items-center w-1/3">
+                    <div class="text-[9px] font-bold text-gray-500 mb-2 h-8 uppercase">${owners[1].displayName}</div>
+                    <div class="w-full podium-pillar h-24 rounded-t-2xl flex flex-col justify-center items-center text-gray-400 border border-white/5">
+                        <span class="font-cyber text-xl font-bold">${owners[1].score}</span>
+                    </div>
+                </div>
+                <div class="flex flex-col items-center w-1/3">
+                    <div class="text-[10px] font-black gold-glow uppercase mb-2 h-8 tracking-tighter">${owners[0].displayName}</div>
+                    <div class="w-full podium-pillar rank-1-pillar h-36 rounded-t-2xl flex flex-col justify-center items-center">
+                        <span class="font-cyber text-2xl font-black gold-glow">${owners[0].score}</span>
+                    </div>
+                </div>
+                <div class="flex flex-col items-center w-1/3">
+                    <div class="text-[9px] font-bold text-gray-600 mb-2 h-8 uppercase">${owners[2].displayName}</div>
+                    <div class="w-full podium-pillar h-16 rounded-t-2xl flex flex-col justify-center items-center text-gray-600 border border-white/5">
+                        <span class="font-cyber text-lg font-bold">${owners[2].score}</span>
+                    </div>
+                </div>`;
         }
 
-        function toggleSection(id) {
-            const el = document.getElementById(id);
-            const isOpen = el.classList.contains('open');
-            document.querySelectorAll('.squad-view').forEach(s => s.classList.remove('open'));
-            if (!isOpen) el.classList.add('open');
-        }
+        const lb = document.getElementById('leaderboard');
+        lb.innerHTML = owners.map((o, i) => `
+            <div class="glass-card overflow-hidden">
+                <div class="p-5 flex justify-between items-center cursor-pointer" onclick="toggleSection('sq-${i}')">
+                    <div class="flex items-center gap-6">
+                        <span class="font-cyber text-lg ${i < 3 ? 'gold-glow' : 'text-gray-700'}">${i+1}</span>
+                        <span class="font-bold text-sm tracking-widest uppercase">${o.displayName}</span>
+                    </div>
+                    <span class="text-xl font-cyber font-black ${i === 0 ? 'gold-glow' : ''}">${o.score}</span>
+                </div>
+                <div id="sq-${i}" class="squad-view">
+                    ${(squads[o.cleanName] || []).sort((a,b)=>b.pts-a.pts).map(p => {
+                        const isLive = activePlayers.some(name => name && name.includes(p.name));
+                        return `
+                        <div class="flex justify-between items-center text-[11px] py-1.5 border-b border-white/5">
+                            <div class="flex items-center">
+                                <span class="${isLive ? 'impact-glow' : (p.pts > 0 ? 'text-gray-300' : 'text-gray-600')} font-medium">${p.name}</span>
+                                ${p.team ? `<span class="team-tag">(${p.team})</span>` : ''}
+                                ${p.role ? `<span class="badge font-cyber">${p.role}</span>` : ''}
+                                ${isLive ? `<span class="ml-2 h-1.5 w-1.5 rounded-full bg-yellow-500 animate-ping"></span>` : ''}
+                            </div>
+                            <span class="font-cyber ${p.pts > 0 ? 'text-yellow-500' : 'text-gray-700'}">${p.pts}</span>
+                        </div>`}).join('')}
+                </div>
+            </div>`).join('');
 
-        updateData();
-        fetchLiveScores();
-        setInterval(updateData, 60000);
-        setInterval(fetchLiveScores, 15000);
-    </script>
-</body>
-</html>
+        // UNSOLD LIST FIX
+        document.getElementById('unsold-total-val').innerText = unsoldPts;
+        const unsoldPlayers = squads["unsold"] || [];
+        document.getElementById('unsold-items-list').innerHTML = unsoldPlayers.length > 0 ? unsoldPlayers.sort((a,b)=>b.pts-a.pts).map(p => `
+            <div class="flex justify-between items-center text-[11px] py-1.5 border-b border-white/5 opacity-80">
+                <span class="text-gray-400 font-medium">${p.name} ${p.team ? `(${p.team})` : ''}</span>
+                <span class="font-cyber text-gray-500">${p.pts}</span>
+            </div>`).join('') : '<div class="text-[10px] text-center py-4 italic text-gray-700">No players in pool.</div>';
+    }
+
+    function toggleSection(id) {
+        const el = document.getElementById(id);
+        const isOpen = el.classList.contains('open');
+        document.querySelectorAll('.squad-view').forEach(s => s.classList.remove('open'));
+        if (!isOpen) el.classList.add('open');
+    }
+
+    updateData();
+    fetchLiveScores();
+    setInterval(updateData, 60000);
+    setInterval(fetchLiveScores, 15000);
+</script>
