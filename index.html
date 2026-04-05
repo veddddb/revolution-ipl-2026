@@ -7,138 +7,74 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --accent: #f1c40f; --glass: rgba(10, 15, 25, 0.98); --border: rgba(255, 255, 255, 0.08); }
-        body { background: radial-gradient(circle at top, #0f172a 0%, #020617 100%) no-repeat; background-attachment: fixed; color: #f8fafc; font-family: 'Inter', sans-serif; min-height: 100vh; }
+        :root { --accent: #f1c40f; --glass: rgba(10,15,25,0.98); --border: rgba(255,255,255,0.08); }
+        body { background: radial-gradient(circle at top, #0f172a 0%, #020617 100%) fixed; color: #f8fafc; font-family: 'Inter', sans-serif; min-height: 100vh; }
         .font-cyber { font-family: 'Orbitron', sans-serif; }
-        .gold-glow { color: var(--accent); text-shadow: 0 0 15px rgba(241, 196, 15, 0.5); }
-        .glass-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 24px; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); margin-bottom: 1rem; position: relative; overflow: hidden; cursor: pointer; }
-        .glass-card:hover { transform: translateY(-4px); border-color: var(--owner-color, var(--accent)); box-shadow: 0 0 30px -5px var(--owner-glow, rgba(241, 196, 15, 0.2)); z-index: 20; }
-        .logo-bg { position: absolute; right: 8%; top: 50%; transform: translateY(-50%); width: 120px; height: 120px; opacity: 0.13; pointer-events: none; z-index: 0; filter: blur(0.5px) grayscale(0.2); transition: opacity 0.4s ease, filter 0.4s ease, transform 0.4s ease; }
-        .glass-card:hover .logo-bg { opacity: 0.4; filter: blur(0px) grayscale(0); transform: translateY(-50%) scale(1.08); }
-        .podium-pillar { background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%); border: 1px solid rgba(255,255,255,0.05); position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-bottom: 10px; }
+        .gold-glow  { color: var(--accent); text-shadow: 0 0 15px rgba(241,196,15,0.5); }
+
+        .glass-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 24px; transition: 0.4s cubic-bezier(0.4,0,0.2,1); margin-bottom: 1rem; position: relative; overflow: hidden; cursor: pointer; }
+        .glass-card:hover { transform: translateY(-4px); border-color: var(--owner-color, var(--accent)); box-shadow: 0 0 30px -5px var(--owner-glow, rgba(241,196,15,0.2)); z-index: 20; }
+
+        .logo-bg { position: absolute; right: 8%; top: 50%; transform: translateY(-50%); width: 120px; height: 120px; opacity: 0.13; pointer-events: none; z-index: 0; filter: blur(0.5px); transition: opacity 0.4s ease, filter 0.4s ease, transform 0.4s ease; }
+        .glass-card:hover .logo-bg { opacity: 0.4; filter: blur(0px); transform: translateY(-50%) scale(1.08); }
+
+        .podium-pillar { background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%); border: 1px solid rgba(255,255,255,0.05); position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-bottom: 10px; transform-origin: bottom; }
         .podium-rank-label { font-family: 'Orbitron'; font-size: 8px; font-weight: 900; opacity: 0.5; color: white; letter-spacing: 1px; margin-top: 2px; }
-        .trophy-bg { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); width: 50px; height: 50px; opacity: 0.08; color: var(--accent); pointer-events: none; }
-        .role-tag { font-size: 7px; padding: 2px 5px; border-radius: 4px; background: rgba(255, 255, 255, 0.05); color: #94a3b8; text-transform: uppercase; font-weight: 700; margin-left: 5px; }
-        .team-tag { font-size: 7px; color: #475569; text-transform: uppercase; font-weight: 800; margin-left: 4px; }
-        .badge { font-size: 8px; padding: 1px 5px; border-radius: 4px; font-weight: 900; border: 1px solid currentColor; margin-left: 6px; }
-        .mvp-banner { background: linear-gradient(90deg, rgba(241,196,15,0.15) 0%, rgba(241,196,15,0.05) 100%); border: 1px solid rgba(241,196,15,0.3); border-radius: 20px; padding: 15px 20px; margin-bottom: 25px; box-shadow: 0 0 20px rgba(241, 196, 15, 0.1); }
+        .trophy-bg { position: absolute; top: 40%; left: 50%; transform: translate(-50%,-50%); width: 50px; height: 50px; opacity: 0.08; color: var(--accent); pointer-events: none; }
+        @keyframes riseUp { from { transform: scaleY(0); opacity: 0; } to { transform: scaleY(1); opacity: 1; } }
+        .pillar-rise { animation: riseUp 0.7s cubic-bezier(0.34,1.56,0.64,1) both; }
+
+        .role-tag  { font-size: 7px; padding: 2px 5px; border-radius: 4px; background: rgba(255,255,255,0.05); color: #94a3b8; text-transform: uppercase; font-weight: 700; margin-left: 5px; }
+        .team-tag  { font-size: 7px; color: #475569; text-transform: uppercase; font-weight: 800; margin-left: 4px; }
+        .badge     { font-size: 8px; padding: 1px 5px; border-radius: 4px; font-weight: 900; border: 1px solid currentColor; margin-left: 6px; }
+
+        .mvp-banner { background: linear-gradient(90deg, rgba(241,196,15,0.15), rgba(241,196,15,0.05)); border: 1px solid rgba(241,196,15,0.3); border-radius: 20px; padding: 15px 20px; margin-bottom: 25px; box-shadow: 0 0 20px rgba(241,196,15,0.1); }
+
         .tab-btn { padding: 10px 24px; border-radius: 12px; font-size: 10px; font-weight: 900; text-transform: uppercase; transition: 0.3s; border: 1px solid var(--border); background: rgba(255,255,255,0.02); color: #64748b; }
-        .tab-btn.active { background: var(--accent); color: #000; border-color: var(--accent); box-shadow: 0 0 20px rgba(241, 196, 15, 0.2); }
+        .tab-btn.active { background: var(--accent); color: #000; border-color: var(--accent); box-shadow: 0 0 20px rgba(241,196,15,0.2); }
+
         .squad-container { display: none; padding: 0 24px 24px 24px; border-top: 1px solid rgba(255,255,255,0.05); }
         .squad-container.open { display: block; animation: slideIn 0.3s ease-out; }
         .player-row-ghost { opacity: 0.25; filter: grayscale(1); transition: 0.3s; }
         .player-row-ghost:hover { opacity: 0.6; }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* ── SKELETON LOADER ── */
-        @keyframes shimmer {
-            0%   { background-position: -600px 0; }
-            100% { background-position:  600px 0; }
-        }
-        .skel {
-            background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.04) 75%);
-            background-size: 600px 100%;
-            animation: shimmer 1.4s infinite linear;
-            border-radius: 8px;
-        }
-        .skel-card {
-            background: rgba(10,15,25,0.98);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 24px;
-            padding: 24px;
-            margin-bottom: 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .skel-podium {
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-            gap: 12px;
-            height: 192px;
-            margin-bottom: 4rem;
-        }
-        .skel-pillar { border-radius: 12px 12px 0 0; }
+        @keyframes shimmer  { 0%{background-position:-600px 0} 100%{background-position:600px 0} }
+        .skel { background: linear-gradient(90deg,rgba(255,255,255,0.04) 25%,rgba(255,255,255,0.1) 50%,rgba(255,255,255,0.04) 75%); background-size:600px 100%; animation:shimmer 1.4s infinite linear; border-radius:8px; }
+        .skel-card { background:rgba(10,15,25,0.98); border:1px solid rgba(255,255,255,0.06); border-radius:24px; padding:24px; margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center; }
 
-        /* ── ERROR BANNER ── */
-        .error-banner {
-            background: rgba(220, 38, 38, 0.12);
-            border: 1px solid rgba(220, 38, 38, 0.35);
-            border-radius: 16px;
-            padding: 14px 20px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            animation: slideIn 0.3s ease-out;
-        }
-        .error-dot { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; flex-shrink: 0; animation: pulse 2s infinite; }
-        @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+        .error-banner { background:rgba(220,38,38,0.12); border:1px solid rgba(220,38,38,0.35); border-radius:16px; padding:14px 20px; margin-bottom:20px; display:flex; align-items:center; gap:12px; animation:slideIn 0.3s ease-out; }
+        .error-dot { width:8px; height:8px; border-radius:50%; background:#ef4444; flex-shrink:0; animation:blink 2s infinite; }
 
-        /* ── WELCOME SPLASH ── */
-        #splash {
-            position: fixed; inset: 0; z-index: 999;
-            background: radial-gradient(circle at 50% 40%, #0f172a 0%, #020617 100%);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            text-align: center; padding: 2rem;
-            transition: opacity 0.8s ease, transform 0.8s ease;
-        }
-        #splash.hide { opacity: 0; transform: scale(1.04); pointer-events: none; }
-        .splash-tag {
-            font-size: 9px; font-family: 'Orbitron', sans-serif; font-weight: 700;
-            letter-spacing: 0.4em; color: #475569; text-transform: uppercase;
-            margin-bottom: 2rem; opacity: 0;
-            animation: fadeUp 0.6s ease 0.2s forwards;
-        }
-        .splash-title {
-            font-family: 'Orbitron', sans-serif; font-weight: 900; font-style: italic;
-            font-size: clamp(2.8rem, 12vw, 5rem); line-height: 1;
-            color: #f1c40f; text-shadow: 0 0 40px rgba(241,196,15,0.35);
-            text-transform: uppercase; letter-spacing: -0.02em;
-            opacity: 0; animation: fadeUp 0.7s ease 0.5s forwards;
-        }
-        .splash-sub {
-            font-family: 'Orbitron', sans-serif; font-size: clamp(0.65rem, 3vw, 0.85rem);
-            font-weight: 700; letter-spacing: 0.25em; color: #64748b;
-            text-transform: uppercase; margin-top: 0.75rem;
-            opacity: 0; animation: fadeUp 0.7s ease 0.75s forwards;
-        }
-        .splash-divider {
-            width: 60px; height: 1px; background: rgba(241,196,15,0.3); margin: 2.5rem auto;
-            opacity: 0; animation: fadeUp 0.6s ease 1s forwards;
-        }
-        .splash-credit-label {
-            font-size: 8px; font-weight: 700; letter-spacing: 0.3em;
-            text-transform: uppercase; color: #334155; margin-bottom: 0.5rem;
-            opacity: 0; animation: fadeUp 0.6s ease 1.1s forwards;
-        }
-        .splash-credit-name {
-            font-family: 'Orbitron', sans-serif; font-size: clamp(0.75rem, 3.5vw, 1rem);
-            font-weight: 900; color: #94a3b8; letter-spacing: 0.1em; text-transform: uppercase;
-            opacity: 0; animation: fadeUp 0.7s ease 1.2s forwards;
-        }
-        .splash-enter {
-            margin-top: 3.5rem; font-size: 9px; font-family: 'Orbitron', sans-serif;
-            font-weight: 700; letter-spacing: 0.4em; color: #475569;
-            text-transform: uppercase; cursor: pointer;
-            opacity: 0; animation: fadeUp 0.6s ease 1.8s forwards, splashBlink 1.4s ease 2.4s infinite;
-        }
-        @keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
-        @keyframes splashBlink { 0%,100%{opacity:0.4;} 50%{opacity:1;} }
+        .share-btn { font-size:9px; font-family:'Orbitron',sans-serif; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; padding:4px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:#64748b; transition:0.2s; cursor:pointer; }
+        .share-btn:hover { color:var(--owner-color); border-color:var(--owner-color); }
+
+        #splash { position:fixed; inset:0; z-index:999; background:radial-gradient(circle at 50% 40%,#0f172a,#020617); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:2rem; transition:opacity 0.8s ease,transform 0.8s ease; }
+        #splash.hide { opacity:0; transform:scale(1.04); pointer-events:none; }
+        .sp { opacity:0; }
+        .sp1 { animation:fadeUp 0.6s ease 0.2s forwards; }
+        .sp2 { animation:fadeUp 0.7s ease 0.5s forwards; }
+        .sp3 { animation:fadeUp 0.7s ease 0.75s forwards; }
+        .sp4 { animation:fadeUp 0.6s ease 1.0s forwards; }
+        .sp5 { animation:fadeUp 0.6s ease 1.1s forwards; }
+        .sp6 { animation:fadeUp 0.7s ease 1.2s forwards; }
+        .sp7 { animation:fadeUp 0.6s ease 1.8s forwards, blink 1.4s ease 2.4s infinite; }
+
+        @keyframes fadeUp  { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes slideIn { from{opacity:0;transform:translateY(-5px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes blink   { 0%,100%{opacity:0.4} 50%{opacity:1} }
     </style>
 </head>
 <body class="p-4 md:p-10">
 
-    <!-- ── WELCOME SPLASH ── -->
+    <!-- SPLASH -->
     <div id="splash" onclick="dismissSplash()">
-        <p class="splash-tag">IPL Fantasy League</p>
-        <h1 class="splash-title">Revo IPL</h1>
-        <p class="splash-sub">2026 Championship</p>
-        <div class="splash-divider"></div>
-        <p class="splash-credit-label">Designed by</p>
-        <p class="splash-credit-name">Vedant Bhansali</p>
-        <p class="splash-enter">Tap anywhere to enter →</p>
+        <p class="sp sp1" style="font-size:9px;font-family:Orbitron,sans-serif;font-weight:700;letter-spacing:0.4em;color:#475569;text-transform:uppercase;margin-bottom:2rem;">IPL Fantasy League</p>
+        <h1 class="sp sp2" style="font-family:Orbitron,sans-serif;font-weight:900;font-style:italic;font-size:clamp(2.8rem,12vw,5rem);line-height:1;color:#f1c40f;text-shadow:0 0 40px rgba(241,196,15,0.35);text-transform:uppercase;letter-spacing:-0.02em;">Revo</h1>
+        <p class="sp sp3" style="font-family:Orbitron,sans-serif;font-size:clamp(0.65rem,3vw,0.85rem);font-weight:700;letter-spacing:0.25em;color:#64748b;text-transform:uppercase;margin-top:0.75rem;">IPL 2026 Championship</p>
+        <div class="sp sp4" style="width:60px;height:1px;background:rgba(241,196,15,0.3);margin:2.5rem auto;"></div>
+        <p class="sp sp5" style="font-size:8px;font-weight:700;letter-spacing:0.3em;text-transform:uppercase;color:#334155;margin-bottom:0.5rem;">Designed by</p>
+        <p class="sp sp6" style="font-family:Orbitron,sans-serif;font-size:clamp(0.75rem,3.5vw,1rem);font-weight:900;color:#94a3b8;letter-spacing:0.1em;text-transform:uppercase;">Vedant Bhansali</p>
+        <p class="sp sp7" style="margin-top:3.5rem;font-size:9px;font-family:Orbitron,sans-serif;font-weight:700;letter-spacing:0.4em;color:#475569;text-transform:uppercase;cursor:pointer;">Tap anywhere to enter →</p>
     </div>
 
     <div class="max-w-xl mx-auto pb-24">
@@ -147,14 +83,13 @@
                 <div class="role-tag uppercase tracking-widest px-3 py-1">EST. 2026</div>
                 <div id="match-counter" class="role-tag tracking-widest text-yellow-500 uppercase px-3 py-1">MATCHES: —/74</div>
             </div>
-            <h1 class="text-5xl font-black font-cyber gold-glow italic tracking-tighter mb-6 uppercase">REVO IPL'26</h1>
+            <h1 class="text-5xl font-black font-cyber gold-glow italic tracking-tighter mb-6 uppercase">REVOLUTION</h1>
             <div class="flex justify-center gap-3 bg-black/40 p-1.5 rounded-2xl border border-white/5 inline-flex">
-                <button onclick="switchTab('main')" id="btn-main" class="tab-btn active">Live Ranks</button>
-                <button onclick="switchTab('strategy')" id="btn-strat" class="tab-btn">Best Probable Outcome!</button>
+                <button onclick="switchTab('main')"     id="btn-main"  class="tab-btn active">Live Ranks</button>
+                <button onclick="switchTab('strategy')" id="btn-strat" class="tab-btn">Luckiest Manager</button>
             </div>
         </header>
 
-        <!-- ERROR BANNER (hidden by default) -->
         <div id="error-banner" class="error-banner hidden">
             <div class="error-dot"></div>
             <div>
@@ -167,6 +102,7 @@
         <div id="view-main" class="space-y-6">
             <div id="mvp-spotlight"></div>
             <div id="podium-area" class="flex justify-center items-end gap-3 mb-16 h-48 text-center px-2"></div>
+            <div id="streak-tracker"></div>
             <div id="leaderboard" class="space-y-2"></div>
         </div>
 
@@ -180,140 +116,64 @@
     </div>
 
     <script>
-        // ── SPLASH DISMISS ──
-        function dismissSplash() {
-            const splash = document.getElementById('splash');
-            splash.classList.add('hide');
-            setTimeout(() => splash.remove(), 900);
-        }
-        // Auto-dismiss after 5s if user doesn't tap
-        setTimeout(dismissSplash, 5000);
-
-        const SHEET_ID = '1xIRCNr0tteFfMk6l7inIkKeSJMb7WLBswsXepHRqjio';
+        const SHEET_ID             = '1xIRCNr0tteFfMk6l7inIkKeSJMb7WLBswsXepHRqjio';
         const TOTAL_SEASON_MATCHES = 74;
 
-        // ── CONSOLIDATED OWNER COLORS ──
-        // Single canonical key per owner (first name or short alias).
-        // All matching is done via fixID → firstName logic in getColor().
         const ownerColors = {
-            vedant:   "#3498db",
-            deep:     "#e74c3c",
-            shlok:    "#2ecc71",
-            rahul:    "#9b59b6",
-            soni:     "#f1c40f",
-            dheer:    "#e67e22",
-            kunal:    "#1abc9c",
-            puneet:   "#ff9f43",
-            vivek:    "#54a0ff",
-            bokaria:  "#5f27cd",
-            prakshal: "#48dbfb",
-            rishi:    "#ff6b6b",
-            aamer:    "#1dd1a1",
-            yashshah: "#f368e0",
-            jash:     "#e67e22",
+            vedant:'#3498db', deep:'#e74c3c',    shlok:'#2ecc71',
+            rahul:'#9b59b6',  soni:'#f1c40f',    dheer:'#e67e22',
+            kunal:'#1abc9c',  puneet:'#ff9f43',  vivek:'#54a0ff',
+            bokaria:'#5f27cd',prakshal:'#48dbfb', rishi:'#ff6b6b',
+            aamer:'#1dd1a1',  yashshah:'#f368e0', jash:'#e67e22',
         };
 
-        // ── IPL TEAM BADGE COLORS — pure CSS, zero network requests ──
+        function getColor(raw) {
+            const n = fixID(raw);
+            if (ownerColors[n]) return ownerColors[n];
+            for (const w of n.split(/\s+/)) if (ownerColors[w]) return ownerColors[w];
+            if (ownerColors[n.replace(/\s/g,'')]) return ownerColors[n.replace(/\s/g,'')];
+            return '#64748b';
+        }
+        const fixID = s => s ? s.toString().toLowerCase().trim() : '';
+
         const IPL_TEAMS = {
-            MI:   { color: '#004BA0', accent: '#89CFF0', label: 'MI'   },
-            CSK:  { color: '#F4C430', accent: '#fff',    label: 'CSK'  },
-            RCB:  { color: '#C8102E', accent: '#FFD700', label: 'RCB'  },
-            KKR:  { color: '#3A225D', accent: '#B8960C', label: 'KKR'  },
-            SRH:  { color: '#F26522', accent: '#1a1a1a', label: 'SRH'  },
-            DC:   { color: '#00529A', accent: '#E8001C', label: 'DC'   },
-            PBKS: { color: '#ED1C24', accent: '#DCDDDF', label: 'PBKS' },
-            RR:   { color: '#EA1A85', accent: '#254AA5', label: 'RR'   },
-            GT:   { color: '#1D4E89', accent: '#C8A84B', label: 'GT'   },
-            LSG:  { color: '#A4D65E', accent: '#1a1a1a', label: 'LSG'  },
+            MI:{color:'#004BA0',accent:'#89CFF0'}, CSK:{color:'#F4C430',accent:'#ffffff'},
+            RCB:{color:'#C8102E',accent:'#FFD700'}, KKR:{color:'#3A225D',accent:'#B8960C'},
+            SRH:{color:'#F26522',accent:'#1a1a1a'}, DC:{color:'#00529A',accent:'#E8001C'},
+            PBKS:{color:'#ED1C24',accent:'#DCDDDF'}, RR:{color:'#EA1A85',accent:'#254AA5'},
+            GT:{color:'#1D4E89',accent:'#C8A84B'}, LSG:{color:'#A4D65E',accent:'#1a1a1a'},
         };
 
-        // Build an inline SVG shield badge for a team — no images, always works
-        function teamBadgeSVG(teamCode, size = 110) {
-            const t = IPL_TEAMS[teamCode];
-            if (!t) return null;
-            const fontSize = teamCode.length <= 2 ? 22 : teamCode.length === 3 ? 18 : 14;
+        function teamBadgeSVG(code, size=110) {
+            const t = IPL_TEAMS[code]; if (!t) return '';
+            const fs = code.length <= 2 ? 22 : code.length === 3 ? 18 : 14;
             return `<svg viewBox="0 0 100 115" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <linearGradient id="sg-${teamCode}" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stop-color="${t.color}" stop-opacity="0.9"/>
-                        <stop offset="100%" stop-color="${t.color}" stop-opacity="0.5"/>
-                    </linearGradient>
-                </defs>
+                <defs><linearGradient id="sg${code}" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="${t.color}" stop-opacity="0.9"/>
+                    <stop offset="100%" stop-color="${t.color}" stop-opacity="0.5"/>
+                </linearGradient></defs>
                 <path d="M50 4 L92 18 L92 54 C92 80 50 110 50 110 C50 110 8 80 8 54 L8 18 Z"
-                      fill="url(#sg-${teamCode})" stroke="${t.accent}" stroke-width="2" stroke-opacity="0.6"/>
-                <text x="50" y="${fontSize <= 14 ? 62 : 60}" text-anchor="middle"
-                      font-family="Orbitron, sans-serif" font-size="${fontSize}" font-weight="900"
-                      fill="${t.accent}" fill-opacity="0.95" letter-spacing="1">${t.label}</text>
+                      fill="url(#sg${code})" stroke="${t.accent}" stroke-width="2" stroke-opacity="0.6"/>
+                <text x="50" y="${fs<=14?62:60}" text-anchor="middle" font-family="Orbitron,sans-serif"
+                      font-size="${fs}" font-weight="900" fill="${t.accent}" fill-opacity="0.95" letter-spacing="1">${code}</text>
             </svg>`;
         }
 
-        // Returns dominant team code(s) — teams tied at max player count
         function getDominantTeams(squad) {
-            if (!squad || squad.length === 0) return [];
+            if (!squad || !squad.length) return [];
             const counts = {};
-            squad.forEach(p => {
-                const t = (p.team || '').toString().trim().toUpperCase();
-                if (t) counts[t] = (counts[t] || 0) + 1;
-            });
+            squad.forEach(p => { const t=(p.team||'').toString().trim().toUpperCase(); if(t) counts[t]=(counts[t]||0)+1; });
             const max = Math.max(...Object.values(counts));
-            return Object.entries(counts)
-                .filter(([, v]) => v === max)
-                .map(([t]) => t)
-                .filter(t => IPL_TEAMS[t]);
+            return Object.entries(counts).filter(([,v])=>v===max).map(([t])=>t).filter(t=>IPL_TEAMS[t]);
         }
 
-        // Resolve color by trying: full id → first word → each word → fallback
-        function getColor(idOrFull) {
-            const normalized = fixID(idOrFull);
-            if (ownerColors[normalized]) return ownerColors[normalized];
-            const words = normalized.split(/\s+/);
-            for (const w of words) {
-                if (ownerColors[w]) return ownerColors[w];
-            }
-            // "yash shah" → "yashshah"
-            const joined = words.join('');
-            if (ownerColors[joined]) return ownerColors[joined];
-            return '#64748b';
+        // ── SPLASH ──
+        function dismissSplash() {
+            const s = document.getElementById('splash');
+            s.classList.add('hide');
+            setTimeout(() => s.remove(), 900);
         }
-
-        const fixID = (str) => str ? str.toString().toLowerCase().trim() : '';
-
-        // ── SKELETON RENDERERS ──
-        function renderSkeleton() {
-            document.getElementById('podium-area').innerHTML = `
-                <div class="skel-podium w-full px-2">
-                    <div class="w-1/3"><div class="skel skel-pillar w-full h-24"></div></div>
-                    <div class="w-1/3"><div class="skel skel-pillar w-full h-40"></div></div>
-                    <div class="w-1/3"><div class="skel skel-pillar w-full h-16"></div></div>
-                </div>`;
-
-            document.getElementById('leaderboard').innerHTML = Array.from({length: 6}).map(() => `
-                <div class="skel-card">
-                    <div class="flex items-center gap-5">
-                        <div class="skel w-4 h-4 rounded"></div>
-                        <div class="skel w-28 h-3 rounded"></div>
-                    </div>
-                    <div class="skel w-12 h-6 rounded"></div>
-                </div>`).join('');
-
-            document.getElementById('mvp-spotlight').innerHTML = `
-                <div class="skel-card mb-6" style="border-radius:20px; padding:15px 20px;">
-                    <div>
-                        <div class="skel w-32 h-2 rounded mb-3"></div>
-                        <div class="skel w-40 h-5 rounded mb-2"></div>
-                        <div class="skel w-24 h-2 rounded"></div>
-                    </div>
-                    <div class="skel w-14 h-8 rounded"></div>
-                </div>`;
-        }
-
-        async function fetchSheet(name) {
-            const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=0&sheet=${name}`;
-            const r = await fetch(url);
-            const t = await r.text();
-            const j = JSON.parse(t.substr(47).slice(0, -2));
-            return j.table.rows.map(row => row.c.map(cell => cell ? (cell.v !== null ? cell.v : "") : ""));
-        }
+        setTimeout(dismissSplash, 5000);
 
         function switchTab(t) {
             document.getElementById('view-main').classList.toggle('hidden', t !== 'main');
@@ -323,23 +183,45 @@
         }
 
         function showError(msg) {
-            const banner = document.getElementById('error-banner');
             document.getElementById('error-msg').textContent = msg || 'Could not reach the data sheet. Retrying in 60s…';
-            banner.classList.remove('hidden');
+            document.getElementById('error-banner').classList.remove('hidden');
+        }
+        function hideError() { document.getElementById('error-banner').classList.add('hidden'); }
+
+        function renderSkeleton() {
+            document.getElementById('podium-area').innerHTML = `
+                <div style="display:flex;justify-content:center;align-items:flex-end;gap:12px;width:100%;height:192px;">
+                    <div class="w-1/3"><div class="skel w-full h-24" style="border-radius:12px 12px 0 0"></div></div>
+                    <div class="w-1/3"><div class="skel w-full h-40" style="border-radius:12px 12px 0 0"></div></div>
+                    <div class="w-1/3"><div class="skel w-full h-16" style="border-radius:12px 12px 0 0"></div></div>
+                </div>`;
+            document.getElementById('leaderboard').innerHTML = Array.from({length:6}).map(()=>`
+                <div class="skel-card">
+                    <div class="flex items-center gap-5"><div class="skel w-4 h-4 rounded"></div><div class="skel w-28 h-3 rounded"></div></div>
+                    <div class="skel w-12 h-6 rounded"></div>
+                </div>`).join('');
+            document.getElementById('mvp-spotlight').innerHTML = `
+                <div class="skel-card mb-6" style="border-radius:20px;padding:15px 20px;">
+                    <div><div class="skel w-32 h-2 rounded mb-3"></div><div class="skel w-40 h-5 rounded mb-2"></div><div class="skel w-24 h-2 rounded"></div></div>
+                    <div class="skel w-14 h-8 rounded"></div>
+                </div>`;
         }
 
-        function hideError() {
-            document.getElementById('error-banner').classList.add('hidden');
+        async function fetchSheet(name) {
+            const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=0&sheet=${encodeURIComponent(name)}`;
+            const r = await fetch(url);
+            if (!r.ok) throw new Error(`Sheet fetch failed: ${name} (${r.status})`);
+            const t = await r.text();
+            const j = JSON.parse(t.substr(47).slice(0,-2));
+            return j.table.rows.map(row => row.c.map(cell => cell ? (cell.v !== null ? cell.v : '') : ''));
         }
+
+        // Global state — used by shareCard
+        let _state = { squads:{}, cumulScores:{}, completedMatches:[] };
 
         async function updateApp() {
             hideError();
-
-            // Show skeleton only on first load (leaderboard is empty)
-            const isFirstLoad = document.getElementById('leaderboard').innerHTML.trim() === '' ||
-                                document.getElementById('leaderboard').querySelector('.skel-card') !== null ||
-                                document.getElementById('leaderboard').innerHTML.trim() === '';
-            if (isFirstLoad) renderSkeleton();
+            if (!document.getElementById('leaderboard').querySelector('.glass-card')) renderSkeleton();
 
             try {
                 const [lbRows, rosRows, pcRows] = await Promise.all([
@@ -348,192 +230,114 @@
                     fetchSheet('PointsCalc'),
                 ]);
 
-                const pPoints = {};
-                let matchPlayers = [];
-                let lastMatchName = "";
-
-                // Match counter — only count matches with at least one player scoring > 0
+                // Completed matches
                 const completedMatches = [...new Set(
-                    pcRows
-                        .filter(row => row[0] && parseFloat(row[6]) > 0)
-                        .map(row => row[0].toString().trim())
+                    pcRows.filter(r => r[0] && parseFloat(r[6]) > 0).map(r => r[0].toString().trim())
                 )];
                 document.getElementById('match-counter').innerText = `MATCHES: ${completedMatches.length}/${TOTAL_SEASON_MATCHES}`;
 
+                // Player cumulative points
+                const pPoints = {};
                 pcRows.forEach(row => {
                     if (!row[1]) return;
-                    const pName = fixID(row[1]);
-                    const val   = parseFloat(row[6]) || 0;
-                    const mult  = parseFloat(row[5]) || 1;
-                    if (!pPoints[pName]) pPoints[pName] = { act: 0, raw: 0 };
-                    pPoints[pName].act += val;
-                    pPoints[pName].raw += (val / mult);
+                    const k = fixID(row[1]);
+                    const v = parseFloat(row[6]) || 0;
+                    const m = parseFloat(row[5]) || 1;
+                    if (!pPoints[k]) pPoints[k] = { act:0, raw:0 };
+                    pPoints[k].act += v;
+                    pPoints[k].raw += (v / m);
                 });
 
-                if (pcRows.length > 0) {
-                    lastMatchName = pcRows[pcRows.length - 1][0];
-                    pcRows.forEach(row => {
-                        if (row[0] === lastMatchName)
-                            matchPlayers.push({ name: row[1], pts: parseFloat(row[6]) || 0, owner: row[2] });
+                // Last match MVP
+                let matchPlayers = [], lastMatchName = '';
+                if (pcRows.length) {
+                    lastMatchName = pcRows[pcRows.length-1][0];
+                    pcRows.forEach(r => {
+                        if (r[0] === lastMatchName)
+                            matchPlayers.push({ name:r[1], pts:parseFloat(r[6])||0, owner:r[2] });
                     });
                 }
 
+                // Squads
                 const squads = {};
                 rosRows.forEach(row => {
                     const oKey = fixID(row[1]);
                     if (!oKey || oKey.includes('owner')) return;
                     if (!squads[oKey]) squads[oKey] = [];
-                    const stats = pPoints[fixID(row[0])] || { act: 0, raw: 0 };
+                    const stats = pPoints[fixID(row[0])] || { act:0, raw:0 };
                     squads[oKey].push({
-                        name: row[0], team: row[4], role: row[6],
-                        act: Math.round(stats.act), raw: stats.raw,
-                        cvc: parseFloat(row[2]) === 2 ? 'C' : parseFloat(row[2]) === 1.5 ? 'VC' : ''
+                        name:row[0], team:row[4], role:row[6],
+                        act:Math.round(stats.act), raw:stats.raw,
+                        cvc: parseFloat(row[2])===2 ? 'C' : parseFloat(row[2])===1.5 ? 'VC' : ''
                     });
                 });
 
+                // Owners
                 let owners = lbRows.map(row => {
-                    const full  = row[0] ? row[0].toString().trim() : "";
-                    const check = full.toLowerCase();
-                    if (check === "owner name" || check === "owner" || check === "" || check === "name") return null;
-                    return { full, score: Math.round(parseFloat(row[1])) || 0, id: check, first: full.split(' ')[0] };
+                    const full = row[0] ? row[0].toString().trim() : '';
+                    const id   = full.toLowerCase();
+                    if (!full || ['owner name','owner','name'].includes(id)) return null;
+                    return { full, score: Math.round(parseFloat(row[1]))||0, id, first:full.split(' ')[0] };
                 }).filter(Boolean);
 
-                const activeOnes = owners.filter(o => o.id !== 'unsold').sort((a, b) => b.score - a.score);
-                const unsoldOne  = owners.find(o => o.id === 'unsold');
-                const finalOrder = unsoldOne ? [...activeOnes, unsoldOne] : activeOnes;
+                const active  = owners.filter(o => o.id !== 'unsold').sort((a,b) => b.score - a.score);
+                const unsold  = owners.find(o => o.id === 'unsold');
+                const allOwners = unsold ? [...active, unsold] : active;
 
-                renderMain(finalOrder, squads);
-                renderStrategy(activeOnes, squads);
-                renderMVP(matchPlayers.sort((a, b) => b.pts - a.pts)[0], lastMatchName);
+                // Build cumulative scores (for streak + sparklines)
+                const cumulScores = buildCumulScores(active, pcRows, completedMatches);
 
-            } catch (e) {
-                console.error("Sync Error:", e);
-                showError("Could not reach the data sheet. Retrying in 60s…");
+                // Save to global state
+                _state = { squads, cumulScores, completedMatches };
+
+                // Render
+                renderMVP(matchPlayers.sort((a,b) => b.pts-a.pts)[0], lastMatchName);
+                renderPodium(active);
+                renderStreakTracker(active, cumulScores, completedMatches);
+                renderLeaderboard(allOwners, squads, cumulScores);
+                renderStrategy(active, squads);
+
+            } catch(e) {
+                console.error('Sync Error:', e);
+                showError(e.message || 'Could not reach the data sheet. Retrying in 60s…');
             }
         }
 
-        function renderMain(owners, squads) {
-            renderPodium(owners.filter(o => o.id !== 'unsold'));
-            renderLeaderboard(owners, squads);
-        }
+        function buildCumulScores(owners, pcRows, completedMatches) {
+            const cumul   = {}, running = {};
+            owners.forEach(o => { cumul[o.id]=[]; running[o.id]=0; });
 
-        function renderPodium(top) {
-            const pod = document.getElementById('podium-area');
-            if (top.length < 3) { pod.innerHTML = ''; return; }
-            pod.innerHTML = `
-                <div class="w-1/3 flex flex-col items-center">
-                    <span class="text-[9px] font-cyber mb-2 opacity-60 uppercase">${top[1].first}</span>
-                    <div class="podium-pillar w-full h-24 rounded-t-2xl">
-                        <span class="font-cyber text-lg mt-4">${top[1].score}</span>
-                        <div class="podium-rank-label">2ND</div>
-                    </div>
-                </div>
-                <div class="w-1/3 flex flex-col items-center">
-                    <span class="text-[10px] font-cyber mb-2 gold-glow italic uppercase tracking-widest">${top[0].first}</span>
-                    <div class="podium-pillar w-full h-40 rounded-t-2xl border-t-yellow-500 shadow-[0_-10px_30px_rgba(241,196,15,0.1)]">
-                        <div class="trophy-bg"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18,2H6V4H2V9C2,12 4.24,14.64 7.28,14.94C8.25,17.29 10.3,19 12.82,19.26V22H10V24H14V22H11.18V19.26C13.7,19 15.75,17.29 16.72,14.94C19.76,14.64 22,12 22,9V4H18V2M4,9V6H6V12.75C4.83,12.28 4,11.23 4,9M18,12.75V6H20V9C20,11.23 19.17,12.28 18,12.75Z"/></svg></div>
-                        <span class="font-cyber text-2xl font-black relative z-10 mt-12">${top[0].score}</span>
-                        <div class="podium-rank-label">1ST</div>
-                    </div>
-                </div>
-                <div class="w-1/3 flex flex-col items-center">
-                    <span class="text-[9px] font-cyber mb-2 opacity-60 uppercase">${top[2].first}</span>
-                    <div class="podium-pillar w-full h-16 rounded-t-2xl">
-                        <span class="font-cyber text-base text-gray-400 mt-2">${top[2].score}</span>
-                        <div class="podium-rank-label">3RD</div>
-                    </div>
-                </div>`;
-        }
-
-        function renderLeaderboard(owners, squads) {
-            document.getElementById('leaderboard').innerHTML = owners.map((o, i) => {
-                const color   = getColor(o.id);
-                const squad   = squads[o.id] || [];
-                const cID     = "c-" + o.id.replace(/\s+/g, '-');
-
-                // Dominant team badge(s) — pure inline SVG, zero network requests
-                const domTeams = getDominantTeams(squad);
-                const logoBgHTML = domTeams.length === 0
-                    ? ''
-                    : domTeams.length === 1
-                        ? `<div class="logo-bg">${teamBadgeSVG(domTeams[0], 110)}</div>`
-                        : `<div class="logo-bg" style="display:flex;gap:6px;width:150px;align-items:center;justify-content:center;">
-                               ${domTeams.slice(0, 2).map(t => teamBadgeSVG(t, 68)).join('')}
-                           </div>`;
-
-                const emptyMsg = squad.length === 0
-                    ? `<p class="text-[10px] text-gray-600 uppercase font-bold tracking-widest text-center py-4">No players in squad</p>`
-                    : squad.sort((a, b) => b.act - a.act).map((p, idx) => `
-                        <div class="flex justify-between items-center ${p.act === 0 ? 'player-row-ghost' : ''}">
-                            <div class="flex items-center">
-                                <span class="text-[8px] font-bold text-gray-600 mr-3 w-3">${idx + 1}</span>
-                                <span class="text-[11px] font-bold text-gray-200">${p.name} <span class="team-tag">(${p.team})</span></span>
-                                <span class="role-tag">${p.role}</span>
-                                ${p.cvc ? `<span class="badge font-cyber" style="color:${color}; border-color:${color}">${p.cvc}</span>` : ''}
-                            </div>
-                            <span class="font-cyber text-xs font-bold" style="color:${p.act > 0 ? color : '#334155'}">${p.act}</span>
-                        </div>`).join('');
-
-                return `
-                <div id="${cID}" class="glass-card ${o.id === 'unsold' ? 'opacity-40 mt-12' : ''}" style="--owner-color: ${color}; --owner-glow: ${color}33">
-                    ${logoBgHTML}
-                    <div class="p-6 flex justify-between items-center relative z-10" onclick="toggleSquad('${cID}')">
-                        <div class="flex items-center gap-5">
-                            <span class="font-cyber text-lg ${i < 3 && o.id !== 'unsold' ? 'gold-glow' : 'text-gray-700'}">${o.id === 'unsold' ? '•' : i + 1}</span>
-                            <span class="font-black text-sm uppercase tracking-widest italic">${o.full}</span>
-                        </div>
-                        <span class="font-cyber text-2xl font-black italic tracking-tighter">${o.score}</span>
-                    </div>
-                    <div id="sq-${cID}" class="squad-container">
-                        <div class="space-y-4 pt-4">${emptyMsg}</div>
-                    </div>
-                </div>`;
-            }).join('');
-        }
-
-        function renderStrategy(owners, squads) {
-            const data = owners.map(o => {
-                const s      = squads[o.id] || [];
-                const sorted = [...s].sort((a, b) => b.raw - a.raw);
-                const potScore = Math.round(
-                    (sorted[0]?.raw || 0) * 2 +
-                    (sorted[1]?.raw || 0) * 1.5 +
-                    sorted.slice(2).reduce((sum, p) => sum + p.raw, 0)
-                );
-                return { ...o, pot: potScore, diff: potScore - o.score, ideal: [sorted[0]?.name || '-', sorted[1]?.name || '-'] };
+            const nameToId = {};
+            owners.forEach(o => {
+                nameToId[fixID(o.full)]  = o.id;
+                nameToId[fixID(o.first)] = o.id;
+                nameToId[o.id]           = o.id;
             });
 
-            const sortedByPot = [...data].sort((a, b) => b.pot - a.pot);
-            document.getElementById('strategy-list').innerHTML = sortedByPot.map((d, i) => {
-                const color       = getColor(d.id);
-                const currentRank = owners.findIndex(o => o.id === d.id) + 1;
-                const potRank     = i + 1;
-                const shiftIcon   = currentRank > potRank ? '🟢 ↑' : currentRank < potRank ? '🔴 ↓' : '⚪';
-                return `
-                <div class="glass-card p-5" style="border-left: 4px solid ${color}; --owner-color: ${color}; --owner-glow: ${color}33">
-                    <div class="flex justify-between items-center mb-4">
-                        <div>
-                            <span class="font-cyber text-[10px]" style="color:${color}">${shiftIcon} POTENTIAL RANK #${potRank}</span>
-                            <h3 class="font-black uppercase italic">${d.full}</h3>
-                        </div>
-                        <div class="text-right">
-                            <span class="font-cyber text-2xl font-black">${d.pot}</span>
-                            <p class="text-[8px] font-bold opacity-40">MAX POTENTIAL</p>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4 border-t border-white/5 pt-4 text-[10px] font-bold">
-                        <div><p class="opacity-40 uppercase mb-1">Ideal C/VC</p><p class="text-yellow-500 uppercase">${d.ideal[0]} / ${d.ideal[1]}</p></div>
-                        <div class="text-right"><p class="opacity-40 uppercase mb-1">Points Lost</p><p class="text-red-500">-${d.diff} PTS</p></div>
-                    </div>
-                </div>`;
-            }).join('');
+            completedMatches.forEach(matchName => {
+                const totals = {};
+                pcRows
+                    .filter(r => r[0] && r[0].toString().trim() === matchName && r[2])
+                    .forEach(r => {
+                        const raw = fixID(r[2]);
+                        const id  = nameToId[raw]
+                            || owners.find(o => raw.includes(o.id) || o.id.includes(raw))?.id;
+                        if (!id) return;
+                        totals[id] = (totals[id]||0) + (parseFloat(r[6])||0);
+                    });
+                owners.forEach(o => {
+                    running[o.id] += (totals[o.id]||0);
+                    cumul[o.id].push(Math.round(running[o.id]));
+                });
+            });
+            return cumul;
         }
 
         function renderMVP(mvp, matchName) {
-            const container = document.getElementById('mvp-spotlight');
-            if (!mvp || !mvp.owner) { container.innerHTML = ''; return; }
+            const el = document.getElementById('mvp-spotlight');
+            if (!mvp || !mvp.owner) { el.innerHTML=''; return; }
             const color = getColor(mvp.owner);
-            container.innerHTML = `
+            el.innerHTML = `
                 <div class="mvp-banner flex justify-between items-center">
                     <div>
                         <p class="text-[8px] font-black text-yellow-500 uppercase tracking-widest mb-1">MATCH HERO • ${matchName}</p>
@@ -547,31 +351,263 @@
                 </div>`;
         }
 
+        function renderPodium(top) {
+            const pod = document.getElementById('podium-area');
+            if (top.length < 3) { pod.innerHTML=''; return; }
+            pod.innerHTML = `
+                <div class="w-1/3 flex flex-col items-center">
+                    <span class="text-[9px] font-cyber mb-2 opacity-60 uppercase">${top[1].first}</span>
+                    <div class="podium-pillar pillar-rise w-full h-24 rounded-t-2xl" style="animation-delay:0.15s">
+                        <span class="font-cyber text-lg mt-4">${top[1].score}</span>
+                        <div class="podium-rank-label">2ND</div>
+                    </div>
+                </div>
+                <div class="w-1/3 flex flex-col items-center">
+                    <span class="text-[10px] font-cyber mb-2 gold-glow italic uppercase tracking-widest">${top[0].first}</span>
+                    <div class="podium-pillar pillar-rise w-full h-40 rounded-t-2xl shadow-[0_-10px_30px_rgba(241,196,15,0.1)]" style="animation-delay:0s">
+                        <div class="trophy-bg"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18,2H6V4H2V9C2,12 4.24,14.64 7.28,14.94C8.25,17.29 10.3,19 12.82,19.26V22H10V24H14V22H11.18V19.26C13.7,19 15.75,17.29 16.72,14.94C19.76,14.64 22,12 22,9V4H18V2M4,9V6H6V12.75C4.83,12.28 4,11.23 4,9M18,12.75V6H20V9C20,11.23 19.17,12.28 18,12.75Z"/></svg></div>
+                        <span class="font-cyber text-2xl font-black relative z-10 mt-12">${top[0].score}</span>
+                        <div class="podium-rank-label">1ST</div>
+                    </div>
+                </div>
+                <div class="w-1/3 flex flex-col items-center">
+                    <span class="text-[9px] font-cyber mb-2 opacity-60 uppercase">${top[2].first}</span>
+                    <div class="podium-pillar pillar-rise w-full h-16 rounded-t-2xl" style="animation-delay:0.3s">
+                        <span class="font-cyber text-base text-gray-400 mt-2">${top[2].score}</span>
+                        <div class="podium-rank-label">3RD</div>
+                    </div>
+                </div>`;
+        }
+
+        function renderStreakTracker(owners, cumulScores, completedMatches) {
+            const el = document.getElementById('streak-tracker');
+            if (!el || completedMatches.length === 0) return;
+
+            const leadCount = {};
+            owners.forEach(o => leadCount[o.id] = 0);
+            for (let m = 0; m < completedMatches.length; m++) {
+                let best=-1, bestId=null;
+                owners.forEach(o => { const s=(cumulScores[o.id]||[])[m]||0; if(s>best){best=s;bestId=o.id;} });
+                if (bestId) leadCount[bestId]++;
+            }
+
+            const leader = [...owners].sort((a,b) => b.score-a.score)[0];
+            let streak = 0;
+            if (leader) {
+                for (let m = completedMatches.length-1; m >= 0; m--) {
+                    let best=-1, bestId=null;
+                    owners.forEach(o => { const s=(cumulScores[o.id]||[])[m]||0; if(s>best){best=s;bestId=o.id;} });
+                    if (bestId === leader.id) streak++; else break;
+                }
+            }
+
+            const sorted = [...owners].sort((a,b) => (leadCount[b.id]||0)-(leadCount[a.id]||0));
+            const lc     = leader ? getColor(leader.id) : '#f1c40f';
+
+            el.innerHTML = `
+                <div style="background:rgba(10,15,25,0.98);border:1px solid rgba(255,255,255,0.07);border-radius:20px;padding:18px 20px;margin-bottom:1rem;">
+                    <p style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;letter-spacing:0.3em;color:#475569;text-transform:uppercase;margin-bottom:14px;">Streak Tracker</p>
+                    ${leader && streak > 0 ? `
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.05);">
+                        <div>
+                            <p style="font-size:9px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:0.2em;margin-bottom:3px;">Current Leader Streak</p>
+                            <p style="font-family:Orbitron,sans-serif;font-size:13px;font-weight:900;color:${lc};text-transform:uppercase;">${leader.first}</p>
+                        </div>
+                        <div style="text-align:right;">
+                            <p style="font-family:Orbitron,sans-serif;font-size:28px;font-weight:900;color:${lc};line-height:1;">${streak}</p>
+                            <p style="font-size:8px;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:0.2em;">match days</p>
+                        </div>
+                    </div>` : ''}
+                    <div style="display:flex;flex-direction:column;gap:8px;">
+                        ${sorted.slice(0,5).map((o,i) => {
+                            const c=getColor(o.id), cnt=leadCount[o.id]||0;
+                            const pct=Math.round((cnt/completedMatches.length)*100);
+                            return `<div style="display:flex;align-items:center;gap:10px;">
+                                <span style="font-size:8px;font-weight:900;color:#334155;width:14px;">${i+1}</span>
+                                <span style="font-size:10px;font-weight:800;color:#94a3b8;text-transform:uppercase;flex:1;">${o.first}</span>
+                                <div style="flex:2;background:rgba(255,255,255,0.04);border-radius:4px;height:4px;overflow:hidden;">
+                                    <div style="height:100%;width:${pct}%;background:${c};border-radius:4px;transition:width 0.8s ease;"></div>
+                                </div>
+                                <span style="font-family:Orbitron,sans-serif;font-size:9px;font-weight:900;color:${c};min-width:28px;text-align:right;">${cnt}d</span>
+                            </div>`;
+                        }).join('')}
+                    </div>
+                </div>`;
+        }
+
+        function buildSparkline(id, scores, color) {
+            if (scores.length < 2) return '';
+            const W=280, H=60, pad=8;
+            const min=Math.min(...scores), max=Math.max(...scores), range=max-min||1;
+            const xStep=(W-pad*2)/(scores.length-1);
+            const pts=scores.map((s,i)=>{
+                const x=pad+i*xStep;
+                const y=H-pad-((s-min)/range)*(H-pad*2);
+                return `${x.toFixed(1)},${y.toFixed(1)}`;
+            }).join(' ');
+            const lx=(pad+(scores.length-1)*xStep).toFixed(1);
+            const ly=(H-pad-((scores[scores.length-1]-min)/range)*(H-pad*2)).toFixed(1);
+            const gid='gr'+id.replace(/[\s-]/g,'');
+            return `
+                <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.05);">
+                    <p style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;letter-spacing:0.3em;color:#334155;text-transform:uppercase;margin-bottom:8px;">Points Journey</p>
+                    <svg viewBox="0 0 ${W} ${H}" width="100%" style="overflow:visible;">
+                        <defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="${color}" stop-opacity="0.25"/>
+                            <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+                        </linearGradient></defs>
+                        <polygon points="${pts} ${lx},${H} ${pad},${H}" fill="url(#${gid})"/>
+                        <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="${lx}" cy="${ly}" r="3" fill="${color}"/>
+                        <text x="${lx}" y="${(parseFloat(ly)-7).toFixed(1)}" text-anchor="middle"
+                              font-family="Orbitron,sans-serif" font-size="7" font-weight="900" fill="${color}">${scores[scores.length-1]}</text>
+                    </svg>
+                </div>`;
+        }
+
+        function renderLeaderboard(owners, squads, cumulScores) {
+            document.getElementById('leaderboard').innerHTML = owners.map((o,i) => {
+                const color  = getColor(o.id);
+                const squad  = squads[o.id] || [];
+                const cID    = 'c-' + o.id.replace(/\s+/g,'-');
+                const teams  = getDominantTeams(squad);
+                const logoBg = teams.length === 0 ? ''
+                    : teams.length === 1
+                        ? `<div class="logo-bg">${teamBadgeSVG(teams[0],110)}</div>`
+                        : `<div class="logo-bg" style="display:flex;gap:6px;width:150px;align-items:center;justify-content:center;">${teams.slice(0,2).map(t=>teamBadgeSVG(t,68)).join('')}</div>`;
+
+                const playerRows = squad.length === 0
+                    ? `<p style="font-size:10px;color:#475569;text-transform:uppercase;font-weight:700;letter-spacing:0.1em;text-align:center;padding:16px 0;">No players in squad</p>`
+                    : squad.sort((a,b)=>b.act-a.act).map((p,idx)=>`
+                        <div class="flex justify-between items-center ${p.act===0?'player-row-ghost':''}">
+                            <div class="flex items-center">
+                                <span class="text-[8px] font-bold text-gray-600 mr-3 w-3">${idx+1}</span>
+                                <span class="text-[11px] font-bold text-gray-200">${p.name} <span class="team-tag">(${p.team})</span></span>
+                                <span class="role-tag">${p.role}</span>
+                                ${p.cvc?`<span class="badge font-cyber" style="color:${color};border-color:${color}">${p.cvc}</span>`:''}
+                            </div>
+                            <span class="font-cyber text-xs font-bold" style="color:${p.act>0?color:'#334155'}">${p.act}</span>
+                        </div>`).join('');
+
+                const scores = (cumulScores[o.id] || []);
+                const graph  = buildSparkline(o.id, scores, color);
+
+                return `
+                <div id="${cID}" class="glass-card ${o.id==='unsold'?'opacity-40 mt-12':''}" style="--owner-color:${color};--owner-glow:${color}33">
+                    ${logoBg}
+                    <div class="p-6 flex justify-between items-center relative z-10" onclick="toggleSquad('${cID}')">
+                        <div class="flex items-center gap-5">
+                            <span class="font-cyber text-lg ${i<3&&o.id!=='unsold'?'gold-glow':'text-gray-700'}">${o.id==='unsold'?'•':i+1}</span>
+                            <span class="font-black text-sm uppercase tracking-widest italic">${o.full}</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="font-cyber text-2xl font-black italic tracking-tighter">${o.score}</span>
+                            ${o.id!=='unsold'?`<button class="share-btn" onclick="event.stopPropagation();shareCard('${cID}','${o.full}',${o.score},${i+1})">Share</button>`:''}
+                        </div>
+                    </div>
+                    <div id="sq-${cID}" class="squad-container">
+                        <div class="space-y-4 pt-4">${playerRows}${graph}</div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
         function toggleSquad(id) {
-            const s = document.getElementById('sq-' + id);
+            const s = document.getElementById('sq-'+id);
             if (s) s.classList.toggle('open');
         }
 
-        // ── VISIBILITY-AWARE POLLING ──
-        let intervalId = null;
+        function renderStrategy(owners, squads) {
+            const data = owners.map(o => {
+                const s=squads[o.id]||[], sorted=[...s].sort((a,b)=>b.raw-a.raw);
+                const pot=Math.round((sorted[0]?.raw||0)*2+(sorted[1]?.raw||0)*1.5+sorted.slice(2).reduce((sum,p)=>sum+p.raw,0));
+                return {...o, pot, diff:pot-o.score, ideal:[sorted[0]?.name||'—',sorted[1]?.name||'—']};
+            }).sort((a,b)=>b.pot-a.pot);
 
-        function startPolling() {
-            if (intervalId) return;
-            intervalId = setInterval(updateApp, 60000);
+            document.getElementById('strategy-list').innerHTML = data.map((d,i) => {
+                const color=getColor(d.id), curRank=owners.findIndex(o=>o.id===d.id)+1;
+                const icon=curRank>i+1?'🟢 ↑':curRank<i+1?'🔴 ↓':'⚪';
+                return `
+                <div class="glass-card p-5" style="border-left:4px solid ${color};--owner-color:${color};--owner-glow:${color}33">
+                    <div class="flex justify-between items-center mb-4">
+                        <div><span class="font-cyber text-[10px]" style="color:${color}">${icon} POTENTIAL RANK #${i+1}</span><h3 class="font-black uppercase italic">${d.full}</h3></div>
+                        <div class="text-right"><span class="font-cyber text-2xl font-black">${d.pot}</span><p class="text-[8px] font-bold opacity-40">MAX POTENTIAL</p></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 border-t border-white/5 pt-4 text-[10px] font-bold">
+                        <div><p class="opacity-40 uppercase mb-1">Ideal C/VC</p><p class="text-yellow-500 uppercase">${d.ideal[0]} / ${d.ideal[1]}</p></div>
+                        <div class="text-right"><p class="opacity-40 uppercase mb-1">Points Lost</p><p class="text-red-500">-${d.diff} PTS</p></div>
+                    </div>
+                </div>`;
+            }).join('');
         }
 
-        function stopPolling() {
-            clearInterval(intervalId);
-            intervalId = null;
+        function shareCard(cID, ownerFull, score, rank) {
+            const color  = getColor(cID.replace('c-','').replace(/-/g,' '));
+            const squad  = (_state.squads[fixID(ownerFull)] || []).sort((a,b)=>b.act-a.act);
+            const W=600, H=200+Math.max(squad.length,1)*26+60;
+            const canvas = document.createElement('canvas');
+            canvas.width=W*2; canvas.height=H*2;
+            const ctx=canvas.getContext('2d');
+            ctx.scale(2,2);
+
+            // BG
+            const bg=ctx.createLinearGradient(0,0,W,H);
+            bg.addColorStop(0,'#0f172a'); bg.addColorStop(1,'#020617');
+            ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+            ctx.fillStyle=color; ctx.fillRect(0,0,W,4);
+
+            // Glow
+            const glow=ctx.createRadialGradient(W*0.8,H*0.25,0,W*0.8,H*0.25,180);
+            glow.addColorStop(0,color+'22'); glow.addColorStop(1,'transparent');
+            ctx.fillStyle=glow; ctx.fillRect(0,0,W,H);
+
+            // Rank
+            ctx.font='700 11px monospace'; ctx.fillStyle=color+'aa';
+            ctx.fillText(`RANK #${rank}`,28,48);
+
+            // Name
+            ctx.font='900 30px monospace'; ctx.fillStyle='#f8fafc';
+            ctx.fillText(ownerFull.toUpperCase(),28,82);
+
+            // Score
+            ctx.font='900 48px monospace'; ctx.fillStyle=color;
+            ctx.textAlign='right'; ctx.fillText(score,W-28,82); ctx.textAlign='left';
+
+            // Label
+            ctx.font='700 9px monospace'; ctx.fillStyle='#334155';
+            ctx.fillText('TOTAL POINTS • REVOLUTION IPL 2026',28,102);
+
+            // Divider
+            ctx.strokeStyle='rgba(255,255,255,0.07)'; ctx.lineWidth=1;
+            ctx.beginPath(); ctx.moveTo(28,118); ctx.lineTo(W-28,118); ctx.stroke();
+
+            // Squad
+            ctx.font='700 9px monospace'; ctx.fillStyle='#475569';
+            ctx.fillText('SQUAD',28,140);
+            squad.forEach((p,i) => {
+                const y=160+i*26;
+                ctx.font='600 12px monospace'; ctx.fillStyle=i%2===0?'#94a3b8':'#64748b';
+                ctx.fillText(`${p.name} (${p.team})`,28,y);
+                ctx.font='900 12px monospace'; ctx.fillStyle=color;
+                ctx.textAlign='right'; ctx.fillText(`${p.act}`,W-28,y); ctx.textAlign='left';
+            });
+
+            // Footer
+            ctx.font='700 8px monospace'; ctx.fillStyle='#1e293b';
+            ctx.fillText('REVOLUTION • VEDANT BHANSALI EDITION',28,H-16);
+
+            const a=document.createElement('a');
+            a.download=`revo-${ownerFull.toLowerCase().replace(/\s/g,'-')}.png`;
+            a.href=canvas.toDataURL('image/png');
+            a.click();
         }
 
+        // ── POLLING ──
+        let _tid = null;
+        function startPolling() { if (!_tid) _tid=setInterval(updateApp,60000); }
+        function stopPolling()  { clearInterval(_tid); _tid=null; }
         document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {
-                stopPolling();
-            } else {
-                updateApp();      // refresh immediately on tab focus
-                startPolling();
-            }
+            if (document.hidden) stopPolling(); else { updateApp(); startPolling(); }
         });
 
         updateApp();
