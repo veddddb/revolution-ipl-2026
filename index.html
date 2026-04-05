@@ -23,6 +23,7 @@
         .trophy-bg { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); width: 50px; height: 50px; opacity: 0.08; color: var(--accent); pointer-events: none; }
 
         .role-tag { font-size: 7px; padding: 2px 5px; border-radius: 4px; background: rgba(255, 255, 255, 0.05); color: #94a3b8; text-transform: uppercase; font-weight: 700; margin-left: 5px; }
+        .team-tag { font-size: 7px; color: #475569; text-transform: uppercase; font-weight: 800; margin-left: 4px; }
         .badge { font-size: 8px; padding: 1px 5px; border-radius: 4px; font-weight: 900; border: 1px solid currentColor; margin-left: 6px; }
 
         .mvp-banner { background: linear-gradient(90deg, rgba(241,196,15,0.15) 0%, rgba(241,196,15,0.05) 100%); border: 1px solid rgba(241,196,15,0.3); border-radius: 20px; padding: 15px 20px; margin-bottom: 25px; box-shadow: 0 0 20px rgba(241, 196, 15, 0.1); }
@@ -40,7 +41,7 @@
                 <div class="role-tag uppercase tracking-widest px-3 py-1">EST. 2026</div>
                 <div id="match-counter" class="role-tag tracking-widest text-yellow-500 uppercase px-3 py-1">MATCHES: 0/74</div>
             </div>
-            <h1 class="text-5xl font-black font-cyber gold-glow italic tracking-tighter mb-6 uppercase">REVOLUTION IPL'26</h1>
+            <h1 class="text-5xl font-black font-cyber gold-glow italic tracking-tighter mb-6 uppercase">REVOLUTION</h1>
             <div class="flex justify-center gap-3 bg-black/40 p-1.5 rounded-2xl border border-white/5 inline-flex">
                 <button onclick="switchTab('main')" id="btn-main" class="tab-btn active">Live Ranks</button>
                 <button onclick="switchTab('strategy')" id="btn-strat" class="tab-btn">Luckiest Manager</button>
@@ -124,7 +125,6 @@
                     return { full: row[0].toString(), score: Math.round(parseFloat(row[1])) || 0, id: clean(row[0]), first: row[0].toString().split(' ')[0] };
                 }).filter(o => o !== null);
 
-                // SORTING: Active managers by score, Unsold at the very end
                 const activeOnes = owners.filter(o => o.id !== 'unsold').sort((a,b) => b.score - a.score);
                 const unsoldOne = owners.find(o => o.id === 'unsold');
                 const finalOrder = unsoldOne ? [...activeOnes, unsoldOne] : activeOnes;
@@ -143,9 +143,9 @@
             const top = owners.filter(o => o.id !== 'unsold');
             if(top.length >= 3) {
                 pod.innerHTML = `
-                <div class="w-1/3 flex flex-col items-center"><span class="text-[9px] font-cyber mb-2 opacity-60">${top[1].first}</span><div class="podium-pillar w-full h-24 rounded-t-2xl"><span class="font-cyber text-lg mt-4">${top[1].score}</span><div class="podium-rank-label">2ND</div></div></div>
+                <div class="w-1/3 flex flex-col items-center"><span class="text-[9px] font-cyber mb-2 opacity-60 uppercase">${top[1].first}</span><div class="podium-pillar w-full h-24 rounded-t-2xl"><span class="font-cyber text-lg mt-4">${top[1].score}</span><div class="podium-rank-label">2ND</div></div></div>
                 <div class="w-1/3 flex flex-col items-center"><span class="text-[10px] font-cyber mb-2 gold-glow italic uppercase tracking-widest">${top[0].first}</span><div class="podium-pillar w-full h-40 rounded-t-2xl border-t-yellow-500 shadow-[0_-10px_30px_rgba(241,196,15,0.1)]"><div class="trophy-bg"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18,2H6V4H2V9C2,12 4.24,14.64 7.28,14.94C8.25,17.29 10.3,19 12.82,19.26V22H10V24H14V22H11.18V19.26C13.7,19 15.75,17.29 16.72,14.94C19.76,14.64 22,12 22,9V4H18V2M4,9V6H6V12.75C4.83,12.28 4,11.23 4,9M18,12.75V6H20V9C20,11.23 19.17,12.28 18,12.75Z"/></svg></div><span class="font-cyber text-2xl font-black relative z-10 mt-12">${top[0].score}</span><div class="podium-rank-label">1ST</div></div></div>
-                <div class="w-1/3 flex flex-col items-center"><span class="text-[9px] font-cyber mb-2 opacity-60">${top[2].first}</span><div class="podium-pillar w-full h-16 rounded-t-2xl"><span class="font-cyber text-base text-gray-400 mt-2">${top[2].score}</span><div class="podium-rank-label">3RD</div></div></div>`;
+                <div class="w-1/3 flex flex-col items-center"><span class="text-[9px] font-cyber mb-2 opacity-60 uppercase">${top[2].first}</span><div class="podium-pillar w-full h-16 rounded-t-2xl"><span class="font-cyber text-base text-gray-400 mt-2">${top[2].score}</span><div class="podium-rank-label">3RD</div></div></div>`;
             }
 
             document.getElementById('leaderboard').innerHTML = owners.map((o, i) => {
@@ -171,7 +171,7 @@
                         <div class="flex justify-between items-center">
                             <div class="flex items-center">
                                 <span class="text-[8px] font-bold text-gray-600 mr-3 w-3">${idx+1}</span>
-                                <span class="text-[11px] font-bold text-gray-200">${p.name}</span>
+                                <span class="text-[11px] font-bold text-gray-200">${p.name} <span class="team-tag">(${p.team})</span></span>
                                 <span class="role-tag">${p.role}</span>
                                 ${p.cvc ? `<span class="badge font-cyber" style="color:${color}; border-color:${color}">${p.cvc}</span>` : ''}
                             </div>
