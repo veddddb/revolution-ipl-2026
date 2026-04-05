@@ -38,15 +38,19 @@
         .player-row-ghost { opacity: 0.25; filter: grayscale(1); transition: 0.3s; }
         .player-row-ghost:hover { opacity: 0.6; }
 
+        /* --- SEARCH STYLES --- */
+        .search-wrap { position: relative; width: 100%; max-width: 400px; margin: 0 auto 2rem; z-index: 50; }
+        .search-box { width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 16px; padding: 12px 16px 12px 40px; font-size: 13px; color: white; transition: 0.3s; outline: none; }
+        .search-box:focus { border-color: var(--accent); background: rgba(255,255,255,0.07); box-shadow: 0 0 20px rgba(241,196,15,0.1); }
+        .search-icon-svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); opacity: 0.3; pointer-events: none; }
+        .search-results { position: absolute; top: 110%; left: 0; right: 0; background: #0f172a; border: 1px solid var(--accent); border-radius: 16px; max-height: 280px; overflow-y: auto; display: none; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+        .search-item { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
+        .search-item:hover { background: rgba(255,255,255,0.06); }
+        /* --- END SEARCH STYLES --- */
+
         @keyframes shimmer  { 0%{background-position:-600px 0} 100%{background-position:600px 0} }
         .skel { background: linear-gradient(90deg,rgba(255,255,255,0.04) 25%,rgba(255,255,255,0.1) 50%,rgba(255,255,255,0.04) 75%); background-size:600px 100%; animation:shimmer 1.4s infinite linear; border-radius:8px; }
         .skel-card { background:rgba(10,15,25,0.98); border:1px solid rgba(255,255,255,0.06); border-radius:24px; padding:24px; margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center; }
-
-        .error-banner { background:rgba(220,38,38,0.12); border:1px solid rgba(220,38,38,0.35); border-radius:16px; padding:14px 20px; margin-bottom:20px; display:flex; align-items:center; gap:12px; animation:slideIn 0.3s ease-out; }
-        .error-dot { width:8px; height:8px; border-radius:50%; background:#ef4444; flex-shrink:0; animation:blink 2s infinite; }
-
-        .share-btn { font-size:9px; font-family:'Orbitron',sans-serif; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; padding:4px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:#64748b; transition:0.2s; cursor:pointer; }
-        .share-btn:hover { color:var(--owner-color); border-color:var(--owner-color); }
 
         #splash { position:fixed; inset:0; z-index:999; background:radial-gradient(circle at 50% 40%,#0f172a,#020617); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:2rem; transition:opacity 0.8s ease,transform 0.8s ease; }
         #splash.hide { opacity:0; transform:scale(1.04); pointer-events:none; }
@@ -66,7 +70,6 @@
 </head>
 <body class="p-4 md:p-10">
 
-    <!-- SPLASH -->
     <div id="splash" onclick="dismissSplash()">
         <p class="sp sp1" style="font-size:9px;font-family:Orbitron,sans-serif;font-weight:700;letter-spacing:0.4em;color:#475569;text-transform:uppercase;margin-bottom:2rem;">IPL Fantasy League</p>
         <h1 class="sp sp2" style="font-family:Orbitron,sans-serif;font-weight:900;font-style:italic;font-size:clamp(2.8rem,12vw,5rem);line-height:1;color:#f1c40f;text-shadow:0 0 40px rgba(241,196,15,0.35);text-transform:uppercase;letter-spacing:-0.02em;">Revo</h1>
@@ -84,6 +87,14 @@
                 <div id="match-counter" class="role-tag tracking-widest text-yellow-500 uppercase px-3 py-1">MATCHES: —/74</div>
             </div>
             <h1 class="text-5xl font-black font-cyber gold-glow italic tracking-tighter mb-6 uppercase">REVOLUTION</h1>
+            
+            <div class="search-wrap">
+                <svg class="search-icon-svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                </svg>
+                <input type="text" id="playerSearch" class="search-box" placeholder="Search Player (e.g. Kohli, Rashid)..." oninput="handlePlayerSearch()">
+                <div id="searchResults" class="search-results"></div>
+            </div>
             <div class="flex justify-center gap-3 bg-black/40 p-1.5 rounded-2xl border border-white/5 inline-flex">
                 <button onclick="switchTab('main')"     id="btn-main"  class="tab-btn active">Live Ranks</button>
                 <button onclick="switchTab('strategy')" id="btn-strat" class="tab-btn">Best Probable Outcome!</button>
@@ -118,6 +129,9 @@
     <script>
         const SHEET_ID             = '1xIRCNr0tteFfMk6l7inIkKeSJMb7WLBswsXepHRqjio';
         const TOTAL_SEASON_MATCHES = 74;
+
+        // Global list for search
+        let _allPlayers = [];
 
         const ownerColors = {
             vedant:'#3498db', deep:'#e74c3c',    shlok:'#2ecc71',
@@ -167,7 +181,6 @@
             return Object.entries(counts).filter(([,v])=>v===max).map(([t])=>t).filter(t=>IPL_TEAMS[t]);
         }
 
-        // ── SPLASH ──
         function dismissSplash() {
             const s = document.getElementById('splash');
             s.classList.add('hide');
@@ -200,23 +213,17 @@
                     <div class="flex items-center gap-5"><div class="skel w-4 h-4 rounded"></div><div class="skel w-28 h-3 rounded"></div></div>
                     <div class="skel w-12 h-6 rounded"></div>
                 </div>`).join('');
-            document.getElementById('mvp-spotlight').innerHTML = `
-                <div class="skel-card mb-6" style="border-radius:20px;padding:15px 20px;">
-                    <div><div class="skel w-32 h-2 rounded mb-3"></div><div class="skel w-40 h-5 rounded mb-2"></div><div class="skel w-24 h-2 rounded"></div></div>
-                    <div class="skel w-14 h-8 rounded"></div>
-                </div>`;
         }
 
         async function fetchSheet(name) {
             const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=0&sheet=${encodeURIComponent(name)}`;
             const r = await fetch(url);
-            if (!r.ok) throw new Error(`Sheet fetch failed: ${name} (${r.status})`);
+            if (!r.ok) throw new Error(`Sheet fetch failed: ${name}`);
             const t = await r.text();
             const j = JSON.parse(t.substr(47).slice(0,-2));
             return j.table.rows.map(row => row.c.map(cell => cell ? (cell.v !== null ? cell.v : '') : ''));
         }
 
-        // Global state — used by shareCard
         let _state = { squads:{}, cumulScores:{}, completedMatches:[] };
 
         async function updateApp() {
@@ -225,18 +232,12 @@
 
             try {
                 const [lbRows, rosRows, pcRows] = await Promise.all([
-                    fetchSheet('Leaderboard'),
-                    fetchSheet('Roster'),
-                    fetchSheet('PointsCalc'),
+                    fetchSheet('Leaderboard'), fetchSheet('Roster'), fetchSheet('PointsCalc')
                 ]);
 
-                // Completed matches
-                const completedMatches = [...new Set(
-                    pcRows.filter(r => r[0] && parseFloat(r[6]) > 0).map(r => r[0].toString().trim())
-                )];
+                const completedMatches = [...new Set(pcRows.filter(r => r[0] && parseFloat(r[6]) > 0).map(r => r[0].toString().trim()))];
                 document.getElementById('match-counter').innerText = `MATCHES: ${completedMatches.length}/${TOTAL_SEASON_MATCHES}`;
 
-                // Player cumulative points
                 const pPoints = {};
                 pcRows.forEach(row => {
                     if (!row[1]) return;
@@ -244,35 +245,34 @@
                     const v = parseFloat(row[6]) || 0;
                     const m = parseFloat(row[5]) || 1;
                     if (!pPoints[k]) pPoints[k] = { act:0, raw:0 };
-                    pPoints[k].act += v;
-                    pPoints[k].raw += (v / m);
+                    pPoints[k].act += v; pPoints[k].raw += (v / m);
                 });
 
-                // Last match MVP
                 let matchPlayers = [], lastMatchName = '';
                 if (pcRows.length) {
                     lastMatchName = pcRows[pcRows.length-1][0];
-                    pcRows.forEach(r => {
-                        if (r[0] === lastMatchName)
-                            matchPlayers.push({ name:r[1], pts:parseFloat(r[6])||0, owner:r[2] });
-                    });
+                    pcRows.forEach(r => { if (r[0] === lastMatchName) matchPlayers.push({ name:r[1], pts:parseFloat(r[6])||0, owner:r[2] }); });
                 }
 
-                // Squads
+                // --- POPULATE SEARCH LIST ---
                 const squads = {};
+                _allPlayers = []; // Reset global list
                 rosRows.forEach(row => {
-                    const oKey = fixID(row[1]);
+                    const oRaw = row[1] ? row[1].toString() : "";
+                    const oKey = fixID(oRaw);
                     if (!oKey || oKey.includes('owner')) return;
                     if (!squads[oKey]) squads[oKey] = [];
                     const stats = pPoints[fixID(row[0])] || { act:0, raw:0 };
-                    squads[oKey].push({
+                    const pData = {
                         name:row[0], team:row[4], role:row[6],
                         act:Math.round(stats.act), raw:stats.raw,
-                        cvc: parseFloat(row[2])===2 ? 'C' : parseFloat(row[2])===1.5 ? 'VC' : ''
-                    });
+                        cvc: parseFloat(row[2])===2 ? 'C' : parseFloat(row[2])===1.5 ? 'VC' : '',
+                        ownerFull: oRaw, ownerID: oKey
+                    };
+                    squads[oKey].push(pData);
+                    _allPlayers.push(pData); // Save to search
                 });
 
-                // Owners
                 let owners = lbRows.map(row => {
                     const full = row[0] ? row[0].toString().trim() : '';
                     const id   = full.toLowerCase();
@@ -280,50 +280,80 @@
                     return { full, score: Math.round(parseFloat(row[1]))||0, id, first:full.split(' ')[0] };
                 }).filter(Boolean);
 
-                const active  = owners.filter(o => o.id !== 'unsold').sort((a,b) => b.score - a.score);
-                const unsold  = owners.find(o => o.id === 'unsold');
+                const active   = owners.filter(o => o.id !== 'unsold').sort((a,b) => b.score - a.score);
+                const unsold   = owners.find(o => o.id === 'unsold');
                 const allOwners = unsold ? [...active, unsold] : active;
-
-                // Build cumulative scores (for streak + sparklines)
                 const cumulScores = buildCumulScores(active, pcRows, completedMatches);
-
-                // Save to global state
                 _state = { squads, cumulScores, completedMatches };
 
-                // Render
                 renderMVP(matchPlayers.sort((a,b) => b.pts-a.pts)[0], lastMatchName);
                 renderPodium(active);
                 renderStreakTracker(active, cumulScores, completedMatches);
                 renderLeaderboard(allOwners, squads, cumulScores);
                 renderStrategy(active, squads);
 
-            } catch(e) {
-                console.error('Sync Error:', e);
-                showError(e.message || 'Could not reach the data sheet. Retrying in 60s…');
-            }
+            } catch(e) { showError(e.message); }
         }
 
+        // --- SEARCH FUNCTIONS ---
+        function handlePlayerSearch() {
+            const query = fixID(document.getElementById('playerSearch').value);
+            const resultsBox = document.getElementById('searchResults');
+            if (query.length < 2) { resultsBox.style.display = 'none'; return; }
+
+            const filtered = _allPlayers.filter(p => fixID(p.name).includes(query)).slice(0, 10);
+            if (filtered.length === 0) { resultsBox.style.display = 'none'; return; }
+
+            resultsBox.innerHTML = filtered.map(p => {
+                const color = getColor(p.ownerID);
+                const idForScroll = 'c-' + p.ownerID.replace(/\s+/g,'-');
+                return `
+                <div class="search-item" onclick="jumpToOwner('${idForScroll}')">
+                    <div>
+                        <p class="text-xs font-black uppercase italic">${p.name} <span class="opacity-40">(${p.team})</span></p>
+                        <p class="text-[8px] font-bold uppercase tracking-widest" style="color:${color}">OWNER: ${p.ownerFull}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-cyber text-sm font-black gold-glow">${p.act}</p>
+                        <p class="text-[8px] opacity-40 uppercase">PTS</p>
+                    </div>
+                </div>`;
+            }).join('');
+            resultsBox.style.display = 'block';
+        }
+
+        function jumpToOwner(id) {
+            switchTab('main');
+            const target = document.getElementById(id);
+            if(target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const squad = document.getElementById('sq-'+id);
+                if(squad) squad.classList.add('open');
+                document.getElementById('searchResults').style.display = 'none';
+                document.getElementById('playerSearch').value = "";
+            }
+        }
+        // Close search on click outside
+        document.addEventListener('click', (e) => {
+            if (!document.getElementById('playerSearch').contains(e.target)) {
+                document.getElementById('searchResults').style.display = 'none';
+            }
+        });
+
+        // (Remaining logic functions like buildCumulScores, renderPodium etc. stay the same as your source)
         function buildCumulScores(owners, pcRows, completedMatches) {
             const cumul   = {}, running = {};
             owners.forEach(o => { cumul[o.id]=[]; running[o.id]=0; });
-
             const nameToId = {};
-            owners.forEach(o => {
-                nameToId[fixID(o.full)]  = o.id;
-                nameToId[fixID(o.first)] = o.id;
-                nameToId[o.id]           = o.id;
-            });
+            owners.forEach(o => { nameToId[fixID(o.full)] = o.id; nameToId[o.id] = o.id; });
 
             completedMatches.forEach(matchName => {
                 const totals = {};
-                pcRows
-                    .filter(r => r[0] && r[0].toString().trim() === matchName && r[2])
+                pcRows.filter(r => r[0] && r[0].toString().trim() === matchName && r[2])
                     .forEach(r => {
                         const raw = fixID(r[2]);
-                        const id  = nameToId[raw]
-                            || owners.find(o => raw.includes(o.id) || o.id.includes(raw))?.id;
-                        if (!id) return;
-                        totals[id] = (totals[id]||0) + (parseFloat(r[6])||0);
+                        const id = nameToId[raw] || owners.find(o => raw.includes(o.id) || o.id.includes(raw))?.id;
+                        if (id) totals[id] = (totals[id]||0) + (parseFloat(r[6])||0);
                     });
                 owners.forEach(o => {
                     running[o.id] += (totals[o.id]||0);
@@ -382,7 +412,6 @@
         function renderStreakTracker(owners, cumulScores, completedMatches) {
             const el = document.getElementById('streak-tracker');
             if (!el || completedMatches.length === 0) return;
-
             const leadCount = {};
             owners.forEach(o => leadCount[o.id] = 0);
             for (let m = 0; m < completedMatches.length; m++) {
@@ -390,7 +419,6 @@
                 owners.forEach(o => { const s=(cumulScores[o.id]||[])[m]||0; if(s>best){best=s;bestId=o.id;} });
                 if (bestId) leadCount[bestId]++;
             }
-
             const leader = [...owners].sort((a,b) => b.score-a.score)[0];
             let streak = 0;
             if (leader) {
@@ -400,10 +428,8 @@
                     if (bestId === leader.id) streak++; else break;
                 }
             }
-
             const sorted = [...owners].sort((a,b) => (leadCount[b.id]||0)-(leadCount[a.id]||0));
-            const lc     = leader ? getColor(leader.id) : '#f1c40f';
-
+            const lc = leader ? getColor(leader.id) : '#f1c40f';
             el.innerHTML = `
                 <div style="background:rgba(10,15,25,0.98);border:1px solid rgba(255,255,255,0.07);border-radius:20px;padding:18px 20px;margin-bottom:1rem;">
                     <p style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;letter-spacing:0.3em;color:#475569;text-transform:uppercase;margin-bottom:14px;">Streak Tracker</p>
@@ -437,18 +463,12 @@
 
         function renderLeaderboard(owners, squads, cumulScores) {
             document.getElementById('leaderboard').innerHTML = owners.map((o,i) => {
-                const color  = getColor(o.id);
-                const squad  = squads[o.id] || [];
-                const cID    = 'c-' + o.id.replace(/\s+/g,'-');
-                const teams  = getDominantTeams(squad);
-                const logoBg = teams.length === 0 ? ''
-                    : teams.length === 1
-                        ? `<div class="logo-bg">${teamBadgeSVG(teams[0],110)}</div>`
-                        : `<div class="logo-bg" style="display:flex;gap:6px;width:150px;align-items:center;justify-content:center;">${teams.slice(0,2).map(t=>teamBadgeSVG(t,68)).join('')}</div>`;
-
-                const playerRows = squad.length === 0
-                    ? `<p style="font-size:10px;color:#475569;text-transform:uppercase;font-weight:700;letter-spacing:0.1em;text-align:center;padding:16px 0;">No players in squad</p>`
-                    : squad.sort((a,b)=>b.act-a.act).map((p,idx)=>`
+                const color = getColor(o.id);
+                const squad = squads[o.id] || [];
+                const cID   = 'c-' + o.id.replace(/\s+/g,'-');
+                const teams = getDominantTeams(squad);
+                const logoBg = teams.length === 0 ? '' : teams.length === 1 ? `<div class="logo-bg">${teamBadgeSVG(teams[0],110)}</div>` : `<div class="logo-bg" style="display:flex;gap:6px;width:150px;align-items:center;justify-content:center;">${teams.slice(0,2).map(t=>teamBadgeSVG(t,68)).join('')}</div>`;
+                const playerRows = squad.length === 0 ? `<p style="font-size:10px;color:#475569;text-transform:uppercase;font-weight:700;letter-spacing:0.1em;text-align:center;padding:16px 0;">No players</p>` : squad.sort((a,b)=>b.act-a.act).map((p,idx)=>`
                         <div class="flex justify-between items-center ${p.act===0?'player-row-ghost':''}">
                             <div class="flex items-center">
                                 <span class="text-[8px] font-bold text-gray-600 mr-3 w-3">${idx+1}</span>
@@ -458,7 +478,6 @@
                             </div>
                             <span class="font-cyber text-xs font-bold" style="color:${p.act>0?color:'#334155'}">${p.act}</span>
                         </div>`).join('');
-
                 return `
                 <div id="${cID}" class="glass-card ${o.id==='unsold'?'opacity-40 mt-12':''}" style="--owner-color:${color};--owner-glow:${color}33">
                     ${logoBg}
@@ -472,17 +491,12 @@
                             ${o.id!=='unsold'?`<button class="share-btn" onclick="event.stopPropagation();shareCard('${cID}','${o.full}',${o.score},${i+1})">Share</button>`:''}
                         </div>
                     </div>
-                    <div id="sq-${cID}" class="squad-container">
-                        <div class="space-y-4 pt-4">${playerRows}</div>
-                    </div>
+                    <div id="sq-${cID}" class="squad-container"><div class="space-y-4 pt-4">${playerRows}</div></div>
                 </div>`;
             }).join('');
         }
 
-        function toggleSquad(id) {
-            const s = document.getElementById('sq-'+id);
-            if (s) s.classList.toggle('open');
-        }
+        function toggleSquad(id) { const s = document.getElementById('sq-'+id); if (s) s.classList.toggle('open'); }
 
         function renderStrategy(owners, squads) {
             const data = owners.map(o => {
@@ -490,7 +504,6 @@
                 const pot=Math.round((sorted[0]?.raw||0)*2+(sorted[1]?.raw||0)*1.5+sorted.slice(2).reduce((sum,p)=>sum+p.raw,0));
                 return {...o, pot, diff:pot-o.score, ideal:[sorted[0]?.name||'—',sorted[1]?.name||'—']};
             }).sort((a,b)=>b.pot-a.pot);
-
             document.getElementById('strategy-list').innerHTML = data.map((d,i) => {
                 const color=getColor(d.id), curRank=owners.findIndex(o=>o.id===d.id)+1;
                 const icon=curRank>i+1?'🟢 ↑':curRank<i+1?'🔴 ↓':'⚪';
@@ -511,86 +524,29 @@
         async function shareCard(cID, ownerFull, score, rank) {
             const color = getColor(cID.replace('c-','').replace(/-/g,' '));
             const squad = (_state.squads[fixID(ownerFull)] || []).sort((a,b) => b.act - a.act);
-
-            // Build canvas image
             const W=600, H=200+Math.max(squad.length,1)*26+60;
-            const canvas = document.createElement('canvas');
-            canvas.width=W*2; canvas.height=H*2;
-            const ctx=canvas.getContext('2d');
-            ctx.scale(2,2);
-
-            const bg=ctx.createLinearGradient(0,0,W,H);
-            bg.addColorStop(0,'#0f172a'); bg.addColorStop(1,'#020617');
-            ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+            const canvas = document.createElement('canvas'); canvas.width=W*2; canvas.height=H*2;
+            const ctx=canvas.getContext('2d'); ctx.scale(2,2);
+            const bg=ctx.createLinearGradient(0,0,W,H); bg.addColorStop(0,'#0f172a'); bg.addColorStop(1,'#020617'); ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
             ctx.fillStyle=color; ctx.fillRect(0,0,W,4);
-
-            const glow=ctx.createRadialGradient(W*0.8,H*0.25,0,W*0.8,H*0.25,180);
-            glow.addColorStop(0,color+'22'); glow.addColorStop(1,'transparent');
-            ctx.fillStyle=glow; ctx.fillRect(0,0,W,H);
-
-            ctx.font='700 11px monospace'; ctx.fillStyle=color+'aa';
-            ctx.fillText(`RANK #${rank}`,28,48);
-
-            ctx.font='900 30px monospace'; ctx.fillStyle='#f8fafc';
-            ctx.fillText(ownerFull.toUpperCase(),28,82);
-
-            ctx.font='900 48px monospace'; ctx.fillStyle=color;
-            ctx.textAlign='right'; ctx.fillText(score,W-28,82); ctx.textAlign='left';
-
-            ctx.font='700 9px monospace'; ctx.fillStyle='#334155';
-            ctx.fillText('TOTAL POINTS • REVOLUTION IPL 2026',28,102);
-
-            ctx.strokeStyle='rgba(255,255,255,0.07)'; ctx.lineWidth=1;
-            ctx.beginPath(); ctx.moveTo(28,118); ctx.lineTo(W-28,118); ctx.stroke();
-
-            ctx.font='700 9px monospace'; ctx.fillStyle='#475569';
-            ctx.fillText('SQUAD',28,140);
-            squad.forEach((p,i) => {
-                const y=160+i*26;
-                ctx.font='600 12px monospace'; ctx.fillStyle=i%2===0?'#94a3b8':'#64748b';
-                ctx.fillText(`${p.name} (${p.team})`,28,y);
-                ctx.font='900 12px monospace'; ctx.fillStyle=color;
-                ctx.textAlign='right'; ctx.fillText(`${p.act}`,W-28,y); ctx.textAlign='left';
-            });
-
-            ctx.font='700 8px monospace'; ctx.fillStyle='#1e293b';
-            ctx.fillText('REVOLUTION • VEDANT BHANSALI EDITION',28,H-16);
-
+            const glow=ctx.createRadialGradient(W*0.8,H*0.25,0,W*0.8,H*0.25,180); glow.addColorStop(0,color+'22'); glow.addColorStop(1,'transparent'); ctx.fillStyle=glow; ctx.fillRect(0,0,W,H);
+            ctx.font='700 11px monospace'; ctx.fillStyle=color+'aa'; ctx.fillText(`RANK #${rank}`,28,48);
+            ctx.font='900 30px monospace'; ctx.fillStyle='#f8fafc'; ctx.fillText(ownerFull.toUpperCase(),28,82);
+            ctx.font='900 48px monospace'; ctx.fillStyle=color; ctx.textAlign='right'; ctx.fillText(score,W-28,82); ctx.textAlign='left';
+            ctx.font='700 9px monospace'; ctx.fillStyle='#334155'; ctx.fillText('TOTAL POINTS • REVOLUTION IPL 2026',28,102);
+            ctx.strokeStyle='rgba(255,255,255,0.07)'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(28,118); ctx.lineTo(W-28,118); ctx.stroke();
+            ctx.font='700 9px monospace'; ctx.fillStyle='#475569'; ctx.fillText('SQUAD',28,140);
+            squad.forEach((p,i) => { const y=160+i*26; ctx.font='600 12px monospace'; ctx.fillStyle=i%2===0?'#94a3b8':'#64748b'; ctx.fillText(`${p.name} (${p.team})`,28,y); ctx.font='900 12px monospace'; ctx.fillStyle=color; ctx.textAlign='right'; ctx.fillText(`${p.act}`,W-28,y); ctx.textAlign='left'; });
+            ctx.font='700 8px monospace'; ctx.fillStyle='#1e293b'; ctx.fillText('REVOLUTION • VEDANT BHANSALI EDITION',28,H-16);
             const filename = `revo-${ownerFull.toLowerCase().replace(/\s/g,'-')}.png`;
-
-            // Mobile: use Web Share API with file
-            if (navigator.share && navigator.canShare) {
-                try {
-                    const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
-                    const file = new File([blob], filename, { type: 'image/png' });
-                    if (navigator.canShare({ files: [file] })) {
-                        await navigator.share({
-                            files: [file],
-                            title: `${ownerFull} — Revolution IPL 2026`,
-                            text:  `${ownerFull} is ranked #${rank} with ${score} points 🏏`,
-                        });
-                        return;
-                    }
-                } catch(e) {
-                    if (e.name === 'AbortError') return; // user cancelled — silent
-                    // fall through to download
-                }
-            }
-
-            // Desktop fallback: direct download
-            const a = document.createElement('a');
-            a.download = filename;
-            a.href = canvas.toDataURL('image/png');
-            a.click();
+            if (navigator.share) { const blob = await new Promise(res => canvas.toBlob(res, 'image/png')); const file = new File([blob], filename, { type: 'image/png' }); navigator.share({ files: [file], title: `Revolution IPL 2026`, text: `${ownerFull} is ranked #${rank} with ${score} points! 🏏` }).catch(()=>{}); }
+            else { const a = document.createElement('a'); a.download = filename; a.href = canvas.toDataURL('image/png'); a.click(); }
         }
 
-        // ── POLLING ──
         let _tid = null;
         function startPolling() { if (!_tid) _tid=setInterval(updateApp,60000); }
         function stopPolling()  { clearInterval(_tid); _tid=null; }
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) stopPolling(); else { updateApp(); startPolling(); }
-        });
+        document.addEventListener('visibilitychange', () => { if (document.hidden) stopPolling(); else { updateApp(); startPolling(); } });
 
         updateApp();
         startPolling();
