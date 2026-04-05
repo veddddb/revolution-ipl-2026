@@ -381,10 +381,7 @@
                         <div class="flex justify-between items-center ${p.act === 0 ? 'player-row-ghost' : ''}">
                             <div class="flex items-center">
                                 <span class="text-[8px] font-bold text-gray-600 mr-3 w-3">${idx + 1}</span>
-                                <span class="text-[11px] font-bold text-gray-200">${p.name}</span>
-                                <img src="${IPL_LOGOS[(p.team || '').toString().trim().toUpperCase()] || ''}"
-                                     onerror="this.style.display='none'"
-                                     style="width:16px;height:16px;object-fit:contain;margin-left:5px;vertical-align:middle;display:inline-block;flex-shrink:0;">
+                                <span class="text-[11px] font-bold text-gray-200">${p.name} <span class="team-tag">(${p.team})</span></span>
                                 <span class="role-tag">${p.role}</span>
                                 ${p.cvc ? `<span class="badge font-cyber" style="color:${color}; border-color:${color}">${p.cvc}</span>` : ''}
                             </div>
