@@ -13,9 +13,12 @@
         .gold-glow { color: var(--accent); text-shadow: 0 0 15px rgba(241, 196, 15, 0.5); }
         .glass-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 24px; transition: all 0.4s; margin-bottom: 1rem; }
         
+        /* MATCH COUNTER BADGE */
+        .match-badge { background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 4px 12px; border-radius: 10px; font-size: 9px; font-weight: 900; color: #64748b; }
+
         /* MVP HERO STYLE */
         .mvp-banner { background: linear-gradient(90deg, rgba(241,196,15,0.1) 0%, rgba(241,196,15,0.02) 100%); border: 1px solid rgba(241,196,15,0.2); border-radius: 20px; padding: 15px 20px; margin-bottom: 25px; position: relative; overflow: hidden; }
-        .mvp-banner::before { content: 'MATCH MVP'; position: absolute; top: -5px; right: -10px; font-family: 'Orbitron'; font-size: 40px; opacity: 0.03; font-weight: 900; font-style: italic; }
+        .mvp-banner::before { content: 'HERO'; position: absolute; top: -5px; right: -10px; font-family: 'Orbitron'; font-size: 40px; opacity: 0.03; font-weight: 900; font-style: italic; }
 
         .tab-btn { padding: 10px 24px; border-radius: 12px; font-size: 10px; font-weight: 900; text-transform: uppercase; transition: 0.3s; border: 1px solid var(--border); background: rgba(255,255,255,0.02); color: #64748b; }
         .tab-btn.active { background: var(--accent); color: #000; border-color: var(--accent); box-shadow: 0 0 20px rgba(241, 196, 15, 0.2); }
@@ -37,11 +40,18 @@
 <body class="p-4 md:p-10">
     <div class="max-w-xl mx-auto pb-24">
         
-        <header class="text-center mb-10 flex flex-col items-center">
-            <h1 class="text-5xl font-black font-cyber gold-glow italic tracking-tighter mb-6 uppercase italic">REVOLUTION</h1>
-            <div class="flex justify-center gap-3 bg-black/40 p-1.5 rounded-2xl border border-white/5">
-                <button onclick="switchTab('main')" id="btn-main" class="tab-btn active">Live Ranks</button>
-                <button onclick="switchTab('strategy')" id="btn-strat" class="tab-btn">Luckiest Manager</button>
+        <header class="mb-10 relative">
+            <div class="flex justify-between items-center mb-8 px-2">
+                <div class="match-badge font-cyber">EST. 2026</div>
+                <div id="match-counter" class="match-badge font-cyber tracking-widest text-yellow-500/80 uppercase">MATCHES: 0/74</div>
+            </div>
+
+            <div class="flex flex-col items-center">
+                <h1 class="text-5xl font-black font-cyber gold-glow italic tracking-tighter mb-6 uppercase italic">REVOLUTION</h1>
+                <div class="flex justify-center gap-3 bg-black/40 p-1.5 rounded-2xl border border-white/5">
+                    <button onclick="switchTab('main')" id="btn-main" class="tab-btn active">Live Ranks</button>
+                    <button onclick="switchTab('strategy')" id="btn-strat" class="tab-btn">Luckiest Manager</button>
+                </div>
             </div>
         </header>
 
@@ -49,6 +59,7 @@
             <div id="mvp-spotlight"></div>
             
             <div id="podium-area" class="flex justify-center items-end gap-3 mb-16 h-48 text-center px-2"></div>
+            
             <div id="leaderboard" class="space-y-2"></div>
         </div>
 
@@ -63,6 +74,7 @@
 
     <script>
         const SHEET_ID = '1xIRCNr0tteFfMk6l7inIkKeSJMb7WLBswsXepHRqjio';
+        const TOTAL_SEASON_MATCHES = 74;
         const ownerColors = { "vedant": "#3498db", "vedant bhansali": "#3498db", "deep": "#e74c3c", "shlok": "#2ecc71", "rahul": "#9b59b6", "soni": "#f1c40f", "yash soni": "#f1c40f", "dheer": "#e67e22", "kunal": "#1abc9c", "puneet": "#ff9f43", "vivek": "#54a0ff", "bokaria": "#5f27cd", "prakshal": "#48dbfb", "rishi": "#ff6b6b", "aamer": "#1dd1a1", "yashshah": "#f368e0", "yash shah": "#f368e0" };
 
         async function fetchSheet(name) {
@@ -87,38 +99,52 @@
 
                 const clean = (val) => val.toString().toLowerCase().trim();
 
-                // 1. CALCULATE TOTALS AND FIND LAST MATCH MVP
+                // 1. CALCULATE MATCH COUNT AND MVP
                 const pPoints = {};
-                let lastMatchName = "";
+                const matchNamesFound = new Set();
                 let matchPlayers = [];
+                let lastMatchName = "";
+                let maxMatchNumberFound = 0;
 
-                // We scan from the bottom of PointsCalc to find the most recent match data
                 if (pcRows.length > 1) {
-                    lastMatchName = pcRows[pcRows.length - 1][0]; // Col A of last row
-                    pcRows.forEach(row => {
-                        const mName = row[0];
-                        const pName = row[1];
-                        const pNameClean = clean(pName); if (!pNameClean) return;
+                    pcRows.slice(1).forEach(row => {
+                        const mName = row[0] ? row[0].toString() : "";
+                        if (!mName) return;
+                        
+                        // Smart Counter: Look for digits in "Match 8"
+                        const matchNum = mName.match(/\d+/);
+                        if (matchNum) {
+                            maxMatchNumberFound = Math.max(maxMatchNumberFound, parseInt(matchNum[0]));
+                        } else {
+                            matchNamesFound.add(mName); // Catch "RR vs GT"
+                        }
+
+                        const pNameClean = clean(row[1]); if (!pNameClean) return;
                         const val = parseFloat(row[6]) || 0;
                         const mult = parseFloat(row[5]) || 1;
 
-                        // Add to overall totals
                         if (!pPoints[pNameClean]) pPoints[pNameClean] = { act: 0, raw: 0 };
                         pPoints[pNameClean].act += val;
                         pPoints[pNameClean].raw += (val / mult);
+                    });
 
-                        // If this row belongs to the most recent match, track it for MVP
-                        if (mName === lastMatchName) {
-                            matchPlayers.push({ name: pName, pts: val, owner: row[2] });
+                    // Capture MVP from very last match block
+                    lastMatchName = pcRows[pcRows.length - 1][0];
+                    pcRows.forEach(row => {
+                        if (row[0] === lastMatchName) {
+                            matchPlayers.push({ name: row[1], pts: parseFloat(row[6]) || 0, owner: row[2] });
                         }
                     });
                 }
 
-                // Identify MVP
-                const mvp = matchPlayers.sort((a,b) => b.pts - a.pts)[0];
+                // Update Match Counter UI
+                const finalMatchCount = Math.max(maxMatchNumberFound, matchNamesFound.size);
+                document.getElementById('match-counter').innerText = `MATCHES: ${finalMatchCount}/${TOTAL_SEASON_MATCHES}`;
 
+                const mvp = matchPlayers.sort((a,b) => b.pts - a.pts)[0];
                 const liveNow = lsRows.map(r => clean(r[1])).filter(n => n !== "");
 
+                // 2. SQUAD MAPPING
                 const squads = {};
                 rosRows.forEach(row => {
                     const name = row[0];
@@ -133,6 +159,7 @@
                     });
                 });
 
+                // 3. OWNER PROCESSING
                 let allOwners = lbRows.map(row => {
                     const name = row[0] ? row[0].toString() : "";
                     const score = Math.round(parseFloat(row[1])) || 0;
@@ -148,27 +175,26 @@
                 renderMain(finalOrder, squads);
                 renderStrategy(activeOwners, squads);
 
-            } catch (e) { console.error(e); }
+            } catch (e) { console.error("Update Failed:", e); }
         }
 
         function renderMVP(mvp, matchName) {
             const container = document.getElementById('mvp-spotlight');
-            if (!mvp) return;
-            const color = ownerColors[cleanOwner(mvp.owner)] || '#f1c40f';
-
+            if (!mvp || mvp.pts === 0) { container.innerHTML = ''; return; }
+            const ownerKey = cleanOwner(mvp.owner);
+            const color = ownerColors[ownerKey] || '#f1c40f';
             container.innerHTML = `
                 <div class="mvp-banner flex justify-between items-center">
                     <div>
                         <p class="text-[8px] font-black text-yellow-500 uppercase tracking-[0.3em] mb-1">Last Match Hero • ${matchName}</p>
                         <h2 class="text-xl font-black uppercase italic tracking-tighter">${mvp.name}</h2>
-                        <p class="text-[10px] font-bold opacity-60">OWNED BY <span style="color:${color}">${mvp.owner.toUpperCase()}</span></p>
+                        <p class="text-[10px] font-bold opacity-60 uppercase">OWNED BY <span style="color:${color}">${mvp.owner}</span></p>
                     </div>
                     <div class="text-right">
-                        <p class="font-cyber text-2xl gold-glow font-black">${mvp.pts}</p>
+                        <p class="font-cyber text-2xl gold-glow font-black italic tracking-tighter">${mvp.pts}</p>
                         <p class="text-[8px] font-bold opacity-40 uppercase">POINTS</p>
                     </div>
-                </div>
-            `;
+                </div>`;
         }
 
         function cleanOwner(val) { return val ? val.toString().toLowerCase().trim() : ""; }
@@ -178,9 +204,9 @@
             const top = owners.filter(o => o.id !== 'unsold');
             if(top.length >= 3) {
                 pod.innerHTML = `
-                    <div class="w-1/3 flex flex-col items-center"><span class="text-[9px] font-cyber mb-2 opacity-60 uppercase tracking-widest">${top[1].first}</span><div class="podium-pillar w-full h-24 rounded-t-2xl flex items-center justify-center font-cyber text-lg">${top[1].score}</div></div>
+                    <div class="w-1/3 flex flex-col items-center"><span class="text-[9px] font-cyber mb-2 opacity-60 uppercase">${top[1].first}</span><div class="podium-pillar w-full h-24 rounded-t-2xl flex items-center justify-center font-cyber text-lg">${top[1].score}</div></div>
                     <div class="w-1/3 flex flex-col items-center"><span class="text-[10px] font-cyber mb-2 gold-glow italic uppercase tracking-widest">${top[0].first}</span><div class="podium-pillar w-full h-40 rounded-t-2xl border-t-yellow-500 flex items-center justify-center font-cyber text-2xl gold-glow shadow-[0_-10px_30px_rgba(241,196,15,0.1)]">${top[0].score}</div></div>
-                    <div class="w-1/3 flex flex-col items-center"><span class="text-[9px] font-cyber mb-2 opacity-40 uppercase tracking-widest">${top[2].first}</span><div class="podium-pillar w-full h-16 rounded-t-2xl flex items-center justify-center font-cyber text-base text-gray-600">${top[2].score}</div></div>
+                    <div class="w-1/3 flex flex-col items-center"><span class="text-[9px] font-cyber mb-2 opacity-40 uppercase">${top[2].first}</span><div class="podium-pillar w-full h-16 rounded-t-2xl flex items-center justify-center font-cyber text-base text-gray-600">${top[2].score}</div></div>
                 `;
             }
 
@@ -196,7 +222,7 @@
                         <div class="flex items-center gap-5">
                             <span class="font-cyber text-lg ${i<3 && o.id !== 'unsold' ? 'gold-glow' : 'text-gray-700'}">${o.id === 'unsold' ? '•' : '#'+(i+1)}</span>
                             <div>
-                                <span class="font-black text-sm uppercase tracking-widest block italic">${o.full}</span>
+                                <span class="font-black text-sm uppercase tracking-widest block italic tracking-tighter">${o.full}</span>
                                 ${hasLive ? `<span class="flex items-center gap-1.5 text-[8px] font-bold text-green-500 uppercase mt-1 tracking-widest"><span class="live-dot"></span> Action Live</span>` : ''}
                             </div>
                         </div>
@@ -207,8 +233,7 @@
                             <div class="flex justify-between items-center ${p.act === 0 && !p.isLive ? 'player-row-dim' : ''}">
                                 <div class="flex items-center">
                                     <span class="text-[8px] font-bold text-gray-600 mr-3 w-3">${idx + 1}</span>
-                                    <span class="text-[11px] font-bold text-gray-200">${p.name}</span>
-                                    <span class="team-tag">(${p.team})</span>
+                                    <span class="text-[11px] font-bold text-gray-200">${p.name} <span class="team-tag">(${p.team})</span></span>
                                     <span class="role-tag">${p.role}</span>
                                     ${p.cvc ? `<span class="badge font-cyber" style="color:${color}; border-color:${color}">${p.cvc}</span>` : ''}
                                     ${p.isLive ? `<span class="live-dot ml-2"></span>` : ''}
