@@ -141,23 +141,42 @@
             jash:     "#e67e22",
         };
 
-        // ── IPL TEAM LOGOS (official IPL CDN — reliable) ──
-        const IPL_LOGOS = {
-            MI:   "https://documents.iplt20.com/ipl/MI/Logos/LogoOutline/MIoutline.png",
-            CSK:  "https://documents.iplt20.com/ipl/CSK/logos/Logooutline/CSKoutline.png",
-            RCB:  "https://documents.iplt20.com/ipl/RCB/Logos/LogoOutline/RCBoutline.png",
-            KKR:  "https://documents.iplt20.com/ipl/KKR/Logos/LogoOutline/KKRoutline.png",
-            SRH:  "https://documents.iplt20.com/ipl/SRH/Logos/LogoOutline/SRHoutline.png",
-            DC:   "https://documents.iplt20.com/ipl/DC/Logos/LogoOutline/DCoutline.png",
-            PBKS: "https://documents.iplt20.com/ipl/PBKS/Logos/LogoOutline/PBKSoutline.png",
-            RR:   "https://documents.iplt20.com/ipl/RR/Logos/LogoOutline/RRoutline.png",
-            GT:   "https://documents.iplt20.com/ipl/GT/Logos/LogoOutline/GToutline.png",
-            LSG:  "https://documents.iplt20.com/ipl/LSG/Logos/LogoOutline/LSGoutline.png",
+        // ── IPL TEAM BADGE COLORS — pure CSS, zero network requests ──
+        const IPL_TEAMS = {
+            MI:   { color: '#004BA0', accent: '#89CFF0', label: 'MI'   },
+            CSK:  { color: '#F4C430', accent: '#fff',    label: 'CSK'  },
+            RCB:  { color: '#C8102E', accent: '#FFD700', label: 'RCB'  },
+            KKR:  { color: '#3A225D', accent: '#B8960C', label: 'KKR'  },
+            SRH:  { color: '#F26522', accent: '#1a1a1a', label: 'SRH'  },
+            DC:   { color: '#00529A', accent: '#E8001C', label: 'DC'   },
+            PBKS: { color: '#ED1C24', accent: '#DCDDDF', label: 'PBKS' },
+            RR:   { color: '#EA1A85', accent: '#254AA5', label: 'RR'   },
+            GT:   { color: '#1D4E89', accent: '#C8A84B', label: 'GT'   },
+            LSG:  { color: '#A4D65E', accent: '#1a1a1a', label: 'LSG'  },
         };
 
-        // Returns array of logo URLs for the dominant team(s) in an owner's squad.
-        // If two or more teams tie for the top count, all tied teams are returned.
-        function getDominantTeamLogos(squad) {
+        // Build an inline SVG shield badge for a team — no images, always works
+        function teamBadgeSVG(teamCode, size = 110) {
+            const t = IPL_TEAMS[teamCode];
+            if (!t) return null;
+            const fontSize = teamCode.length <= 2 ? 22 : teamCode.length === 3 ? 18 : 14;
+            return `<svg viewBox="0 0 100 115" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="sg-${teamCode}" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="${t.color}" stop-opacity="0.9"/>
+                        <stop offset="100%" stop-color="${t.color}" stop-opacity="0.5"/>
+                    </linearGradient>
+                </defs>
+                <path d="M50 4 L92 18 L92 54 C92 80 50 110 50 110 C50 110 8 80 8 54 L8 18 Z"
+                      fill="url(#sg-${teamCode})" stroke="${t.accent}" stroke-width="2" stroke-opacity="0.6"/>
+                <text x="50" y="${fontSize <= 14 ? 62 : 60}" text-anchor="middle"
+                      font-family="Orbitron, sans-serif" font-size="${fontSize}" font-weight="900"
+                      fill="${t.accent}" fill-opacity="0.95" letter-spacing="1">${t.label}</text>
+            </svg>`;
+        }
+
+        // Returns dominant team code(s) — teams tied at max player count
+        function getDominantTeams(squad) {
             if (!squad || squad.length === 0) return [];
             const counts = {};
             squad.forEach(p => {
@@ -167,8 +186,8 @@
             const max = Math.max(...Object.values(counts));
             return Object.entries(counts)
                 .filter(([, v]) => v === max)
-                .map(([t]) => IPL_LOGOS[t])
-                .filter(Boolean);
+                .map(([t]) => t)
+                .filter(t => IPL_TEAMS[t]);
         }
 
         // Resolve color by trying: full id → first word → each word → fallback
@@ -360,19 +379,14 @@
                 const squad   = squads[o.id] || [];
                 const cID     = "c-" + o.id.replace(/\s+/g, '-');
 
-                // Dominant team logo(s) — one or two if tied
-                const domLogos = getDominantTeamLogos(squad);
-                const logoBgHTML = domLogos.length === 0
-                    ? '' // no squad yet — render nothing
-                    : domLogos.length === 1
-                        ? `<img class="logo-bg" src="${domLogos[0]}"
-                               style="width:110px;height:110px;object-fit:contain;"
-                               onerror="this.style.display='none'">`
-                        // Two tied teams: side-by-side, slightly smaller
-                        : `<div class="logo-bg" style="display:flex;gap:4px;width:140px;height:110px;align-items:center;justify-content:center;">
-                               ${domLogos.slice(0, 2).map(url =>
-                                   `<img src="${url}" style="width:62px;height:62px;object-fit:contain;" onerror="this.style.display='none'">`
-                               ).join('')}
+                // Dominant team badge(s) — pure inline SVG, zero network requests
+                const domTeams = getDominantTeams(squad);
+                const logoBgHTML = domTeams.length === 0
+                    ? ''
+                    : domTeams.length === 1
+                        ? `<div class="logo-bg">${teamBadgeSVG(domTeams[0], 110)}</div>`
+                        : `<div class="logo-bg" style="display:flex;gap:6px;width:150px;align-items:center;justify-content:center;">
+                               ${domTeams.slice(0, 2).map(t => teamBadgeSVG(t, 68)).join('')}
                            </div>`;
 
                 const emptyMsg = squad.length === 0
