@@ -14,13 +14,14 @@
         .glass-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 24px; transition: all 0.4s; margin-bottom: 1rem; position: relative; overflow: hidden; }
         
         .logo-bg { position: absolute; right: 10%; top: 50%; transform: translateY(-50%); width: 120px; height: 120px; opacity: 0.12; pointer-events: none; z-index: 0; filter: blur(1px); }
-        
-        /* CHEMISTRY BADGE */
         .chem-badge { font-size: 7px; font-weight: 900; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.05); color: #94a3b8; text-transform: uppercase; margin-top: 4px; display: inline-block; border: 1px solid rgba(255,255,255,0.1); }
-
         .match-badge { background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 4px 12px; border-radius: 10px; font-size: 9px; font-weight: 900; color: #64748b; }
         
-        /* MVP & SPOILER BANNERS */
+        /* PODIUM PILLARS */
+        .podium-pillar { background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%); border: 1px solid rgba(255,255,255,0.05); position: relative; overflow: hidden; }
+        .podium-rank { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); font-family: 'Orbitron'; font-size: 10px; font-weight: 900; opacity: 0.3; color: white; letter-spacing: 2px; }
+        .trophy-bg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 60px; opacity: 0.08; color: var(--accent); pointer-events: none; }
+
         .mvp-banner { background: linear-gradient(90deg, rgba(241,196,15,0.1) 0%, rgba(241,196,15,0.02) 100%); border: 1px solid rgba(241,196,15,0.2); border-radius: 20px; padding: 15px 20px; margin-bottom: 25px; position: relative; overflow: hidden; }
         .spoiler-banner { background: linear-gradient(90deg, rgba(231, 76, 60, 0.15) 0%, rgba(231, 76, 60, 0.02) 100%); border: 1px solid rgba(231, 76, 60, 0.3); border-radius: 20px; padding: 15px 20px; margin-bottom: 25px; position: relative; overflow: hidden; }
 
@@ -48,7 +49,7 @@
             </div>
 
             <div class="flex flex-col items-center">
-                <h1 class="text-5xl font-black font-cyber gold-glow italic tracking-tighter mb-6 uppercase italic">REVOLUTION IPL'26</h1>
+                <h1 class="text-5xl font-black font-cyber gold-glow italic tracking-tighter mb-6 uppercase italic">REVOLUTION</h1>
                 <div class="flex justify-center gap-3 bg-black/40 p-1.5 rounded-2xl border border-white/5">
                     <button onclick="switchTab('main')" id="btn-main" class="tab-btn active">Live Ranks</button>
                     <button onclick="switchTab('strategy')" id="btn-strat" class="tab-btn">Luckiest Manager</button>
@@ -131,7 +132,6 @@
                 const mvp = matchPlayers.sort((a,b) => b.pts - a.pts)[0];
                 const liveNow = lsRows.map(r => clean(r[1])).filter(n => n !== "");
 
-                // SQUAD & CHEMISTRY LOGIC
                 const squads = {};
                 const chemistry = {};
                 rosRows.forEach(row => {
@@ -147,8 +147,6 @@
                         cvc: m === 2 ? 'C' : m === 1.5 ? 'VC' : '',
                         isLive: liveNow.includes(clean(name))
                     });
-
-                    // Track team counts for chemistry
                     chemistry[owner][teamCode] = (chemistry[owner][teamCode] || 0) + 1;
                 });
 
@@ -204,9 +202,30 @@
             const top = owners.filter(o => o.id !== 'unsold');
             if(top.length >= 3) {
                 pod.innerHTML = `
-                    <div class="w-1/3 flex flex-col items-center"><span class="text-[9px] font-cyber mb-2 opacity-60 uppercase">${top[1].first}</span><div class="podium-pillar w-full h-24 rounded-t-2xl flex items-center justify-center font-cyber text-lg">${top[1].score}</div></div>
-                    <div class="w-1/3 flex flex-col items-center"><span class="text-[10px] font-cyber mb-2 gold-glow italic uppercase tracking-widest">${top[0].first}</span><div class="podium-pillar w-full h-40 rounded-t-2xl border-t-yellow-500 flex items-center justify-center font-cyber text-2xl gold-glow shadow-[0_-10px_30px_rgba(241,196,15,0.1)]">${top[0].score}</div></div>
-                    <div class="w-1/3 flex flex-col items-center"><span class="text-[9px] font-cyber mb-2 opacity-40 uppercase">${top[2].first}</span><div class="podium-pillar w-full h-16 rounded-t-2xl flex items-center justify-center font-cyber text-base text-gray-600">${top[2].score}</div></div>
+                    <div class="w-1/3 flex flex-col items-center">
+                        <span class="text-[9px] font-cyber mb-2 opacity-60 uppercase">${top[1].first}</span>
+                        <div class="podium-pillar w-full h-24 rounded-t-2xl flex items-center justify-center font-cyber text-lg">
+                            ${top[1].score}
+                            <div class="podium-rank">2ND</div>
+                        </div>
+                    </div>
+                    <div class="w-1/3 flex flex-col items-center">
+                        <span class="text-[10px] font-cyber mb-2 gold-glow italic uppercase tracking-widest">${top[0].first}</span>
+                        <div class="podium-pillar w-full h-40 rounded-t-2xl border-t-yellow-500 flex items-center justify-center font-cyber text-2xl gold-glow shadow-[0_-10px_30px_rgba(241,196,15,0.1)]">
+                            <div class="trophy-bg">
+                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18,2H6V4H2V9C2,12 4.24,14.64 7.28,14.94C8.25,17.29 10.3,19 12.82,19.26V22H10V24H14V22H11.18V19.26C13.7,19 15.75,17.29 16.72,14.94C19.76,14.64 22,12 22,9V4H18V2M4,9V6H6V12.75C4.83,12.28 4,11.23 4,9M18,12.75V6H20V9C20,11.23 19.17,12.28 18,12.75Z"/></svg>
+                            </div>
+                            <span class="relative z-10">${top[0].score}</span>
+                            <div class="podium-rank">1ST</div>
+                        </div>
+                    </div>
+                    <div class="w-1/3 flex flex-col items-center">
+                        <span class="text-[9px] font-cyber mb-2 opacity-40 uppercase">${top[2].first}</span>
+                        <div class="podium-pillar w-full h-16 rounded-t-2xl flex items-center justify-center font-cyber text-base text-gray-600">
+                            ${top[2].score}
+                            <div class="podium-rank">3RD</div>
+                        </div>
+                    </div>
                 `;
             }
 
@@ -217,7 +236,6 @@
                 const safeId = o.id.replace(/[^a-z0-9]/g, '');
                 const initials = getInitials(o.full);
 
-                // Calculate Chemistry Badge
                 let chemText = "Tactical Hybrid";
                 const ownerChem = chemistry[o.id] || {};
                 const topTeam = Object.keys(ownerChem).reduce((a, b) => ownerChem[a] > ownerChem[b] ? a : b, "");
