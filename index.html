@@ -11,9 +11,48 @@
         body { background: radial-gradient(circle at top, #0f172a 0%, #020617 100%) no-repeat; background-attachment: fixed; color: #f8fafc; font-family: 'Inter', sans-serif; min-height: 100vh; }
         .font-cyber { font-family: 'Orbitron', sans-serif; }
         .gold-glow { color: var(--accent); text-shadow: 0 0 15px rgba(241, 196, 15, 0.5); }
-        .glass-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 24px; transition: all 0.4s; margin-bottom: 1rem; position: relative; overflow: hidden; }
         
-        .logo-bg { position: absolute; right: 10%; top: 50%; transform: translateY(-50%); width: 120px; height: 120px; opacity: 0.12; pointer-events: none; z-index: 0; filter: blur(1px); }
+        /* UPDATED GLASS CARD WITH HOVER GLOW */
+        .glass-card { 
+            background: var(--glass); 
+            backdrop-filter: blur(20px); 
+            border: 1px solid var(--border); 
+            border-radius: 24px; 
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+            margin-bottom: 1rem; 
+            position: relative; 
+            overflow: hidden; 
+            cursor: pointer;
+        }
+        
+        /* DYNAMIC HOVER GLOW EFFECT */
+        .glass-card:hover {
+            transform: translateY(-4px) scale(1.01);
+            border-color: var(--owner-color, var(--accent));
+            box-shadow: 0 0 30px -5px var(--owner-glow, rgba(241, 196, 15, 0.2));
+            z-index: 20;
+        }
+
+        .logo-bg { 
+            position: absolute; 
+            right: 10%; 
+            top: 50%; 
+            transform: translateY(-50%); 
+            width: 120px; 
+            height: 120px; 
+            opacity: 0.12; 
+            pointer-events: none; 
+            z-index: 0; 
+            filter: blur(1px); 
+            transition: all 0.4s ease;
+        }
+        .glass-card:hover .logo-bg {
+            opacity: 0.35;
+            filter: blur(0px);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        /* CHEMISTRY BADGE */
         .chem-badge { font-size: 7px; font-weight: 900; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.05); color: #94a3b8; text-transform: uppercase; margin-top: 4px; display: inline-block; border: 1px solid rgba(255,255,255,0.1); }
         .match-badge { background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 4px 12px; border-radius: 10px; font-size: 9px; font-weight: 900; color: #64748b; }
         
@@ -49,7 +88,7 @@
             </div>
 
             <div class="flex flex-col items-center">
-                <h1 class="text-5xl font-black font-cyber gold-glow italic tracking-tighter mb-6 uppercase italic">REVOLUTION IPL'26</h1>
+                <h1 class="text-5xl font-black font-cyber gold-glow italic tracking-tighter mb-6 uppercase italic">REVOLUTION</h1>
                 <div class="flex justify-center gap-3 bg-black/40 p-1.5 rounded-2xl border border-white/5">
                     <button onclick="switchTab('main')" id="btn-main" class="tab-btn active">Live Ranks</button>
                     <button onclick="switchTab('strategy')" id="btn-strat" class="tab-btn">Luckiest Manager</button>
@@ -68,7 +107,7 @@
         </div>
 
         <footer class="text-center py-20 opacity-20 font-cyber text-[8px] uppercase tracking-[0.6em]">
-            Dashboard designed by Vedant Bhansali
+            Precision Sync • Vedant Bhansali Edition
         </footer>
     </div>
 
@@ -99,27 +138,23 @@
 
                 const clean = (val) => val.toString().toLowerCase().trim();
 
+                let totalMatchesDone = 0;
                 const pPoints = {};
-                const matchNameStrings = new Set();
                 let matchPlayers = [];
                 let lastMatchName = "";
-                let maxNumericMatch = 0;
 
                 if (pcRows.length > 1) {
-                    pcRows.slice(1).forEach(row => {
-                        const mName = row[0] ? row[0].toString() : "";
-                        if (!mName) return;
-                        const digitMatch = mName.match(/\d+/);
-                        if (digitMatch) { maxNumericMatch = Math.max(maxNumericMatch, parseInt(digitMatch[0])); }
-                        else { matchNameStrings.add(mName); }
+                    const matchNameCol = pcRows.slice(1).map(row => row[0].toString().trim());
+                    const uniqueMatches = [...new Set(matchNameCol.filter(m => m !== ""))];
+                    totalMatchesDone = uniqueMatches.length;
 
+                    pcRows.slice(1).forEach(row => {
                         const pNameClean = clean(row[1]); if (!pNameClean) return;
                         const val = parseFloat(row[6]) || 0;
                         const mult = parseFloat(row[5]) || 1;
                         if (!pPoints[pNameClean]) pPoints[pNameClean] = { act: 0, raw: 0 };
                         pPoints[pNameClean].act += val; pPoints[pNameClean].raw += (val / mult);
                     });
-                    const totalMatchesDone = Math.max(maxNumericMatch, matchNameStrings.size);
                     document.getElementById('match-counter').innerText = `MATCHES: ${totalMatchesDone}/${TOTAL_SEASON_MATCHES}`;
                     lastMatchName = pcRows[pcRows.length - 1][0];
                     pcRows.forEach(row => {
@@ -140,7 +175,6 @@
                     const teamCode = row[4];
                     const stats = pPoints[clean(name)] || { act: 0, raw: 0 };
                     const m = parseFloat(row[2]) || 1;
-                    
                     if (!squads[owner]) { squads[owner] = []; chemistry[owner] = {}; }
                     squads[owner].push({
                         name, team: teamCode, role: row[6], act: Math.round(stats.act), raw: stats.raw,
@@ -176,7 +210,6 @@
             const ownerKey = cleanOwner(mvp.owner);
             const isUnsold = ownerKey === 'unsold';
             const color = isUnsold ? '#e74c3c' : (ownerColors[ownerKey] || '#f1c40f');
-            
             container.innerHTML = `
                 <div class="${isUnsold ? 'spoiler-banner' : 'mvp-banner'} flex justify-between items-center">
                     <div>
@@ -204,25 +237,25 @@
                 pod.innerHTML = `
                     <div class="w-1/3 flex flex-col items-center">
                         <span class="text-[9px] font-cyber mb-2 opacity-60 uppercase">${top[1].first}</span>
-                        <div class="podium-pillar w-full h-24 rounded-t-2xl">
-                            <span class="font-cyber text-lg mt-4">${top[1].score}</span>
+                        <div class="podium-pillar w-full h-24 rounded-t-2xl flex flex-col items-center justify-center">
+                            <span class="font-cyber text-lg">${top[1].score}</span>
                             <div class="podium-rank-label">2ND</div>
                         </div>
                     </div>
                     <div class="w-1/3 flex flex-col items-center">
                         <span class="text-[10px] font-cyber mb-2 gold-glow italic uppercase tracking-widest">${top[0].first}</span>
-                        <div class="podium-pillar w-full h-40 rounded-t-2xl border-t-yellow-500 gold-glow shadow-[0_-10px_30px_rgba(241,196,15,0.1)]">
+                        <div class="podium-pillar w-full h-40 rounded-t-2xl border-t-yellow-500 shadow-[0_-10px_30px_rgba(241,196,15,0.1)] flex flex-col items-center justify-center">
                             <div class="trophy-bg">
                                 <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18,2H6V4H2V9C2,12 4.24,14.64 7.28,14.94C8.25,17.29 10.3,19 12.82,19.26V22H10V24H14V22H11.18V19.26C13.7,19 15.75,17.29 16.72,14.94C19.76,14.64 22,12 22,9V4H18V2M4,9V6H6V12.75C4.83,12.28 4,11.23 4,9M18,12.75V6H20V9C20,11.23 19.17,12.28 18,12.75Z"/></svg>
                             </div>
-                            <span class="font-cyber text-2xl font-black relative z-10 mt-12">${top[0].score}</span>
-                            <div class="podium-rank-label relative z-10">1ST</div>
+                            <span class="font-cyber text-2xl font-black relative z-10">${top[0].score}</span>
+                            <div class="podium-rank-label">1ST</div>
                         </div>
                     </div>
                     <div class="w-1/3 flex flex-col items-center">
                         <span class="text-[9px] font-cyber mb-2 opacity-60 uppercase">${top[2].first}</span>
-                        <div class="podium-pillar w-full h-16 rounded-t-2xl">
-                            <span class="font-cyber text-base text-gray-400 mt-2">${top[2].score}</span>
+                        <div class="podium-pillar w-full h-16 rounded-t-2xl flex flex-col items-center justify-center">
+                            <span class="font-cyber text-base text-gray-400">${top[2].score}</span>
                             <div class="podium-rank-label">3RD</div>
                         </div>
                     </div>
@@ -235,14 +268,17 @@
                 const hasLive = squad.some(p => p.isLive);
                 const safeId = o.id.replace(/[^a-z0-9]/g, '');
                 const initials = getInitials(o.full);
-
+                
                 let chemText = "Tactical Hybrid";
                 const ownerChem = chemistry[o.id] || {};
                 const topTeam = Object.keys(ownerChem).reduce((a, b) => ownerChem[a] > ownerChem[b] ? a : b, "");
                 if (topTeam && ownerChem[topTeam] >= 4) chemText = `${topTeam} LOYALIST`;
 
                 return `
-                <div id="card-${safeId}" class="glass-card overflow-hidden ${o.id === 'unsold' ? 'opacity-40 mt-12' : ''}">
+                <div id="card-${safeId}" 
+                     class="glass-card overflow-hidden ${o.id === 'unsold' ? 'opacity-40 mt-12' : ''}" 
+                     style="--owner-color: ${color}; --owner-glow: ${color}33">
+                    
                     <div class="logo-bg" style="color: ${color}">
                         <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M50 5 L85 20 V50 C85 75 50 95 50 95 C50 95 15 75 15 50 V20 L50 5Z" stroke="currentColor" stroke-width="2" fill="currentColor" fill-opacity="0.05"/>
@@ -250,7 +286,7 @@
                         </svg>
                     </div>
 
-                    <div class="p-6 flex justify-between items-center cursor-pointer relative z-10" onclick="toggleSquad('${safeId}', '${color}')">
+                    <div class="p-6 flex justify-between items-center relative z-10" onclick="toggleSquad('${safeId}', '${color}')">
                         <div class="flex items-center gap-5">
                             <span class="font-cyber text-lg ${i<3 && o.id !== 'unsold' ? 'gold-glow' : 'text-gray-700'}">${o.id === 'unsold' ? '•' : '#'+(i+1)}</span>
                             <div>
@@ -299,11 +335,9 @@
                         <div>
                             <span class="font-cyber text-lg" style="color:${color}">#${i+1}</span>
                             <span class="font-black text-xs uppercase tracking-widest italic ml-2">${d.full}</span>
-                            <p class="text-[8px] font-bold text-gray-500 mt-2 uppercase italic tracking-wider">Best Pair: ${d.pair[0]} & ${d.pair[1]}</p>
                         </div>
                         <div class="text-right">
                             <p class="font-cyber text-xl italic" style="color:${color}">${d.pot}</p>
-                            <p class="text-[9px] font-black ${d.diff > 0 ? 'text-yellow-500' : 'text-gray-600'}">+${d.diff} MISSED</p>
                         </div>
                     </div>
                 </div>`;
