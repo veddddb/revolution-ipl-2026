@@ -435,36 +435,6 @@
                 </div>`;
         }
 
-        function buildSparkline(id, scores, color) {
-            if (scores.length < 2) return '';
-            const W=280, H=60, pad=8;
-            const min=Math.min(...scores), max=Math.max(...scores), range=max-min||1;
-            const xStep=(W-pad*2)/(scores.length-1);
-            const pts=scores.map((s,i)=>{
-                const x=pad+i*xStep;
-                const y=H-pad-((s-min)/range)*(H-pad*2);
-                return `${x.toFixed(1)},${y.toFixed(1)}`;
-            }).join(' ');
-            const lx=(pad+(scores.length-1)*xStep).toFixed(1);
-            const ly=(H-pad-((scores[scores.length-1]-min)/range)*(H-pad*2)).toFixed(1);
-            const gid='gr'+id.replace(/[\s-]/g,'');
-            return `
-                <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.05);">
-                    <p style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;letter-spacing:0.3em;color:#334155;text-transform:uppercase;margin-bottom:8px;">Points Journey</p>
-                    <svg viewBox="0 0 ${W} ${H}" width="100%" style="overflow:visible;">
-                        <defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="${color}" stop-opacity="0.25"/>
-                            <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
-                        </linearGradient></defs>
-                        <polygon points="${pts} ${lx},${H} ${pad},${H}" fill="url(#${gid})"/>
-                        <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <circle cx="${lx}" cy="${ly}" r="3" fill="${color}"/>
-                        <text x="${lx}" y="${(parseFloat(ly)-7).toFixed(1)}" text-anchor="middle"
-                              font-family="Orbitron,sans-serif" font-size="7" font-weight="900" fill="${color}">${scores[scores.length-1]}</text>
-                    </svg>
-                </div>`;
-        }
-
         function renderLeaderboard(owners, squads, cumulScores) {
             document.getElementById('leaderboard').innerHTML = owners.map((o,i) => {
                 const color  = getColor(o.id);
@@ -489,9 +459,6 @@
                             <span class="font-cyber text-xs font-bold" style="color:${p.act>0?color:'#334155'}">${p.act}</span>
                         </div>`).join('');
 
-                const scores = (cumulScores[o.id] || []);
-                const graph  = buildSparkline(o.id, scores, color);
-
                 return `
                 <div id="${cID}" class="glass-card ${o.id==='unsold'?'opacity-40 mt-12':''}" style="--owner-color:${color};--owner-glow:${color}33">
                     ${logoBg}
@@ -506,7 +473,7 @@
                         </div>
                     </div>
                     <div id="sq-${cID}" class="squad-container">
-                        <div class="space-y-4 pt-4">${playerRows}${graph}</div>
+                        <div class="space-y-4 pt-4">${playerRows}</div>
                     </div>
                 </div>`;
             }).join('');
@@ -541,47 +508,41 @@
             }).join('');
         }
 
-        function shareCard(cID, ownerFull, score, rank) {
-            const color  = getColor(cID.replace('c-','').replace(/-/g,' '));
-            const squad  = (_state.squads[fixID(ownerFull)] || []).sort((a,b)=>b.act-a.act);
+        async function shareCard(cID, ownerFull, score, rank) {
+            const color = getColor(cID.replace('c-','').replace(/-/g,' '));
+            const squad = (_state.squads[fixID(ownerFull)] || []).sort((a,b) => b.act - a.act);
+
+            // Build canvas image
             const W=600, H=200+Math.max(squad.length,1)*26+60;
             const canvas = document.createElement('canvas');
             canvas.width=W*2; canvas.height=H*2;
             const ctx=canvas.getContext('2d');
             ctx.scale(2,2);
 
-            // BG
             const bg=ctx.createLinearGradient(0,0,W,H);
             bg.addColorStop(0,'#0f172a'); bg.addColorStop(1,'#020617');
             ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
             ctx.fillStyle=color; ctx.fillRect(0,0,W,4);
 
-            // Glow
             const glow=ctx.createRadialGradient(W*0.8,H*0.25,0,W*0.8,H*0.25,180);
             glow.addColorStop(0,color+'22'); glow.addColorStop(1,'transparent');
             ctx.fillStyle=glow; ctx.fillRect(0,0,W,H);
 
-            // Rank
             ctx.font='700 11px monospace'; ctx.fillStyle=color+'aa';
             ctx.fillText(`RANK #${rank}`,28,48);
 
-            // Name
             ctx.font='900 30px monospace'; ctx.fillStyle='#f8fafc';
             ctx.fillText(ownerFull.toUpperCase(),28,82);
 
-            // Score
             ctx.font='900 48px monospace'; ctx.fillStyle=color;
             ctx.textAlign='right'; ctx.fillText(score,W-28,82); ctx.textAlign='left';
 
-            // Label
             ctx.font='700 9px monospace'; ctx.fillStyle='#334155';
             ctx.fillText('TOTAL POINTS • REVOLUTION IPL 2026',28,102);
 
-            // Divider
             ctx.strokeStyle='rgba(255,255,255,0.07)'; ctx.lineWidth=1;
             ctx.beginPath(); ctx.moveTo(28,118); ctx.lineTo(W-28,118); ctx.stroke();
 
-            // Squad
             ctx.font='700 9px monospace'; ctx.fillStyle='#475569';
             ctx.fillText('SQUAD',28,140);
             squad.forEach((p,i) => {
@@ -592,13 +553,34 @@
                 ctx.textAlign='right'; ctx.fillText(`${p.act}`,W-28,y); ctx.textAlign='left';
             });
 
-            // Footer
             ctx.font='700 8px monospace'; ctx.fillStyle='#1e293b';
             ctx.fillText('REVOLUTION • VEDANT BHANSALI EDITION',28,H-16);
 
-            const a=document.createElement('a');
-            a.download=`revo-${ownerFull.toLowerCase().replace(/\s/g,'-')}.png`;
-            a.href=canvas.toDataURL('image/png');
+            const filename = `revo-${ownerFull.toLowerCase().replace(/\s/g,'-')}.png`;
+
+            // Mobile: use Web Share API with file
+            if (navigator.share && navigator.canShare) {
+                try {
+                    const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+                    const file = new File([blob], filename, { type: 'image/png' });
+                    if (navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            files: [file],
+                            title: `${ownerFull} — Revolution IPL 2026`,
+                            text:  `${ownerFull} is ranked #${rank} with ${score} points 🏏`,
+                        });
+                        return;
+                    }
+                } catch(e) {
+                    if (e.name === 'AbortError') return; // user cancelled — silent
+                    // fall through to download
+                }
+            }
+
+            // Desktop fallback: direct download
+            const a = document.createElement('a');
+            a.download = filename;
+            a.href = canvas.toDataURL('image/png');
             a.click();
         }
 
