@@ -11,21 +11,16 @@
         body { background: radial-gradient(circle at top, #0f172a 0%, #020617 100%) no-repeat; background-attachment: fixed; color: #f8fafc; font-family: 'Inter', sans-serif; min-height: 100vh; }
         .font-cyber { font-family: 'Orbitron', sans-serif; }
         .gold-glow { color: var(--accent); text-shadow: 0 0 15px rgba(241, 196, 15, 0.5); }
-        
-        .glass-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 24px; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); margin-bottom: 1rem; position: relative; overflow: hidden; }
+        .glass-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 24px; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); margin-bottom: 1rem; position: relative; overflow: hidden; cursor: pointer; }
         .glass-card:hover { transform: translateY(-4px); border-color: var(--owner-color, var(--accent)); box-shadow: 0 0 30px -5px var(--owner-glow, rgba(241, 196, 15, 0.2)); z-index: 20; }
-
         .logo-bg { position: absolute; right: 10%; top: 50%; transform: translateY(-50%); width: 120px; height: 120px; opacity: 0.12; pointer-events: none; z-index: 0; filter: blur(1px); transition: 0.4s ease; }
         .glass-card:hover .logo-bg { opacity: 0.35; filter: blur(0px); transform: translateY(-50%) scale(1.1); }
-
         .podium-pillar { background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%); border: 1px solid rgba(255,255,255,0.05); position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-bottom: 10px; }
         .podium-rank-label { font-family: 'Orbitron'; font-size: 8px; font-weight: 900; opacity: 0.5; color: white; letter-spacing: 1px; margin-top: 2px; }
         .trophy-bg { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); width: 50px; height: 50px; opacity: 0.08; color: var(--accent); pointer-events: none; }
-
         .role-tag { font-size: 7px; padding: 2px 5px; border-radius: 4px; background: rgba(255, 255, 255, 0.05); color: #94a3b8; text-transform: uppercase; font-weight: 700; margin-left: 5px; }
         .team-tag { font-size: 7px; color: #475569; text-transform: uppercase; font-weight: 800; margin-left: 4px; }
         .badge { font-size: 8px; padding: 1px 5px; border-radius: 4px; font-weight: 900; border: 1px solid currentColor; margin-left: 6px; }
-
         .mvp-banner { background: linear-gradient(90deg, rgba(241,196,15,0.15) 0%, rgba(241,196,15,0.05) 100%); border: 1px solid rgba(241,196,15,0.3); border-radius: 20px; padding: 15px 20px; margin-bottom: 25px; box-shadow: 0 0 20px rgba(241, 196, 15, 0.1); }
         .tab-btn { padding: 10px 24px; border-radius: 12px; font-size: 10px; font-weight: 900; text-transform: uppercase; transition: 0.3s; border: 1px solid var(--border); background: rgba(255,255,255,0.02); color: #64748b; }
         .tab-btn.active { background: var(--accent); color: #000; border-color: var(--accent); box-shadow: 0 0 20px rgba(241, 196, 15, 0.2); }
@@ -41,7 +36,7 @@
                 <div class="role-tag uppercase tracking-widest px-3 py-1">EST. 2026</div>
                 <div id="match-counter" class="role-tag tracking-widest text-yellow-500 uppercase px-3 py-1">MATCHES: 0/74</div>
             </div>
-            <h1 class="text-5xl font-black font-cyber gold-glow italic tracking-tighter mb-6 uppercase italic">REVOLUTION IPL'26</h1>
+            <h1 class="text-5xl font-black font-cyber gold-glow italic tracking-tighter mb-6 uppercase italic">REVOLUTION</h1>
             <div class="flex justify-center gap-3 bg-black/40 p-1.5 rounded-2xl border border-white/5 inline-flex">
                 <button onclick="switchTab('main')" id="btn-main" class="tab-btn active">Live Ranks</button>
                 <button onclick="switchTab('strategy')" id="btn-strat" class="tab-btn">Luckiest Manager</button>
@@ -68,6 +63,8 @@
         const TOTAL_SEASON_MATCHES = 74;
         const ownerColors = { "vedant": "#3498db", "vedant bhansali": "#3498db", "deep": "#e74c3c", "shlok": "#2ecc71", "rahul": "#9b59b6", "soni": "#f1c40f", "yash soni": "#f1c40f", "dheer": "#e67e22", "kunal": "#1abc9c", "puneet": "#ff9f43", "vivek": "#54a0ff", "bokaria": "#5f27cd", "prakshal": "#48dbfb", "rishi": "#ff6b6b", "aamer": "#1dd1a1", "yashshah": "#f368e0", "yash shah": "#f368e0" };
 
+        const normalize = (str) => str ? str.toString().toLowerCase().trim().replace(/[^a-z0-9]/g, '') : '';
+
         async function fetchSheet(name) {
             const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${name}`;
             const r = await fetch(url); const t = await r.text();
@@ -82,14 +79,13 @@
             document.getElementById('btn-strat').classList.toggle('active', t === 'strategy');
         }
 
-        const clean = (val) => val.toString().toLowerCase().trim().replace(/\s+/g, '');
-
         async function updateApp() {
             try {
                 const [lbRows, rosRows, lsRows, pcRows] = await Promise.all([
                     fetchSheet('Leaderboard'), fetchSheet('Roster'), fetchSheet('Livescore'), fetchSheet('PointsCalc')
                 ]);
 
+                // 1. PROCESS POINTS
                 const pPoints = {};
                 let matchPlayers = [];
                 let lastMatchName = "";
@@ -99,33 +95,33 @@
                     document.getElementById('match-counter').innerText = `MATCHES: ${uniqueMatches.length}/${TOTAL_SEASON_MATCHES}`;
 
                     pcRows.slice(1).forEach(row => {
-                        const pNameClean = clean(row[1]); if (!pNameClean) return;
+                        const pNameID = normalize(row[1]); if (!pNameID) return;
                         const val = parseFloat(row[6]) || 0;
                         const mult = parseFloat(row[5]) || 1;
-                        if (!pPoints[pNameClean]) pPoints[pNameClean] = { act: 0, raw: 0 };
-                        pPoints[pNameClean].act += val; pPoints[pNameClean].raw += (val / mult);
+                        if (!pPoints[pNameID]) pPoints[pNameID] = { act: 0, raw: 0 };
+                        pPoints[pNameID].act += val; pPoints[pNameID].raw += (val / mult);
                     });
                     lastMatchName = pcRows[pcRows.length - 1][0];
                     pcRows.forEach(row => { if (row[0] === lastMatchName) matchPlayers.push({ name: row[1], pts: parseFloat(row[6]) || 0, owner: row[2] }); });
                 }
 
+                // 2. SQUAD MAPPING (CRITICAL: Normalize Owner IDs)
                 const squads = {};
                 rosRows.forEach(row => {
-                    const ownerRaw = row[1] ? row[1].toString() : "";
-                    const ownerId = clean(ownerRaw); if (!ownerId) return;
-                    if (!squads[ownerId]) squads[ownerId] = [];
-                    const stats = pPoints[clean(row[0])] || { act: 0, raw: 0 };
-                    const m = parseFloat(row[2]) || 1;
-                    squads[ownerId].push({ 
+                    const oID = normalize(row[1]); if (!oID) return;
+                    if (!squads[oID]) squads[oID] = [];
+                    const stats = pPoints[normalize(row[0])] || { act: 0, raw: 0 };
+                    squads[oID].push({ 
                         name: row[0], team: row[4], role: row[6], act: Math.round(stats.act), raw: stats.raw,
-                        cvc: m === 2 ? 'C' : m === 1.5 ? 'VC' : ''
+                        cvc: parseFloat(row[2]) === 2 ? 'C' : parseFloat(row[2]) === 1.5 ? 'VC' : ''
                     });
                 });
 
+                // 3. OWNER PROCESSING (CRITICAL: Ensure Vedant Bhansali exists)
                 let owners = lbRows.slice(1).map(row => {
-                    const nameRaw = row[0] ? row[0].toString() : "";
-                    if (!nameRaw || clean(nameRaw) === "owner") return null;
-                    return { full: nameRaw, score: Math.round(parseFloat(row[1])) || 0, id: clean(nameRaw), first: nameRaw.split(' ')[0] };
+                    const full = row[0] ? row[0].toString().trim() : "";
+                    if (!full || full.toLowerCase() === "owner") return null;
+                    return { full: full, score: Math.round(parseFloat(row[1])) || 0, id: normalize(full), first: full.split(' ')[0] };
                 }).filter(o => o !== null);
 
                 const activeOnes = owners.filter(o => o.id !== 'unsold').sort((a,b) => b.score - a.score);
@@ -137,7 +133,7 @@
                 renderStrategy(activeOnes, squads);
                 renderMVP(matchPlayers.sort((a,b) => b.pts - a.pts)[0], lastMatchName);
 
-            } catch (e) { console.error(e); }
+            } catch (e) { console.error("Sync Error:", e); }
         }
 
         function renderMain(owners, squads) {
@@ -151,25 +147,23 @@
             }
 
             document.getElementById('leaderboard').innerHTML = owners.map((o, i) => {
-                // Fuzzy color match
-                const color = ownerColors[o.id] || ownerColors[o.id.replace('bhansali', '')] || '#64748b';
-                const safeId = o.id;
-                const initials = o.full.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+                const color = ownerColors[o.id] || ownerColors[o.first.toLowerCase()] || '#64748b';
                 const squad = squads[o.id] || [];
+                const initials = o.full.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
 
                 return `
-                <div id="card-${safeId}" class="glass-card ${o.id === 'unsold' ? 'opacity-40 mt-12' : ''}" style="--owner-color: ${color}; --owner-glow: ${color}33">
+                <div id="card-${o.id}" class="glass-card ${o.id === 'unsold' ? 'opacity-40 mt-12' : ''}" style="--owner-color: ${color}; --owner-glow: ${color}33">
                     <div class="logo-bg" style="color: ${color}">
                         <svg viewBox="0 0 100 100" fill="none"><path d="M50 5 L85 20 V50 C85 75 50 95 50 95 C50 95 15 75 15 50 V20 L50 5Z" stroke="currentColor" stroke-width="2" fill="currentColor" fill-opacity="0.05"/><text x="50%" y="62%" text-anchor="middle" font-family="Orbitron" font-size="28" font-weight="900" fill="currentColor" opacity="0.8">${initials}</text></svg>
                     </div>
-                    <div class="p-6 flex justify-between items-center relative z-10" onclick="toggleSquad('${safeId}')">
+                    <div class="p-6 flex justify-between items-center relative z-10" onclick="toggleSquad('${o.id}')">
                         <div class="flex items-center gap-5">
                             <span class="font-cyber text-lg ${i<3 && o.id !== 'unsold' ? 'gold-glow' : 'text-gray-700'}">${o.currentRank}</span>
                             <span class="font-black text-sm uppercase tracking-widest italic">${o.full}</span>
                         </div>
                         <span class="font-cyber text-2xl font-black italic tracking-tighter">${o.score}</span>
                     </div>
-                    <div id="sq-${safeId}" class="squad-container"><div class="space-y-4 pt-4">
+                    <div id="sq-${o.id}" class="squad-container"><div class="space-y-4 pt-4">
                         ${squad.sort((a,b)=>b.act-a.act).map((p, idx) => `
                         <div class="flex justify-between items-center">
                             <div class="flex items-center">
@@ -195,7 +189,7 @@
 
             const sortedByPot = [...data].sort((a,b) => b.pot - a.pot);
             document.getElementById('strategy-list').innerHTML = sortedByPot.map((d, i) => {
-                const color = ownerColors[d.id] || ownerColors[d.id.replace('bhansali', '')] || '#fff';
+                const color = ownerColors[d.id] || ownerColors[d.first.toLowerCase()] || '#fff';
                 const potRank = i + 1;
                 const shiftIcon = d.currentRank > potRank ? '🟢 ↑' : d.currentRank < potRank ? '🔴 ↓' : '⚪';
                 return `
@@ -215,7 +209,7 @@
         function renderMVP(mvp, matchName) {
             const container = document.getElementById('mvp-spotlight');
             if (!mvp || mvp.pts === 0) { container.innerHTML = ''; return; }
-            const color = ownerColors[clean(mvp.owner)] || '#f1c40f';
+            const color = ownerColors[normalize(mvp.owner)] || '#f1c40f';
             container.innerHTML = `
                 <div class="mvp-banner flex justify-between items-center">
                     <div><p class="text-[8px] font-black text-yellow-500 uppercase tracking-widest mb-1">MATCH HERO • ${matchName}</p><h2 class="text-xl font-black uppercase italic tracking-tighter">${mvp.name}</h2><p class="text-[10px] font-bold opacity-60 uppercase">OWNED BY <span style="color:${color}">${mvp.owner}</span></p></div>
