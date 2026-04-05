@@ -95,27 +95,20 @@
 
                 const clean = (val) => val.toString().toLowerCase().trim();
 
-                // --- ROBUST MATCH COUNTER & PLAYER TOTALS ---
+                // --- ROBUST MATCH COUNTER ---
+                let totalMatchesDone = 0;
                 const pPoints = {};
-                const matchNameStrings = new Set();
                 let matchPlayers = [];
                 let lastMatchName = "";
-                let maxNumericMatch = 0;
 
                 if (pcRows.length > 1) {
+                    const matchNameCol = pcRows.slice(1).map(row => row[0].toString().trim());
+                    // Filter out empty rows and then get unique match labels
+                    const uniqueMatches = [...new Set(matchNameCol.filter(m => m !== ""))];
+                    totalMatchesDone = uniqueMatches.length;
+
                     pcRows.slice(1).forEach(row => {
                         const mName = row[0] ? row[0].toString() : "";
-                        if (!mName) return;
-
-                        // Check for digits (like Match 1, Match 2)
-                        const digitMatch = mName.match(/\d+/);
-                        if (digitMatch) {
-                            maxNumericMatch = Math.max(maxNumericMatch, parseInt(digitMatch[0]));
-                        } else {
-                            // Track unique descriptive names separately
-                            matchNameStrings.add(mName);
-                        }
-
                         const pNameClean = clean(row[1]); if (!pNameClean) return;
                         const val = parseFloat(row[6]) || 0;
                         const mult = parseFloat(row[5]) || 1;
@@ -125,12 +118,10 @@
                         pPoints[pNameClean].raw += (val / mult);
                     });
 
-                    // Update UI Counter
-                    // Logic: Highest number found + any unique non-numbered matches
-                    const totalMatchesDone = Math.max(maxNumericMatch, matchNameStrings.size);
+                    // Set Match Counter UI
                     document.getElementById('match-counter').innerText = `MATCHES: ${totalMatchesDone}/${TOTAL_SEASON_MATCHES}`;
 
-                    // MVP Logic
+                    // MVP Logic from last block
                     lastMatchName = pcRows[pcRows.length - 1][0];
                     pcRows.forEach(row => {
                         if (row[0] === lastMatchName) {
@@ -142,6 +133,7 @@
                 const mvp = matchPlayers.sort((a,b) => b.pts - a.pts)[0];
                 const liveNow = lsRows.map(r => clean(r[1])).filter(n => n !== "");
 
+                // Baseline Logic Intact
                 const squads = {};
                 rosRows.forEach(row => {
                     const name = row[0];
