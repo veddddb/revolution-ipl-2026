@@ -13,10 +13,8 @@
         .gold-glow { color: var(--accent); text-shadow: 0 0 15px rgba(241, 196, 15, 0.5); }
         .glass-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 24px; transition: all 0.4s; margin-bottom: 1rem; }
         
-        /* MATCH COUNTER BADGE */
         .match-badge { background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 4px 12px; border-radius: 10px; font-size: 9px; font-weight: 900; color: #64748b; }
 
-        /* MVP HERO STYLE */
         .mvp-banner { background: linear-gradient(90deg, rgba(241,196,15,0.1) 0%, rgba(241,196,15,0.02) 100%); border: 1px solid rgba(241,196,15,0.2); border-radius: 20px; padding: 15px 20px; margin-bottom: 25px; position: relative; overflow: hidden; }
         .mvp-banner::before { content: 'HERO'; position: absolute; top: -5px; right: -10px; font-family: 'Orbitron'; font-size: 40px; opacity: 0.03; font-weight: 900; font-style: italic; }
 
@@ -42,7 +40,7 @@
         
         <header class="mb-10 relative">
             <div class="flex justify-between items-center mb-8 px-2">
-                <div class="match-badge font-cyber">EST. 2026</div>
+                <div class="match-badge font-cyber uppercase tracking-widest">EST. 2026</div>
                 <div id="match-counter" class="match-badge font-cyber tracking-widest text-yellow-500/80 uppercase">MATCHES: 0/74</div>
             </div>
 
@@ -57,9 +55,7 @@
 
         <div id="view-main" class="space-y-6">
             <div id="mvp-spotlight"></div>
-            
             <div id="podium-area" class="flex justify-center items-end gap-3 mb-16 h-48 text-center px-2"></div>
-            
             <div id="leaderboard" class="space-y-2"></div>
         </div>
 
@@ -99,24 +95,25 @@
 
                 const clean = (val) => val.toString().toLowerCase().trim();
 
-                // 1. CALCULATE MATCH COUNT AND MVP
+                // --- ROBUST MATCH COUNTER & PLAYER TOTALS ---
                 const pPoints = {};
-                const matchNamesFound = new Set();
+                const matchNameStrings = new Set();
                 let matchPlayers = [];
                 let lastMatchName = "";
-                let maxMatchNumberFound = 0;
+                let maxNumericMatch = 0;
 
                 if (pcRows.length > 1) {
                     pcRows.slice(1).forEach(row => {
                         const mName = row[0] ? row[0].toString() : "";
                         if (!mName) return;
-                        
-                        // Smart Counter: Look for digits in "Match 8"
-                        const matchNum = mName.match(/\d+/);
-                        if (matchNum) {
-                            maxMatchNumberFound = Math.max(maxMatchNumberFound, parseInt(matchNum[0]));
+
+                        // Check for digits (like Match 1, Match 2)
+                        const digitMatch = mName.match(/\d+/);
+                        if (digitMatch) {
+                            maxNumericMatch = Math.max(maxNumericMatch, parseInt(digitMatch[0]));
                         } else {
-                            matchNamesFound.add(mName); // Catch "RR vs GT"
+                            // Track unique descriptive names separately
+                            matchNameStrings.add(mName);
                         }
 
                         const pNameClean = clean(row[1]); if (!pNameClean) return;
@@ -128,7 +125,12 @@
                         pPoints[pNameClean].raw += (val / mult);
                     });
 
-                    // Capture MVP from very last match block
+                    // Update UI Counter
+                    // Logic: Highest number found + any unique non-numbered matches
+                    const totalMatchesDone = Math.max(maxNumericMatch, matchNameStrings.size);
+                    document.getElementById('match-counter').innerText = `MATCHES: ${totalMatchesDone}/${TOTAL_SEASON_MATCHES}`;
+
+                    // MVP Logic
                     lastMatchName = pcRows[pcRows.length - 1][0];
                     pcRows.forEach(row => {
                         if (row[0] === lastMatchName) {
@@ -137,14 +139,9 @@
                     });
                 }
 
-                // Update Match Counter UI
-                const finalMatchCount = Math.max(maxMatchNumberFound, matchNamesFound.size);
-                document.getElementById('match-counter').innerText = `MATCHES: ${finalMatchCount}/${TOTAL_SEASON_MATCHES}`;
-
                 const mvp = matchPlayers.sort((a,b) => b.pts - a.pts)[0];
                 const liveNow = lsRows.map(r => clean(r[1])).filter(n => n !== "");
 
-                // 2. SQUAD MAPPING
                 const squads = {};
                 rosRows.forEach(row => {
                     const name = row[0];
@@ -159,7 +156,6 @@
                     });
                 });
 
-                // 3. OWNER PROCESSING
                 let allOwners = lbRows.map(row => {
                     const name = row[0] ? row[0].toString() : "";
                     const score = Math.round(parseFloat(row[1])) || 0;
@@ -175,13 +171,13 @@
                 renderMain(finalOrder, squads);
                 renderStrategy(activeOwners, squads);
 
-            } catch (e) { console.error("Update Failed:", e); }
+            } catch (e) { console.error("Sync Error:", e); }
         }
 
         function renderMVP(mvp, matchName) {
             const container = document.getElementById('mvp-spotlight');
             if (!mvp || mvp.pts === 0) { container.innerHTML = ''; return; }
-            const ownerKey = cleanOwner(mvp.owner);
+            const ownerKey = mvp.owner ? mvp.owner.toString().toLowerCase().trim() : "";
             const color = ownerColors[ownerKey] || '#f1c40f';
             container.innerHTML = `
                 <div class="mvp-banner flex justify-between items-center">
@@ -196,8 +192,6 @@
                     </div>
                 </div>`;
         }
-
-        function cleanOwner(val) { return val ? val.toString().toLowerCase().trim() : ""; }
 
         function renderMain(owners, squads) {
             const pod = document.getElementById('podium-area');
