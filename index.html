@@ -11,24 +11,22 @@
         body { background: radial-gradient(circle at top, #0f172a 0%, #020617 100%) no-repeat; background-attachment: fixed; color: #f8fafc; font-family: 'Inter', sans-serif; min-height: 100vh; }
         .font-cyber { font-family: 'Orbitron', sans-serif; }
         .gold-glow { color: var(--accent); text-shadow: 0 0 15px rgba(241, 196, 15, 0.5); }
-        .glass-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 24px; transition: all 0.4s; margin-bottom: 1rem; }
+        .glass-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 24px; transition: all 0.4s; margin-bottom: 1rem; position: relative; overflow: hidden; }
         
+        /* THE LOGO BACKGROUND */
+        .logo-bg { position: absolute; right: 10%; top: 50%; transform: translateY(-50%); width: 120px; height: 120px; opacity: 0.15; pointer-events: none; transition: opacity 0.4s; z-index: 0; filter: blur(1px); }
+        .glass-card:hover .logo-bg { opacity: 0.3; filter: blur(0px); }
+
         .match-badge { background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 4px 12px; border-radius: 10px; font-size: 9px; font-weight: 900; color: #64748b; }
-
         .mvp-banner { background: linear-gradient(90deg, rgba(241,196,15,0.1) 0%, rgba(241,196,15,0.02) 100%); border: 1px solid rgba(241,196,15,0.2); border-radius: 20px; padding: 15px 20px; margin-bottom: 25px; position: relative; overflow: hidden; }
-        .mvp-banner::before { content: 'HERO'; position: absolute; top: -5px; right: -10px; font-family: 'Orbitron'; font-size: 40px; opacity: 0.03; font-weight: 900; font-style: italic; }
-
         .tab-btn { padding: 10px 24px; border-radius: 12px; font-size: 10px; font-weight: 900; text-transform: uppercase; transition: 0.3s; border: 1px solid var(--border); background: rgba(255,255,255,0.02); color: #64748b; }
         .tab-btn.active { background: var(--accent); color: #000; border-color: var(--accent); box-shadow: 0 0 20px rgba(241, 196, 15, 0.2); }
-
-        .squad-container { display: none; padding: 0 24px 24px 24px; border-top: 1px solid rgba(255,255,255,0.05); }
+        .squad-container { display: none; padding: 0 24px 24px 24px; border-top: 1px solid rgba(255,255,255,0.05); position: relative; z-index: 10; }
         .squad-container.open { display: block; animation: slideIn 0.3s ease-out; }
         .player-row-dim { opacity: 0.2; filter: grayscale(1); }
-        
         .role-tag { font-size: 7px; padding: 2px 5px; border-radius: 4px; background: rgba(255, 255, 255, 0.05); color: #94a3b8; text-transform: uppercase; font-weight: 700; margin-left: 5px; }
         .team-tag { font-size: 7px; color: #475569; text-transform: uppercase; font-weight: 800; margin-left: 4px; }
         .badge { font-size: 8px; padding: 1px 5px; border-radius: 4px; font-weight: 900; border: 1px solid currentColor; margin-left: 6px; }
-
         .live-dot { height: 7px; width: 7px; background: #2ecc71; border-radius: 50%; display: inline-block; position: relative; box-shadow: 0 0 10px #2ecc71; }
         .live-dot::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 50%; background: #2ecc71; animation: live-pulse 2s infinite; }
         @keyframes live-pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(3.5); opacity: 0; } }
@@ -95,33 +93,28 @@
 
                 const clean = (val) => val.toString().toLowerCase().trim();
 
-                // --- ROBUST MATCH COUNTER ---
-                let totalMatchesDone = 0;
                 const pPoints = {};
+                const matchNameStrings = new Set();
                 let matchPlayers = [];
                 let lastMatchName = "";
+                let maxNumericMatch = 0;
 
                 if (pcRows.length > 1) {
-                    const matchNameCol = pcRows.slice(1).map(row => row[0].toString().trim());
-                    // Filter out empty rows and then get unique match labels
-                    const uniqueMatches = [...new Set(matchNameCol.filter(m => m !== ""))];
-                    totalMatchesDone = uniqueMatches.length;
-
                     pcRows.slice(1).forEach(row => {
                         const mName = row[0] ? row[0].toString() : "";
+                        if (!mName) return;
+                        const digitMatch = mName.match(/\d+/);
+                        if (digitMatch) { maxNumericMatch = Math.max(maxNumericMatch, parseInt(digitMatch[0])); }
+                        else { matchNameStrings.add(mName); }
+
                         const pNameClean = clean(row[1]); if (!pNameClean) return;
                         const val = parseFloat(row[6]) || 0;
                         const mult = parseFloat(row[5]) || 1;
-
                         if (!pPoints[pNameClean]) pPoints[pNameClean] = { act: 0, raw: 0 };
-                        pPoints[pNameClean].act += val;
-                        pPoints[pNameClean].raw += (val / mult);
+                        pPoints[pNameClean].act += val; pPoints[pNameClean].raw += (val / mult);
                     });
-
-                    // Set Match Counter UI
+                    const totalMatchesDone = Math.max(maxNumericMatch, matchNameStrings.size);
                     document.getElementById('match-counter').innerText = `MATCHES: ${totalMatchesDone}/${TOTAL_SEASON_MATCHES}`;
-
-                    // MVP Logic from last block
                     lastMatchName = pcRows[pcRows.length - 1][0];
                     pcRows.forEach(row => {
                         if (row[0] === lastMatchName) {
@@ -133,7 +126,6 @@
                 const mvp = matchPlayers.sort((a,b) => b.pts - a.pts)[0];
                 const liveNow = lsRows.map(r => clean(r[1])).filter(n => n !== "");
 
-                // Baseline Logic Intact
                 const squads = {};
                 rosRows.forEach(row => {
                     const name = row[0];
@@ -163,7 +155,12 @@
                 renderMain(finalOrder, squads);
                 renderStrategy(activeOwners, squads);
 
-            } catch (e) { console.error("Sync Error:", e); }
+            } catch (e) { console.error(e); }
+        }
+
+        // Helper to get initials (Vedant Bhansali -> VB)
+        function getInitials(name) {
+            return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
         }
 
         function renderMVP(mvp, matchName) {
@@ -201,10 +198,19 @@
                 const color = ownerColors[o.id] || ownerColors[o.first] || '#64748b';
                 const hasLive = squad.some(p => p.isLive);
                 const safeId = o.id.replace(/[^a-z0-9]/g, '');
+                const initials = getInitials(o.full);
 
                 return `
                 <div id="card-${safeId}" class="glass-card overflow-hidden ${o.id === 'unsold' ? 'opacity-40 mt-12' : ''}">
-                    <div class="p-6 flex justify-between items-center cursor-pointer" onclick="toggleSquad('${safeId}', '${color}')">
+                    <div class="logo-bg" style="color: ${color}">
+                        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M50 5 L85 20 V50 C85 75 50 95 50 95 C50 95 15 75 15 50 V20 L50 5Z" stroke="currentColor" stroke-width="2" fill="currentColor" fill-opacity="0.05"/>
+                            <text x="50%" y="62%" text-anchor="middle" font-family="Orbitron" font-size="28" font-weight="900" fill="currentColor" opacity="0.8">${initials}</text>
+                            <path d="M30 15 L50 5 L70 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+
+                    <div class="p-6 flex justify-between items-center cursor-pointer relative z-10" onclick="toggleSquad('${safeId}', '${color}')">
                         <div class="flex items-center gap-5">
                             <span class="font-cyber text-lg ${i<3 && o.id !== 'unsold' ? 'gold-glow' : 'text-gray-700'}">${o.id === 'unsold' ? '•' : '#'+(i+1)}</span>
                             <div>
@@ -244,7 +250,6 @@
                 });
                 return { ...o, pot: Math.round(pot), diff: Math.round(pot) - o.score, pair: [b1?.name || '-', b2?.name || '-'] };
             }).sort((a,b) => b.pot - a.pot);
-
             document.getElementById('strategy-list').innerHTML = data.map((d, i) => {
                 const color = ownerColors[d.id] || ownerColors[d.first] || '#fff';
                 return `
