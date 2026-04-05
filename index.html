@@ -13,8 +13,8 @@
         .gold-glow { color: var(--accent); text-shadow: 0 0 15px rgba(241, 196, 15, 0.5); }
         .glass-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 24px; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); margin-bottom: 1rem; position: relative; overflow: hidden; cursor: pointer; }
         .glass-card:hover { transform: translateY(-4px); border-color: var(--owner-color, var(--accent)); box-shadow: 0 0 30px -5px var(--owner-glow, rgba(241, 196, 15, 0.2)); z-index: 20; }
-        .logo-bg { position: absolute; right: 10%; top: 50%; transform: translateY(-50%); width: 120px; height: 120px; opacity: 0.12; pointer-events: none; z-index: 0; filter: blur(1px); transition: 0.4s ease; }
-        .glass-card:hover .logo-bg { opacity: 0.35; filter: blur(0px); transform: translateY(-50%) scale(1.1); }
+        .logo-bg { position: absolute; right: 8%; top: 50%; transform: translateY(-50%); width: 120px; height: 120px; opacity: 0.13; pointer-events: none; z-index: 0; filter: blur(0.5px) grayscale(0.2); transition: opacity 0.4s ease, filter 0.4s ease, transform 0.4s ease; }
+        .glass-card:hover .logo-bg { opacity: 0.4; filter: blur(0px) grayscale(0); transform: translateY(-50%) scale(1.08); }
         .podium-pillar { background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%); border: 1px solid rgba(255,255,255,0.05); position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-bottom: 10px; }
         .podium-rank-label { font-family: 'Orbitron'; font-size: 8px; font-weight: 900; opacity: 0.5; color: white; letter-spacing: 1px; margin-top: 2px; }
         .trophy-bg { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); width: 50px; height: 50px; opacity: 0.08; color: var(--accent); pointer-events: none; }
@@ -87,7 +87,7 @@
             <h1 class="text-5xl font-black font-cyber gold-glow italic tracking-tighter mb-6 uppercase">REVOLUTION</h1>
             <div class="flex justify-center gap-3 bg-black/40 p-1.5 rounded-2xl border border-white/5 inline-flex">
                 <button onclick="switchTab('main')" id="btn-main" class="tab-btn active">Live Ranks</button>
-                <button onclick="switchTab('strategy')" id="btn-strat" class="tab-btn">Best Probable Outcome!</button>
+                <button onclick="switchTab('strategy')" id="btn-strat" class="tab-btn">Luckiest Manager</button>
             </div>
         </header>
 
@@ -140,6 +140,36 @@
             yashshah: "#f368e0",
             jash:     "#e67e22",
         };
+
+        // ── IPL TEAM LOGOS ──
+        const IPL_LOGOS = {
+            MI:   "https://upload.wikimedia.org/wikipedia/en/c/cd/Mumbai_Indians_Logo.svg",
+            CSK:  "https://upload.wikimedia.org/wikipedia/en/2/2b/Chennai_Super_Kings_Logo.svg",
+            RCB:  "https://upload.wikimedia.org/wikipedia/en/2/2a/Royal_Challengers_Bangalore_2020.svg",
+            KKR:  "https://upload.wikimedia.org/wikipedia/en/4/4c/Kolkata_Knight_Riders_Logo.svg",
+            SRH:  "https://upload.wikimedia.org/wikipedia/en/8/81/Sunrisers_Hyderabad.svg",
+            DC:   "https://upload.wikimedia.org/wikipedia/en/f/f5/Delhi_Capitals_Logo.svg",
+            PBKS: "https://upload.wikimedia.org/wikipedia/en/3/3b/Punjab_Kings_Logo.svg",
+            RR:   "https://upload.wikimedia.org/wikipedia/en/6/60/Rajasthan_Royals_Logo.svg",
+            GT:   "https://upload.wikimedia.org/wikipedia/en/0/09/Gujarat_Titans_Logo.svg",
+            LSG:  "https://upload.wikimedia.org/wikipedia/en/a/a6/Lucknow_Super_Giants_logo.svg",
+        };
+
+        // Returns array of logo URLs for the dominant team(s) in an owner's squad.
+        // If two or more teams tie for the top count, all tied teams are returned.
+        function getDominantTeamLogos(squad) {
+            if (!squad || squad.length === 0) return [];
+            const counts = {};
+            squad.forEach(p => {
+                const t = (p.team || '').toString().trim().toUpperCase();
+                if (t) counts[t] = (counts[t] || 0) + 1;
+            });
+            const max = Math.max(...Object.values(counts));
+            return Object.entries(counts)
+                .filter(([, v]) => v === max)
+                .map(([t]) => IPL_LOGOS[t])
+                .filter(Boolean);
+        }
 
         // Resolve color by trying: full id → first word → each word → fallback
         function getColor(idOrFull) {
@@ -328,15 +358,33 @@
             document.getElementById('leaderboard').innerHTML = owners.map((o, i) => {
                 const color   = getColor(o.id);
                 const squad   = squads[o.id] || [];
-                const initials = o.full.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
                 const cID     = "c-" + o.id.replace(/\s+/g, '-');
+
+                // Dominant team logo(s) — one or two if tied
+                const domLogos = getDominantTeamLogos(squad);
+                const logoBgHTML = domLogos.length === 0
+                    ? '' // no squad yet — render nothing
+                    : domLogos.length === 1
+                        ? `<img class="logo-bg" src="${domLogos[0]}"
+                               style="width:110px;height:110px;object-fit:contain;"
+                               onerror="this.style.display='none'">`
+                        // Two tied teams: side-by-side, slightly smaller
+                        : `<div class="logo-bg" style="display:flex;gap:4px;width:140px;height:110px;align-items:center;justify-content:center;">
+                               ${domLogos.slice(0, 2).map(url =>
+                                   `<img src="${url}" style="width:62px;height:62px;object-fit:contain;" onerror="this.style.display='none'">`
+                               ).join('')}
+                           </div>`;
+
                 const emptyMsg = squad.length === 0
                     ? `<p class="text-[10px] text-gray-600 uppercase font-bold tracking-widest text-center py-4">No players in squad</p>`
                     : squad.sort((a, b) => b.act - a.act).map((p, idx) => `
                         <div class="flex justify-between items-center ${p.act === 0 ? 'player-row-ghost' : ''}">
                             <div class="flex items-center">
                                 <span class="text-[8px] font-bold text-gray-600 mr-3 w-3">${idx + 1}</span>
-                                <span class="text-[11px] font-bold text-gray-200">${p.name} <span class="team-tag">(${p.team})</span></span>
+                                <span class="text-[11px] font-bold text-gray-200">${p.name}</span>
+                                <img src="${IPL_LOGOS[(p.team || '').toString().trim().toUpperCase()] || ''}"
+                                     onerror="this.style.display='none'"
+                                     style="width:16px;height:16px;object-fit:contain;margin-left:5px;vertical-align:middle;display:inline-block;flex-shrink:0;">
                                 <span class="role-tag">${p.role}</span>
                                 ${p.cvc ? `<span class="badge font-cyber" style="color:${color}; border-color:${color}">${p.cvc}</span>` : ''}
                             </div>
@@ -345,9 +393,7 @@
 
                 return `
                 <div id="${cID}" class="glass-card ${o.id === 'unsold' ? 'opacity-40 mt-12' : ''}" style="--owner-color: ${color}; --owner-glow: ${color}33">
-                    <div class="logo-bg" style="color: ${color}">
-                        <svg viewBox="0 0 100 100" fill="none"><path d="M50 5 L85 20 V50 C85 75 50 95 50 95 C50 95 15 75 15 50 V20 L50 5Z" stroke="currentColor" stroke-width="2" fill="currentColor" fill-opacity="0.05"/><text x="50%" y="62%" text-anchor="middle" font-family="Orbitron" font-size="28" font-weight="900" fill="currentColor" opacity="0.8">${initials}</text></svg>
-                    </div>
+                    ${logoBgHTML}
                     <div class="p-6 flex justify-between items-center relative z-10" onclick="toggleSquad('${cID}')">
                         <div class="flex items-center gap-5">
                             <span class="font-cyber text-lg ${i < 3 && o.id !== 'unsold' ? 'gold-glow' : 'text-gray-700'}">${o.id === 'unsold' ? '•' : i + 1}</span>
