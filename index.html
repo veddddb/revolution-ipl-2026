@@ -11,21 +11,16 @@
         body { background: radial-gradient(circle at top, #0f172a 0%, #020617 100%) no-repeat; background-attachment: fixed; color: #f8fafc; font-family: 'Inter', sans-serif; min-height: 100vh; }
         .font-cyber { font-family: 'Orbitron', sans-serif; }
         .gold-glow { color: var(--accent); text-shadow: 0 0 15px rgba(241, 196, 15, 0.5); }
-        
         .glass-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 24px; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); margin-bottom: 1rem; position: relative; overflow: hidden; cursor: pointer; }
         .glass-card:hover { transform: translateY(-4px); border-color: var(--owner-color, var(--accent)); box-shadow: 0 0 30px -5px var(--owner-glow, rgba(241, 196, 15, 0.2)); z-index: 20; }
-
         .logo-bg { position: absolute; right: 10%; top: 50%; transform: translateY(-50%); width: 120px; height: 120px; opacity: 0.12; pointer-events: none; z-index: 0; filter: blur(1px); transition: 0.4s ease; }
         .glass-card:hover .logo-bg { opacity: 0.35; filter: blur(0px); transform: translateY(-50%) scale(1.1); }
-
         .podium-pillar { background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%); border: 1px solid rgba(255,255,255,0.05); position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-bottom: 10px; }
         .podium-rank-label { font-family: 'Orbitron'; font-size: 8px; font-weight: 900; opacity: 0.5; color: white; letter-spacing: 1px; margin-top: 2px; }
         .trophy-bg { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); width: 50px; height: 50px; opacity: 0.08; color: var(--accent); pointer-events: none; }
-
         .role-tag { font-size: 7px; padding: 2px 5px; border-radius: 4px; background: rgba(255, 255, 255, 0.05); color: #94a3b8; text-transform: uppercase; font-weight: 700; margin-left: 5px; }
         .team-tag { font-size: 7px; color: #475569; text-transform: uppercase; font-weight: 800; margin-left: 4px; }
         .badge { font-size: 8px; padding: 1px 5px; border-radius: 4px; font-weight: 900; border: 1px solid currentColor; margin-left: 6px; }
-
         .mvp-banner { background: linear-gradient(90deg, rgba(241,196,15,0.15) 0%, rgba(241,196,15,0.05) 100%); border: 1px solid rgba(241,196,15,0.3); border-radius: 20px; padding: 15px 20px; margin-bottom: 25px; box-shadow: 0 0 20px rgba(241, 196, 15, 0.1); }
         .tab-btn { padding: 10px 24px; border-radius: 12px; font-size: 10px; font-weight: 900; text-transform: uppercase; transition: 0.3s; border: 1px solid var(--border); background: rgba(255,255,255,0.02); color: #64748b; }
         .tab-btn.active { background: var(--accent); color: #000; border-color: var(--accent); box-shadow: 0 0 20px rgba(241, 196, 15, 0.2); }
@@ -41,7 +36,7 @@
                 <div class="role-tag uppercase tracking-widest px-3 py-1">EST. 2026</div>
                 <div id="match-counter" class="role-tag tracking-widest text-yellow-500 uppercase px-3 py-1">MATCHES: 0/74</div>
             </div>
-            <h1 class="text-5xl font-black font-cyber gold-glow italic tracking-tighter mb-6 uppercase">REVOLUTION</h1>
+            <h1 class="text-5xl font-black font-cyber gold-glow italic tracking-tighter mb-6 uppercase italic">REVOLUTION</h1>
             <div class="flex justify-center gap-3 bg-black/40 p-1.5 rounded-2xl border border-white/5 inline-flex">
                 <button onclick="switchTab('main')" id="btn-main" class="tab-btn active">Live Ranks</button>
                 <button onclick="switchTab('strategy')" id="btn-strat" class="tab-btn">Luckiest Manager</button>
@@ -71,17 +66,19 @@
             "vedant": "#3498db", "bhansali": "#3498db", "deep": "#e74c3c", "shlok": "#2ecc71", 
             "rahul": "#9b59b6", "soni": "#f1c40f", "dheer": "#e67e22", "kunal": "#1abc9c", 
             "puneet": "#ff9f43", "vivek": "#54a0ff", "bokaria": "#5f27cd", "prakshal": "#48dbfb", 
-            "rishi": "#ff6b6b", "aamer": "#1dd1a1", "yash": "#f368e0" 
+            "rishi": "#ff6b6b", "aamer": "#1dd1a1", "yash": "#f368e0", "jash": "#e67e22" 
         };
 
         const getOwnerColor = (name) => {
+            if (!name) return "#64748b";
             const n = name.toLowerCase();
             for (let key in ownerColors) { if (n.includes(key)) return ownerColors[key]; }
             return "#64748b";
         };
 
+        // NEW: Force pull all rows including potential header rows
         async function fetchSheet(name) {
-            const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${name}`;
+            const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=0&sheet=${name}`;
             const r = await fetch(url); const t = await r.text();
             const j = JSON.parse(t.substr(47).slice(0, -2));
             return j.table.rows.map(row => row.c.map(cell => cell ? (cell.v !== null ? cell.v : "") : ""));
@@ -100,23 +97,12 @@
                     fetchSheet('Leaderboard'), fetchSheet('Roster'), fetchSheet('Livescore'), fetchSheet('PointsCalc')
                 ]);
 
-                // HEADER DETECTOR: Finds where data actually starts
-                const findHeader = (rows, keyword) => {
-                    for(let i=0; i<rows.length; i++) {
-                        if(rows[i][0] && rows[i][0].toString().toLowerCase().includes(keyword)) return i + 1;
-                    }
-                    return 1;
-                };
-
-                const lbStart = findHeader(lbRows, 'owner');
-                const rosStart = findHeader(rosRows, 'player');
-                const pcStart = findHeader(pcRows, 'match');
-
-                // 1. POINTS CALC
+                // Points History processing
                 const pPoints = {};
                 let matchPlayers = [];
                 let lastMatchName = "";
-                pcRows.slice(pcStart).forEach(row => {
+
+                pcRows.forEach(row => {
                     if (!row[1]) return;
                     const pName = row[1].toString().toLowerCase().trim();
                     const val = parseFloat(row[6]) || 0;
@@ -124,32 +110,35 @@
                     if (!pPoints[pName]) pPoints[pName] = { act: 0, raw: 0 };
                     pPoints[pName].act += val; pPoints[pName].raw += (val / mult);
                 });
-                if(pcRows.length > pcStart) {
-                    const uniqueMatches = [...new Set(pcRows.slice(pcStart).map(row => row[0]).filter(m => m !== ""))];
+
+                if(pcRows.length > 0) {
+                    const uniqueMatches = [...new Set(pcRows.map(row => row[0] ? row[0].toString() : "").filter(m => m !== "" && m.toLowerCase() !== 'match'))];
                     document.getElementById('match-counter').innerText = `MATCHES: ${uniqueMatches.length}/${TOTAL_SEASON_MATCHES}`;
                     lastMatchName = pcRows[pcRows.length - 1][0];
                     pcRows.forEach(row => { if (row[0] === lastMatchName) matchPlayers.push({ name: row[1], pts: parseFloat(row[6]) || 0, owner: row[2] }); });
                 }
 
-                // 2. SQUAD MAPPING
+                // SQUADS processing
                 const squads = {};
-                rosRows.slice(rosStart).forEach(row => {
-                    if (!row[1]) return;
+                rosRows.forEach(row => {
+                    if (!row[1] || row[1].toString().toLowerCase().includes('owner')) return;
                     const oKey = row[1].toString().toLowerCase().trim();
                     if (!squads[oKey]) squads[oKey] = [];
-                    const stats = pPoints[row[0].toString().toLowerCase().trim()] || { act: 0, raw: 0 };
+                    const pName = row[0].toString().toLowerCase().trim();
+                    const stats = pPoints[pName] || { act: 0, raw: 0 };
                     squads[oKey].push({ 
                         name: row[0], team: row[4], role: row[6], act: Math.round(stats.act), raw: stats.raw,
                         cvc: parseFloat(row[2]) === 2 ? 'C' : parseFloat(row[2]) === 1.5 ? 'VC' : ''
                     });
                 });
 
-                // 3. LEADERBOARD
-                let owners = lbRows.slice(lbStart).map(row => {
+                // LEADERBOARD processing - Filter out only actual headers
+                let owners = lbRows.map(row => {
                     if (!row[0]) return null;
                     const full = row[0].toString().trim();
-                    if (full === "") return null;
-                    return { full: full, score: Math.round(parseFloat(row[1])) || 0, id: full.toLowerCase().trim() };
+                    const check = full.toLowerCase();
+                    if (check === "owner name" || check === "owner" || check === "" || check === "name") return null;
+                    return { full: full, score: Math.round(parseFloat(row[1])) || 0, id: check };
                 }).filter(o => o !== null);
 
                 const activeOnes = owners.filter(o => o.id !== 'unsold').sort((a,b) => b.score - a.score);
@@ -177,21 +166,21 @@
                 const color = getOwnerColor(o.full);
                 const squad = squads[o.id] || [];
                 const initials = o.full.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
-                const cID = "c-" + o.id.replace(/\s+/g, '-');
+                const cardID = "c-" + o.id.replace(/\s+/g, '-');
 
                 return `
-                <div id="${cID}" class="glass-card ${o.id === 'unsold' ? 'opacity-40 mt-12' : ''}" style="--owner-color: ${color}; --owner-glow: ${color}33">
+                <div id="${cardID}" class="glass-card ${o.id === 'unsold' ? 'opacity-40 mt-12' : ''}" style="--owner-color: ${color}; --owner-glow: ${color}33">
                     <div class="logo-bg" style="color: ${color}">
                         <svg viewBox="0 0 100 100" fill="none"><path d="M50 5 L85 20 V50 C85 75 50 95 50 95 C50 95 15 75 15 50 V20 L50 5Z" stroke="currentColor" stroke-width="2" fill="currentColor" fill-opacity="0.05"/><text x="50%" y="62%" text-anchor="middle" font-family="Orbitron" font-size="28" font-weight="900" fill="currentColor" opacity="0.8">${initials}</text></svg>
                     </div>
-                    <div class="p-6 flex justify-between items-center relative z-10" onclick="toggleSquad('${cID}')">
+                    <div class="p-6 flex justify-between items-center relative z-10" onclick="toggleSquad('${cardID}')">
                         <div class="flex items-center gap-5">
                             <span class="font-cyber text-lg ${i<3 && o.id !== 'unsold' ? 'gold-glow' : 'text-gray-700'}">${o.id === 'unsold' ? '•' : i+1}</span>
                             <span class="font-black text-sm uppercase tracking-widest italic">${o.full}</span>
                         </div>
                         <span class="font-cyber text-2xl font-black italic tracking-tighter">${o.score}</span>
                     </div>
-                    <div id="sq-${cID}" class="squad-container"><div class="space-y-4 pt-4">
+                    <div id="sq-${cardID}" class="squad-container"><div class="space-y-4 pt-4">
                         ${squad.sort((a,b)=>b.act-a.act).map((p, idx) => `
                         <div class="flex justify-between items-center">
                             <div class="flex items-center">
@@ -246,8 +235,8 @@
                 </div>`;
         }
 
-        function toggleSquad(id) { 
-            const s = document.getElementById('sq-' + id);
+        function toggleSquad(cardID) { 
+            const s = document.getElementById('sq-' + cardID);
             if(s) s.classList.toggle('open');
         }
         updateApp(); setInterval(updateApp, 60000);
