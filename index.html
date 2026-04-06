@@ -7,13 +7,50 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --accent: #f1c40f; --glass: rgba(10,15,25,0.98); --border: rgba(255,255,255,0.08); }
-        body { background: radial-gradient(circle at top, #0f172a 0%, #020617 100%) fixed; color: #f8fafc; font-family: 'Inter', sans-serif; min-height: 100vh; }
+        /* ── DARK MODE (default) ── */
+        :root {
+            --accent:#f1c40f; --border:rgba(255,255,255,0.1);
+            --bg1:#0f172a; --bg2:#020617;
+            --text-pri:#f8fafc; --text-sec:#94a3b8; --text-muted:#475569;
+            /* Liquid glass */
+            --glass-bg:rgba(15,23,42,0.55);
+            --glass-blur:blur(28px) saturate(160%) brightness(1.08);
+            --glass-border:rgba(255,255,255,0.12);
+            --glass-shine:linear-gradient(135deg,rgba(255,255,255,0.10) 0%,rgba(255,255,255,0.02) 50%,rgba(255,255,255,0.06) 100%);
+            --glass-shadow:0 8px 32px rgba(0,0,0,0.45);
+        }
+        /* ── LIGHT MODE ── */
+        body.light {
+            --bg1:#e8eef8; --bg2:#d0daea;
+            --text-pri:#0f172a; --text-sec:#334155; --text-muted:#64748b;
+            --glass-bg:rgba(255,255,255,0.45);
+            --glass-blur:blur(28px) saturate(180%) brightness(1.05);
+            --glass-border:rgba(255,255,255,0.7);
+            --glass-shine:linear-gradient(135deg,rgba(255,255,255,0.6) 0%,rgba(255,255,255,0.15) 60%,rgba(255,255,255,0.35) 100%);
+            --glass-shadow:0 8px 32px rgba(100,130,180,0.18);
+            --border:rgba(0,0,0,0.08);
+        }
+        body { background: radial-gradient(circle at 30% 20%, var(--bg1) 0%, var(--bg2) 100%) fixed; color: var(--text-pri); font-family: 'Inter', sans-serif; min-height: 100vh; transition: background 0.4s ease, color 0.3s ease; }
         .font-cyber { font-family: 'Orbitron', sans-serif; }
         .gold-glow  { color: var(--accent); text-shadow: 0 0 15px rgba(241,196,15,0.5); }
 
-        .glass-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 24px; transition: 0.4s cubic-bezier(0.4,0,0.2,1); margin-bottom: 1rem; position: relative; overflow: hidden; cursor: pointer; }
-        .glass-card:hover { transform: translateY(-4px); border-color: var(--owner-color, var(--accent)); box-shadow: 0 0 30px -5px var(--owner-glow, rgba(241,196,15,0.2)); z-index: 20; }
+        /* ── LIQUID GLASS CARD ── */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            box-shadow: var(--glass-shadow);
+            transition: 0.4s cubic-bezier(0.4,0,0.2,1);
+            margin-bottom: 1rem; position: relative; overflow: hidden; cursor: pointer;
+        }
+        .glass-card::before {
+            content:''; position:absolute; inset:0; border-radius:24px;
+            background: var(--glass-shine);
+            pointer-events:none; z-index:1;
+        }
+        .glass-card:hover { transform: translateY(-4px); border-color: var(--owner-color, var(--accent)); box-shadow: 0 0 30px -5px var(--owner-glow, rgba(241,196,15,0.25)), var(--glass-shadow); z-index: 20; }
 
         .logo-bg { position: absolute; right: 8%; top: 50%; transform: translateY(-50%); width: 120px; height: 120px; opacity: 0.13; pointer-events: none; z-index: 0; filter: blur(0.5px); transition: opacity 0.4s ease, filter 0.4s ease, transform 0.4s ease; }
         .glass-card:hover .logo-bg { opacity: 0.4; filter: blur(0px); transform: translateY(-50%) scale(1.08); }
@@ -88,12 +125,17 @@
         <header class="mb-10 text-center">
             <div class="flex justify-between items-center mb-8 px-2">
                 <div class="role-tag uppercase tracking-widest px-3 py-1">EST. 2026</div>
-                <div id="match-counter" class="role-tag tracking-widest text-yellow-500 uppercase px-3 py-1">MATCHES: —/74</div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <div id="match-counter" class="role-tag tracking-widest text-yellow-500 uppercase px-3 py-1">MATCHES: —/74</div>
+                    <button id="theme-toggle" onclick="toggleTheme()" title="Toggle theme"
+                        style="width:32px;height:32px;border-radius:50%;border:1px solid var(--glass-border);background:var(--glass-bg);backdrop-filter:var(--glass-blur);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:0.3s;font-size:15px;">🌙</button>
+                </div>
             </div>
             <h1 class="text-5xl font-black font-cyber gold-glow italic tracking-tighter mb-6 uppercase">REVOLUTION</h1>
             <div class="flex justify-center gap-3 bg-black/40 p-1.5 rounded-2xl border border-white/5 inline-flex">
                 <button onclick="switchTab('main')"     id="btn-main"     class="tab-btn active">Live Ranks</button>
                 <button onclick="switchTab('strategy')" id="btn-strat"    class="tab-btn">Luckiest Manager</button>
+                <button onclick="switchTab('weekly')"   id="btn-weekly"   class="tab-btn">Weekly</button>
                 <button onclick="switchTab('schedule')" id="btn-schedule" class="tab-btn">Schedule</button>
             </div>
         </header>
@@ -118,6 +160,20 @@
                 <svg style="position:absolute;left:13px;top:50%;transform:translateY(-50%);opacity:0.3;pointer-events:none;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
                 <div id="search-dropdown" style="display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:rgba(8,12,20,0.99);border:1px solid rgba(255,255,255,0.1);border-radius:14px;overflow:hidden;z-index:100;max-height:320px;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.5);"></div>
             </div>
+            <!-- IPL TEAM FILTER -->
+            <div id="team-filter-bar" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;">
+                <button class="team-filter-btn active" data-team="ALL" onclick="setTeamFilter('ALL')" style="flex-shrink:0;font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.06);color:var(--text-sec);cursor:pointer;transition:0.2s;letter-spacing:0.05em;">ALL</button>
+                <button class="team-filter-btn" data-team="MI"   onclick="setTeamFilter('MI')"   style="flex-shrink:0;font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 10px;border-radius:20px;border:1px solid rgba(0,75,160,0.4);background:rgba(0,75,160,0.15);color:#89CFF0;cursor:pointer;transition:0.2s;">MI</button>
+                <button class="team-filter-btn" data-team="CSK"  onclick="setTeamFilter('CSK')"  style="flex-shrink:0;font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 10px;border-radius:20px;border:1px solid rgba(244,196,48,0.4);background:rgba(244,196,48,0.12);color:#F4C430;cursor:pointer;transition:0.2s;">CSK</button>
+                <button class="team-filter-btn" data-team="RCB"  onclick="setTeamFilter('RCB')"  style="flex-shrink:0;font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 10px;border-radius:20px;border:1px solid rgba(200,16,46,0.4);background:rgba(200,16,46,0.12);color:#F87171;cursor:pointer;transition:0.2s;">RCB</button>
+                <button class="team-filter-btn" data-team="KKR"  onclick="setTeamFilter('KKR')"  style="flex-shrink:0;font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 10px;border-radius:20px;border:1px solid rgba(58,34,93,0.5);background:rgba(58,34,93,0.2);color:#c4b5fd;cursor:pointer;transition:0.2s;">KKR</button>
+                <button class="team-filter-btn" data-team="SRH"  onclick="setTeamFilter('SRH')"  style="flex-shrink:0;font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 10px;border-radius:20px;border:1px solid rgba(242,101,34,0.4);background:rgba(242,101,34,0.12);color:#fb923c;cursor:pointer;transition:0.2s;">SRH</button>
+                <button class="team-filter-btn" data-team="DC"   onclick="setTeamFilter('DC')"   style="flex-shrink:0;font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 10px;border-radius:20px;border:1px solid rgba(0,82,154,0.4);background:rgba(0,82,154,0.15);color:#60a5fa;cursor:pointer;transition:0.2s;">DC</button>
+                <button class="team-filter-btn" data-team="PBKS" onclick="setTeamFilter('PBKS')" style="flex-shrink:0;font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 10px;border-radius:20px;border:1px solid rgba(237,28,36,0.4);background:rgba(237,28,36,0.12);color:#fca5a5;cursor:pointer;transition:0.2s;">PBKS</button>
+                <button class="team-filter-btn" data-team="RR"   onclick="setTeamFilter('RR')"   style="flex-shrink:0;font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 10px;border-radius:20px;border:1px solid rgba(234,26,133,0.4);background:rgba(234,26,133,0.12);color:#f9a8d4;cursor:pointer;transition:0.2s;">RR</button>
+                <button class="team-filter-btn" data-team="GT"   onclick="setTeamFilter('GT')"   style="flex-shrink:0;font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 10px;border-radius:20px;border:1px solid rgba(29,78,137,0.4);background:rgba(29,78,137,0.15);color:#93c5fd;cursor:pointer;transition:0.2s;">GT</button>
+                <button class="team-filter-btn" data-team="LSG"  onclick="setTeamFilter('LSG')"  style="flex-shrink:0;font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 10px;border-radius:20px;border:1px solid rgba(164,214,94,0.4);background:rgba(164,214,94,0.12);color:#a4d65e;cursor:pointer;transition:0.2s;">LSG</button>
+            </div>
             <div id="mvp-spotlight"></div>
             <div id="podium-area" class="flex justify-center items-end gap-3 mb-16 h-48 text-center px-2"></div>
             <div id="streak-tracker"></div>
@@ -126,6 +182,10 @@
 
         <div id="view-strategy" class="hidden space-y-4 pt-4">
             <div id="strategy-list" class="space-y-4"></div>
+        </div>
+
+        <div id="view-weekly" class="hidden pt-4">
+            <div id="weekly-list" class="space-y-4"></div>
         </div>
 
         <div id="view-schedule" class="hidden pt-4">
@@ -197,14 +257,45 @@
         }
         setTimeout(dismissSplash, 5000);
 
-        function switchTab(t) {
-            document.getElementById('view-main').classList.toggle('hidden', t !== 'main');
-            document.getElementById('view-strategy').classList.toggle('hidden', t !== 'strategy');
-            document.getElementById('view-schedule').classList.toggle('hidden', t !== 'schedule');
-            document.getElementById('btn-main').classList.toggle('active', t === 'main');
-            document.getElementById('btn-strat').classList.toggle('active', t === 'strategy');
-            document.getElementById('btn-schedule').classList.toggle('active', t === 'schedule');
+        const TAB_ORDER = ['main','strategy','weekly','schedule'];
+        let _currentTab = 'main';
+
+        function switchTab(t, animate) {
+            const views = { main:'view-main', strategy:'view-strategy', weekly:'view-weekly', schedule:'view-schedule' };
+            const btns  = { main:'btn-main', strategy:'btn-strat', weekly:'btn-weekly', schedule:'btn-schedule' };
+            Object.keys(views).forEach(k => {
+                const el = document.getElementById(views[k]);
+                if (k === t) {
+                    el.classList.remove('hidden');
+                    if (animate) {
+                        el.style.animation = 'none';
+                        el.offsetHeight; // reflow
+                        el.style.animation = 'slideIn 0.25s ease-out';
+                    }
+                } else {
+                    el.classList.add('hidden');
+                }
+                document.getElementById(btns[k]).classList.toggle('active', k === t);
+            });
+            _currentTab = t;
+            // Scroll tab button into view
+            const btn = document.getElementById(btns[t]);
+            if (btn) btn.scrollIntoView({ inline:'center', behavior:'smooth', block:'nearest' });
         }
+
+        // ── SWIPE GESTURE ──
+        (function() {
+            let sx = 0, sy = 0;
+            document.addEventListener('touchstart', e => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive:true });
+            document.addEventListener('touchend', e => {
+                const dx = e.changedTouches[0].clientX - sx;
+                const dy = e.changedTouches[0].clientY - sy;
+                if (Math.abs(dx) < 50 || Math.abs(dy) > Math.abs(dx) * 0.8) return; // not a horiz swipe
+                const idx = TAB_ORDER.indexOf(_currentTab);
+                if (dx < 0 && idx < TAB_ORDER.length - 1) switchTab(TAB_ORDER[idx + 1], true);
+                if (dx > 0 && idx > 0) switchTab(TAB_ORDER[idx - 1], true);
+            }, { passive:true });
+        })();
 
         function showError(msg) {
             document.getElementById('error-msg').textContent = msg || 'Could not reach the data sheet. Retrying in 60s…';
@@ -313,7 +404,7 @@
                 const cumulScores = buildCumulScores(active, pcRows, completedMatches);
 
                 // Save to global state
-                _state = { squads, cumulScores, completedMatches, rosRows, pPoints };
+                _state = { squads, cumulScores, completedMatches, rosRows, pPoints, pcRows, active };
 
                 // Render
                 renderMVP(matchPlayers.sort((a,b) => b.pts-a.pts)[0], lastMatchName);
@@ -322,6 +413,8 @@
                 renderLeaderboard(allOwners, squads, cumulScores);
                 renderStrategy(active, squads);
                 if (schedRows && schedRows.length) renderSchedule(schedRows);
+                renderWeekly(active, pcRows, completedMatches, squads);
+                renderRankArrows(active);
 
             } catch(e) {
                 console.error('Sync Error:', e);
@@ -995,6 +1088,176 @@
             if (!e.target.closest('#player-search') && !e.target.closest('#search-dropdown'))
                 document.getElementById('search-dropdown').style.display = 'none';
         });
+
+
+        // ── THEME TOGGLE ──
+        function toggleTheme() {
+            const isLight = document.body.classList.toggle('light');
+            document.getElementById('theme-toggle').textContent = isLight ? '☀️' : '🌙';
+            localStorage.setItem('revo-theme', isLight ? 'light' : 'dark');
+        }
+        // Restore saved theme
+        if (localStorage.getItem('revo-theme') === 'light') {
+            document.body.classList.add('light');
+            document.getElementById('theme-toggle').textContent = '☀️';
+        }
+
+        // ── TEAM FILTER ──
+        let _activeTeamFilter = 'ALL';
+        function setTeamFilter(team) {
+            _activeTeamFilter = team;
+            document.querySelectorAll('.team-filter-btn').forEach(b => {
+                b.style.opacity = (b.dataset.team === team) ? '1' : '0.45';
+                b.style.transform = (b.dataset.team === team) ? 'scale(1.08)' : 'scale(1)';
+            });
+            const cards = document.querySelectorAll('#leaderboard .glass-card');
+            cards.forEach(card => {
+                if (team === 'ALL') { card.style.display = ''; card.style.opacity = '1'; return; }
+                // Check if this owner has any player from the selected team
+                const teamTags = card.querySelectorAll('.team-tag');
+                const hasTeam  = Array.from(teamTags).some(t => t.textContent.includes('(' + team + ')') || t.textContent.trim() === team);
+                card.style.display   = hasTeam ? '' : 'none';
+                card.style.opacity   = '1';
+            });
+        }
+
+        // ── RANK CHANGE ARROWS ──
+        let _prevRanks = {};
+        function renderRankArrows(active) {
+            active.forEach((o, i) => {
+                const cID  = 'c-' + o.id.replace(/\s+/g, '-');
+                const card = document.getElementById(cID);
+                if (!card) return;
+                const rankEl = card.querySelector('.font-cyber.text-lg');
+                if (!rankEl) return;
+                const prev = _prevRanks[o.id];
+                const curr = i + 1;
+                if (prev !== undefined && prev !== curr) {
+                    const up    = curr < prev;
+                    const arrow = document.createElement('span');
+                    arrow.textContent = up ? ' ↑' : ' ↓';
+                    arrow.style.cssText = `font-size:10px;font-weight:900;color:${up?'#4ade80':'#f87171'};opacity:1;transition:opacity 2s ease;`;
+                    rankEl.appendChild(arrow);
+                    setTimeout(() => arrow.style.opacity = '0', 2500);
+                    setTimeout(() => arrow.remove(), 4500);
+                }
+                _prevRanks[o.id] = curr;
+            });
+        }
+
+        // ── PUSH NOTIFICATIONS ──
+        async function requestPushPermission() {
+            if (!('Notification' in window)) return;
+            if (Notification.permission === 'granted') return;
+            const perm = await Notification.requestPermission();
+            if (perm === 'granted') showLocalNotif('Revo IPL 2026', 'Notifications enabled! You\'ll be alerted when rankings change.');
+        }
+        function showLocalNotif(title, body) {
+            if (Notification.permission === 'granted') new Notification(title, { body, icon: '' });
+        }
+        // Check for rank change and notify
+        let _notifRanks = {};
+        function checkAndNotify(active) {
+            if (Notification.permission !== 'granted') return;
+            active.forEach((o, i) => {
+                const prev = _notifRanks[o.id];
+                if (prev !== undefined && prev !== i + 1) {
+                    const up = i + 1 < prev;
+                    showLocalNotif(`${o.first} moved ${up?'up':'down'}!`, `Now ranked #${i+1} with ${o.score} pts`);
+                }
+                _notifRanks[o.id] = i + 1;
+            });
+        }
+        // Show notification prompt button subtly after 3s
+        setTimeout(() => {
+            if ('Notification' in window && Notification.permission === 'default') {
+                const btn = document.createElement('button');
+                btn.textContent = '🔔 Enable alerts';
+                btn.style.cssText = 'position:fixed;bottom:24px;right:16px;z-index:500;font-size:10px;font-family:Orbitron,sans-serif;font-weight:900;letter-spacing:0.05em;padding:8px 14px;border-radius:20px;border:1px solid rgba(241,196,15,0.3);background:rgba(10,15,25,0.92);backdrop-filter:blur(12px);color:#f1c40f;cursor:pointer;transition:0.3s;';
+                btn.onclick = () => { requestPushPermission(); btn.remove(); };
+                document.body.appendChild(btn);
+                setTimeout(() => { if (btn.parentNode) btn.style.opacity='0'; setTimeout(()=>btn.remove(),500); }, 8000);
+            }
+        }, 3000);
+
+        // ── WEEKLY REPORT ──
+        function renderWeekly(active, pcRows, completedMatches, squads) {
+            const el = document.getElementById('weekly-list');
+            if (!el || !completedMatches.length) return;
+
+            // Last 7 match days
+            const last7 = completedMatches.slice(-7);
+            const all   = completedMatches;
+
+            // Per-owner: total in last7, total overall, best player in last7
+            const weeklyData = active.map(o => {
+                // Build owner name→id map
+                const sqPlayers = squads[o.id] || [];
+                const playerNames = new Set(sqPlayers.map(p => fixID(p.name)));
+
+                let weekPts = 0, totalPts = o.score, bestPlayer = null, bestPts = 0;
+
+                pcRows.forEach(r => {
+                    if (!r[1] || !r[2]) return;
+                    const ownerRaw = fixID(r[2]);
+                    const isOwner  = ownerRaw === o.id ||
+                                     ownerRaw.includes(o.id.split(' ')[0]) ||
+                                     o.id.includes(ownerRaw.split(' ')[0]);
+                    if (!isOwner) return;
+                    const pts = parseFloat(r[6]) || 0;
+                    const match = r[0] ? r[0].toString().trim() : '';
+                    if (last7.includes(match)) {
+                        weekPts += pts;
+                        if (pts > bestPts) { bestPts = pts; bestPlayer = r[1]; }
+                    }
+                });
+
+                const avgMatch = all.length > 0 ? totalPts / all.length : 0;
+                const weekAvg  = last7.length > 0 ? weekPts / last7.length : 0;
+                const trend    = weekAvg > avgMatch ? 'hot' : weekAvg < avgMatch * 0.8 ? 'cold' : 'steady';
+
+                return { ...o, weekPts: Math.round(weekPts), avgMatch: Math.round(avgMatch), weekAvg: Math.round(weekAvg), trend, bestPlayer, bestPts: Math.round(bestPts) };
+            }).sort((a, b) => b.weekPts - a.weekPts);
+
+            el.innerHTML = `
+                <div style="background:var(--glass-bg);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-border);border-radius:20px;padding:16px 18px;margin-bottom:1rem;">
+                    <p style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;letter-spacing:0.3em;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Last 7 Matches</p>
+                    <p style="font-size:10px;font-weight:700;color:var(--text-sec);">Who's been on fire lately?</p>
+                </div>
+                ${weeklyData.map((d, i) => {
+                    const color  = getColor(d.id);
+                    const tIcon  = d.trend === 'hot' ? '🔥' : d.trend === 'cold' ? '🧊' : '➡️';
+                    const tColor = d.trend === 'hot' ? '#4ade80' : d.trend === 'cold' ? '#60a5fa' : '#94a3b8';
+                    const weekPct = d.avgMatch > 0 ? Math.min(100, Math.round((d.weekAvg / d.avgMatch) * 100)) : 50;
+                    return `
+                    <div style="background:var(--glass-bg);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-border);border-radius:20px;padding:14px 18px;margin-bottom:8px;box-shadow:var(--glass-shadow);position:relative;overflow:hidden;">
+                        <div style="position:absolute;inset:0;background:var(--glass-shine);border-radius:20px;pointer-events:none;"></div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;position:relative;z-index:1;">
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <span style="font-family:Orbitron,sans-serif;font-size:9px;font-weight:900;color:#334155;">${i+1}</span>
+                                <div>
+                                    <p style="font-size:13px;font-weight:800;color:var(--text-pri);text-transform:uppercase;letter-spacing:0.05em;">${d.first}</p>
+                                    <p style="font-size:9px;font-weight:700;color:var(--text-muted);margin-top:1px;">${tIcon} <span style="color:${tColor}">${d.trend.toUpperCase()}</span> &nbsp;·&nbsp; avg/match: ${d.weekAvg} pts</p>
+                                </div>
+                            </div>
+                            <div style="text-align:right;">
+                                <p style="font-family:Orbitron,sans-serif;font-size:22px;font-weight:900;color:${color};line-height:1;">${d.weekPts}</p>
+                                <p style="font-size:8px;color:var(--text-muted);text-transform:uppercase;">last 7 matches</p>
+                            </div>
+                        </div>
+                        <!-- Progress bar: week avg vs season avg -->
+                        <div style="position:relative;z-index:1;">
+                            <div style="display:flex;justify-content:space-between;font-size:7px;color:var(--text-muted);text-transform:uppercase;font-weight:700;margin-bottom:4px;">
+                                <span>Week avg vs season avg</span><span>${d.weekAvg} / ${d.avgMatch}</span>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.06);border-radius:4px;height:4px;overflow:hidden;">
+                                <div style="height:100%;width:${weekPct}%;background:${color};border-radius:4px;transition:width 0.8s ease;"></div>
+                            </div>
+                            ${d.bestPlayer ? `<p style="font-size:8px;color:var(--text-muted);margin-top:6px;">⭐ Best: <span style="color:${color};font-weight:800;">${d.bestPlayer}</span> <span style="color:#334155;">(${d.bestPts} pts)</span></p>` : ''}
+                        </div>
+                    </div>`;
+                }).join('')}`;
+        }
 
         updateApp();
         startPolling();
