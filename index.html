@@ -67,7 +67,8 @@
         #search-dropdown::-webkit-scrollbar-track { background:transparent; }
         #search-dropdown::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:2px; }
         @keyframes slideIn { from{opacity:0;transform:translateY(-5px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes blink   { 0%,100%{opacity:0.4} 50%{opacity:1} }
+        @keyframes blink      { 0%,100%{opacity:0.4} 50%{opacity:1} }
+        @keyframes todayGlow  { 0%,100%{box-shadow:0 0 12px 2px rgba(241,196,15,0.15),inset 0 0 0 1px rgba(241,196,15,0.2)} 50%{box-shadow:0 0 26px 8px rgba(241,196,15,0.32),inset 0 0 0 1px rgba(241,196,15,0.5)} }
     </style>
 </head>
 <body class="p-4 md:p-10">
@@ -703,80 +704,202 @@
             LSG:'#A4D65E', DC:'#00529A', TBD:'#334155'
         };
 
+        // ── SCHEDULE HELPERS ──
+        const TEAM_NAME_MAP = {
+            'royal challengers bengaluru':'RCB','royal challengers bangalore':'RCB',
+            'mumbai indians':'MI','chennai super kings':'CSK',
+            'kolkata knight riders':'KKR','sunrisers hyderabad':'SRH',
+            'rajasthan royals':'RR','punjab kings':'PBKS',
+            'gujarat titans':'GT','lucknow super giants':'LSG','delhi capitals':'DC',
+        };
+        const MONTH_SHORT = {
+            'jan':'Jan','feb':'Feb','mar':'Mar','apr':'Apr','may':'May','jun':'Jun',
+            'jul':'Jul','aug':'Aug','sep':'Sep','oct':'Oct','nov':'Nov','dec':'Dec'
+        };
+        const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+        function toCode(raw) {
+            if (!raw) return 'TBD';
+            const s = raw.toString().trim();
+            const low = s.toLowerCase();
+            if (TEAM_NAME_MAP[low]) return TEAM_NAME_MAP[low];
+            if (s.length <= 4) return s.toUpperCase();
+            return s; // fallback keep as-is, truncate in render
+        }
+
+        // Parse "28-Mar-2026" → { display:"28 Mar", month:"Apr 2026", dayStr:"Sat", ts:Date }
+        function parseDate(raw) {
+            if (!raw) return { display:'TBD', month:'Playoffs', dayStr:'', ts:null };
+            const s = raw.toString().trim();
+
+            // Handle GViz Date(yyyy,m,d) just in case
+            const gm = s.match(/Date\((\d+),(\d+),(\d+)\)/);
+            if (gm) {
+                const dt = new Date(+gm[1], +gm[2], +gm[3]);
+                return {
+                    display: String(dt.getDate()).padStart(2,'0') + ' ' + MONTH_SHORT[dt.toLocaleString('en',{month:'short'}).toLowerCase()],
+                    month:   dt.toLocaleString('en',{month:'short'}) + ' ' + dt.getFullYear(),
+                    dayStr:  DAY_NAMES[dt.getDay()], ts: dt
+                };
+            }
+
+            // Handle "28-Mar-2026"
+            const dm = s.match(/(\d{1,2})-([A-Za-z]+)-(\d{4})/);
+            if (dm) {
+                const d = parseInt(dm[1]), monStr = dm[2].toLowerCase(), y = parseInt(dm[3]);
+                const monIdx = Object.keys(MONTH_SHORT).indexOf(monStr);
+                const dt = new Date(y, monIdx >= 0 ? monIdx : 0, d);
+                return {
+                    display: String(d).padStart(2,'0') + ' ' + (MONTH_SHORT[monStr] || dm[2]),
+                    month:   (MONTH_SHORT[monStr] || dm[2]) + ' ' + y,
+                    dayStr:  DAY_NAMES[dt.getDay()], ts: dt
+                };
+            }
+
+            // Handle "2026-03-28"
+            const iso = s.match(/(\d{4})-(\d{2})-(\d{2})/);
+            if (iso) {
+                const dt = new Date(+iso[1], +iso[2]-1, +iso[3]);
+                const mon = MONTH_SHORT[dt.toLocaleString('en',{month:'short'}).toLowerCase()];
+                return {
+                    display: String(dt.getDate()).padStart(2,'0') + ' ' + mon,
+                    month:   mon + ' ' + dt.getFullYear(),
+                    dayStr:  DAY_NAMES[dt.getDay()], ts: dt
+                };
+            }
+
+            return { display: s, month: 'Upcoming', dayStr:'', ts:null };
+        }
+
+        // Shorten result: "Royal Challengers Bengaluru won by 43 runs" → "won by 43 runs"
+        // or "Chennai Super Kings won by 5 wickets" → "won by 5 wkts"
+        function shortResult(raw, winnerFull) {
+            if (!raw) return '';
+            let s = raw.toString().trim();
+            // Remove the winning team name from the front
+            if (winnerFull) {
+                const re = new RegExp('^' + winnerFull.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\s*', 'i');
+                s = s.replace(re, '');
+            }
+            // Normalise "wickets" → "wkts", "runs" stays
+            s = s.replace(/\bwickets\b/gi,'wkts').replace(/\bwicket\b/gi,'wkt');
+            // Trim
+            return s.length > 28 ? s.substring(0,26) + '…' : s;
+        }
+
+        function isToday(ts) {
+            if (!ts) return false;
+            const now = new Date();
+            return ts.getDate()===now.getDate() && ts.getMonth()===now.getMonth() && ts.getFullYear()===now.getFullYear();
+        }
+
         function renderSchedule(rows) {
             const el = document.getElementById('schedule-list');
-            // If live rows passed, parse them; otherwise fall back to hardcoded SCHEDULE
-            let matches = SCHEDULE;
+            let matches = SCHEDULE; // hardcoded fallback
+
             if (rows && rows.length > 0) {
                 const parsed = rows
                     .filter(r => r[0] && !isNaN(parseInt(r[0])))
-                    .map(r => ({
-                        m:      parseInt(r[0]),
-                        date:   (r[1] || '').toString().trim(),
-                        day:    (r[2] || '').toString().trim(),
-                        t1:     (r[3] || '').toString().trim().toUpperCase(),
-                        t2:     (r[4] || '').toString().trim().toUpperCase(),
-                        venue:  (r[5] || '').toString().trim(),
-                        winner: (r[6] || '').toString().trim().toUpperCase() || null,
-                        result: (r[7] || '').toString().trim(),
-                    }));
+                    .map(r => {
+                        const dateObj    = parseDate(r[1]);
+                        const t1Full     = (r[3] || '').toString().trim();
+                        const t2Full     = (r[4] || '').toString().trim();
+                        const winnerFull = (r[6] || '').toString().trim();
+                        return {
+                            m:       parseInt(r[0]),
+                            dateObj,
+                            t1:      toCode(t1Full),
+                            t2:      toCode(t2Full),
+                            winner:  winnerFull ? toCode(winnerFull) : null,
+                            winFull: winnerFull,
+                            result:  shortResult(r[7], winnerFull),
+                        };
+                    });
                 if (parsed.length > 0) matches = parsed;
+            }
+
+            // Convert hardcoded SCHEDULE entries to same shape if using fallback
+            if (matches === SCHEDULE) {
+                matches = SCHEDULE.map(m => ({
+                    ...m,
+                    dateObj: parseDate(m.date + (m.date !== 'TBD' ? '-2026' : '')),
+                    winFull: m.winner, result: m.result,
+                }));
             }
 
             // Group by month
             const groups = {};
             matches.forEach(m => {
-                const parts = m.date ? m.date.split(' ') : [];
-                const key = (!m.date || m.date === 'TBD' || parts.length < 2) ? 'Playoffs' : parts[1] + ' 2026';
+                const key = m.dateObj ? m.dateObj.month : 'Playoffs';
                 if (!groups[key]) groups[key] = [];
                 groups[key].push(m);
             });
 
-            el.innerHTML = Object.entries(groups).map(([month, matches]) => `
+            el.innerHTML = Object.entries(groups).map(([month, ms]) => `
                 <div style="margin-bottom:1.5rem;">
                     <p style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;letter-spacing:0.35em;color:#475569;text-transform:uppercase;margin-bottom:10px;padding:0 4px;">${month}</p>
                     <div style="display:flex;flex-direction:column;gap:6px;">
-                        ${matches.map(m => {
-                            const isDone   = m.winner !== null;
-                            const isPlayoff = m.date === 'TBD' || ['FINAL','Qualifier 1','Qualifier 2','Eliminator'].includes(m.result);
-                            const c1 = TEAM_COLORS[m.t1] || '#334155';
-                            const c2 = TEAM_COLORS[m.t2] || '#334155';
-                            const w1 = m.winner === m.t1;
-                            const w2 = m.winner === m.t2;
+                        ${ms.map(m => {
+                            const isDone    = !!m.winner;
+                            const today     = m.dateObj && isToday(m.dateObj.ts);
+                            const isPlayoff = !m.dateObj || m.dateObj.month === 'Playoffs';
+                            const c1        = TEAM_COLORS[m.t1] || '#475569';
+                            const c2        = TEAM_COLORS[m.t2] || '#475569';
+                            const wc        = isDone ? (TEAM_COLORS[m.winner] || '#f1c40f') : '';
+                            const w1        = m.winner === m.t1;
+                            const w2        = m.winner === m.t2;
+                            const dateLabel = m.dateObj ? m.dateObj.display : 'TBD';
+                            const dayLabel  = m.dateObj ? m.dateObj.dayStr  : '';
 
                             return `
-                            <div style="background:rgba(10,15,25,0.98);border:1px solid rgba(255,255,255,${isDone?'0.09':'0.05'});border-radius:16px;padding:12px 16px;display:flex;align-items:center;gap:10px;position:relative;overflow:hidden;">
-                                ${isDone ? `<div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:${TEAM_COLORS[m.winner]||'#f1c40f'};"></div>` : ''}
-                                <!-- Match no + date -->
-                                <div style="min-width:38px;text-align:center;flex-shrink:0;">
-                                    <p style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;color:#334155;">${isPlayoff?'':m.m}</p>
-                                    <p style="font-size:8px;font-weight:700;color:#475569;white-space:nowrap;">${m.date}</p>
-                                    <p style="font-size:7px;font-weight:600;color:#334155;">${m.day}</p>
+                            <div style="
+                                background:rgba(10,15,25,0.98);
+                                border:1px solid rgba(255,255,255,${today?'0.0':'0.06'});
+                                border-radius:16px;padding:11px 14px;
+                                display:flex;align-items:center;gap:8px;
+                                position:relative;overflow:hidden;
+                                ${today ? 'animation:todayGlow 2s ease-in-out infinite;' : ''}
+                            ">
+                                ${isDone ? `<div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:${wc};border-radius:3px 0 0 3px;"></div>` : ''}
+
+                                <!-- Date block -->
+                                <div style="min-width:36px;text-align:center;flex-shrink:0;padding-left:${isDone?'6':'2'}px;">
+                                    <p style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;line-height:1;">${isPlayoff?'★':m.m}</p>
+                                    <p style="font-size:9px;font-weight:800;color:${today?'#f1c40f':'#64748b'};white-space:nowrap;line-height:1.4;">${dateLabel}</p>
+                                    <p style="font-size:7px;font-weight:600;color:#334155;line-height:1;">${dayLabel}</p>
                                 </div>
+
                                 <!-- Team 1 -->
                                 <div style="flex:1;text-align:right;">
-                                    <p style="font-family:Orbitron,sans-serif;font-size:${m.t1.length>3?'9':'11'}px;font-weight:900;color:${w1?c1:'#64748b'};${w1?'text-shadow:0 0 8px '+c1+'55;':''}">${m.t1}</p>
+                                    <p style="font-family:Orbitron,sans-serif;font-size:11px;font-weight:900;
+                                        color:${w1 ? c1 : '#475569'};
+                                        ${w1 ? 'text-shadow:0 0 10px '+c1+'66;' : ''}
+                                        transition:0.3s;">${m.t1}</p>
                                 </div>
-                                <!-- VS / result -->
-                                <div style="min-width:42px;text-align:center;flex-shrink:0;">
-                                    ${isDone
-                                        ? `<p style="font-size:7px;font-weight:800;color:${TEAM_COLORS[m.winner]||'#f1c40f'};text-transform:uppercase;line-height:1.3;">${m.winner}</p>
-                                           <p style="font-size:6px;color:#334155;text-transform:uppercase;">WON</p>`
-                                        : isPlayoff
-                                            ? `<p style="font-size:7px;font-weight:900;color:#f1c40f;font-family:Orbitron,sans-serif;">★</p>`
-                                            : `<p style="font-size:8px;font-weight:900;color:#334155;font-family:Orbitron,sans-serif;">VS</p>`
-                                    }
+
+                                <!-- Middle: VS or result -->
+                                <div style="min-width:52px;text-align:center;flex-shrink:0;">
+                                    ${isDone ? `
+                                        <p style="font-family:Orbitron,sans-serif;font-size:10px;font-weight:900;
+                                            color:${wc};text-shadow:0 0 8px ${wc}88;
+                                            line-height:1.2;">${m.winner}</p>
+                                        <p style="font-size:7px;font-weight:700;color:#475569;line-height:1.3;margin-top:2px;">${m.result}</p>
+                                    ` : isPlayoff ? `
+                                        <p style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#f1c40f;letter-spacing:0.05em;">PLAYOFF</p>
+                                    ` : `
+                                        <p style="font-family:Orbitron,sans-serif;font-size:9px;font-weight:900;color:#1e293b;">VS</p>
+                                        ${today ? '<p style="font-size:7px;font-weight:900;color:#f1c40f;font-family:Orbitron,sans-serif;margin-top:2px;">TODAY</p>' : ''}
+                                    `}
                                 </div>
+
                                 <!-- Team 2 -->
                                 <div style="flex:1;">
-                                    <p style="font-family:Orbitron,sans-serif;font-size:${m.t2.length>3?'9':'11'}px;font-weight:900;color:${w2?c2:'#64748b'};${w2?'text-shadow:0 0 8px '+c2+'55;':''}">${m.t2}</p>
+                                    <p style="font-family:Orbitron,sans-serif;font-size:11px;font-weight:900;
+                                        color:${w2 ? c2 : '#475569'};
+                                        ${w2 ? 'text-shadow:0 0 10px '+c2+'66;' : ''}
+                                        transition:0.3s;">${m.t2}</p>
                                 </div>
-                                <!-- Venue -->
-                                <div style="min-width:60px;text-align:right;flex-shrink:0;">
-                                    <p style="font-size:7px;font-weight:700;color:#334155;text-transform:uppercase;">${m.venue}</p>
-                                    ${isDone && m.result ? `<p style="font-size:6px;color:#475569;margin-top:2px;line-height:1.2;">${m.result}</p>` : ''}
-                                    ${isPlayoff && m.result && !isDone ? `<p style="font-size:7px;font-weight:800;color:#f1c40f;font-family:Orbitron,sans-serif;">${m.result}</p>` : ''}
-                                </div>
+
                             </div>`;
                         }).join('')}
                     </div>
@@ -826,7 +949,7 @@
                 const tc     = TEAM_COLORS[p.team.toUpperCase()] || '#334155';
                 return `
                 <div class="search-item" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;transition:0.15s;border-bottom:1px solid rgba(255,255,255,0.04);"
-                     onclick="closeSearch()">
+                     data-ownerid="${fixID(p.owner)}" onclick="navigateToOwner(this.dataset.ownerid)">
                     <div style="flex:1;min-width:0;">
                         <p style="font-size:12px;font-weight:800;color:#f1f5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</p>
                         <p style="font-size:9px;font-weight:700;color:#475569;text-transform:uppercase;margin-top:2px;">
@@ -848,6 +971,23 @@
         function closeSearch() {
             document.getElementById('player-search').value = '';
             document.getElementById('search-dropdown').style.display = 'none';
+        }
+
+        function navigateToOwner(ownerId) {
+            closeSearch();
+            switchTab('main');
+            const cID  = 'c-' + ownerId.replace(/\s+/g, '-');
+            const card = document.getElementById(cID);
+            if (!card) return;
+            const sq = document.getElementById('sq-' + cID);
+            if (sq && !sq.classList.contains('open')) sq.classList.add('open');
+            setTimeout(() => {
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const origColor = card.style.borderColor;
+                card.style.transition = 'border-color 0.2s ease';
+                card.style.borderColor = getColor(ownerId);
+                setTimeout(() => { card.style.borderColor = origColor; }, 1400);
+            }, 100);
         }
 
         // Close dropdown when tapping outside
