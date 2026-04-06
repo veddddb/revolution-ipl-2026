@@ -18,19 +18,6 @@
         .logo-bg { position: absolute; right: 8%; top: 50%; transform: translateY(-50%); width: 120px; height: 120px; opacity: 0.13; pointer-events: none; z-index: 0; filter: blur(0.5px); transition: opacity 0.4s ease, filter 0.4s ease, transform 0.4s ease; }
         .glass-card:hover .logo-bg { opacity: 0.4; filter: blur(0px); transform: translateY(-50%) scale(1.08); }
 
-        /* NEON SHARE BUTTON */
-        .share-btn { font-size: 9px; font-family: 'Orbitron', sans-serif; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; padding: 6px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: #64748b; transition: 0.3s; cursor: pointer; box-shadow: 0 0 0px transparent; }
-        .share-btn:hover { color: var(--owner-color); border-color: var(--owner-color); background: rgba(255,255,255,0.08); box-shadow: 0 0 15px var(--owner-glow); }
-
-        /* SEARCH BAR STYLING */
-        .search-wrap { position: relative; width: 100%; max-width: 400px; margin: 0 auto 2rem; z-index: 50; }
-        .search-box { width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 16px; padding: 12px 16px 12px 40px; font-size: 13px; color: white; transition: 0.3s; outline: none; }
-        .search-box:focus { border-color: var(--accent); background: rgba(255,255,255,0.07); box-shadow: 0 0 20px rgba(241,196,15,0.1); }
-        .search-icon-svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); opacity: 0.3; pointer-events: none; }
-        .search-results { position: absolute; top: 110%; left: 0; right: 0; background: #0f172a; border: 1px solid var(--accent); border-radius: 16px; max-height: 280px; overflow-y: auto; display: none; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
-        .search-item { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
-        .search-item:hover { background: rgba(255,255,255,0.06); }
-
         .podium-pillar { background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%); border: 1px solid rgba(255,255,255,0.05); position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-bottom: 10px; transform-origin: bottom; }
         .podium-rank-label { font-family: 'Orbitron'; font-size: 8px; font-weight: 900; opacity: 0.5; color: white; letter-spacing: 1px; margin-top: 2px; }
         .trophy-bg { position: absolute; top: 40%; left: 50%; transform: translate(-50%,-50%); width: 50px; height: 50px; opacity: 0.08; color: var(--accent); pointer-events: none; }
@@ -55,6 +42,12 @@
         .skel { background: linear-gradient(90deg,rgba(255,255,255,0.04) 25%,rgba(255,255,255,0.1) 50%,rgba(255,255,255,0.04) 75%); background-size:600px 100%; animation:shimmer 1.4s infinite linear; border-radius:8px; }
         .skel-card { background:rgba(10,15,25,0.98); border:1px solid rgba(255,255,255,0.06); border-radius:24px; padding:24px; margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center; }
 
+        .error-banner { background:rgba(220,38,38,0.12); border:1px solid rgba(220,38,38,0.35); border-radius:16px; padding:14px 20px; margin-bottom:20px; display:flex; align-items:center; gap:12px; animation:slideIn 0.3s ease-out; }
+        .error-dot { width:8px; height:8px; border-radius:50%; background:#ef4444; flex-shrink:0; animation:blink 2s infinite; }
+
+        .share-btn { font-size:9px; font-family:'Orbitron',sans-serif; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; padding:4px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:#64748b; transition:0.2s; cursor:pointer; }
+        .share-btn:hover { color:var(--owner-color); border-color:var(--owner-color); }
+
         #splash { position:fixed; inset:0; z-index:999; background:radial-gradient(circle at 50% 40%,#0f172a,#020617); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:2rem; transition:opacity 0.8s ease,transform 0.8s ease; }
         #splash.hide { opacity:0; transform:scale(1.04); pointer-events:none; }
         .sp { opacity:0; }
@@ -73,6 +66,7 @@
 </head>
 <body class="p-4 md:p-10">
 
+    <!-- SPLASH -->
     <div id="splash" onclick="dismissSplash()">
         <p class="sp sp1" style="font-size:9px;font-family:Orbitron,sans-serif;font-weight:700;letter-spacing:0.4em;color:#475569;text-transform:uppercase;margin-bottom:2rem;">IPL Fantasy League</p>
         <h1 class="sp sp2" style="font-family:Orbitron,sans-serif;font-weight:900;font-style:italic;font-size:clamp(2.8rem,12vw,5rem);line-height:1;color:#f1c40f;text-shadow:0 0 40px rgba(241,196,15,0.35);text-transform:uppercase;letter-spacing:-0.02em;">Revo</h1>
@@ -90,18 +84,21 @@
                 <div id="match-counter" class="role-tag tracking-widest text-yellow-500 uppercase px-3 py-1">MATCHES: —/74</div>
             </div>
             <h1 class="text-5xl font-black font-cyber gold-glow italic tracking-tighter mb-6 uppercase">REVOLUTION</h1>
-            
-            <div class="search-wrap">
-                <svg class="search-icon-svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
-                <input type="text" id="playerSearch" class="search-box" placeholder="Search Player (e.g. Kohli, Rashid)..." oninput="handleSearch()">
-                <div id="searchResults" class="search-results"></div>
-            </div>
-
             <div class="flex justify-center gap-3 bg-black/40 p-1.5 rounded-2xl border border-white/5 inline-flex">
-                <button onclick="switchTab('main')"     id="btn-main"  class="tab-btn active">Live Ranks</button>
-                <button onclick="switchTab('strategy')" id="btn-strat" class="tab-btn">Best Probable Outcome!</button>
+                <button onclick="switchTab('main')"     id="btn-main"     class="tab-btn active">Live Ranks</button>
+                <button onclick="switchTab('strategy')" id="btn-strat"    class="tab-btn">Luckiest Manager</button>
+                <button onclick="switchTab('schedule')" id="btn-schedule" class="tab-btn">Schedule</button>
             </div>
         </header>
+
+        <div id="error-banner" class="error-banner hidden">
+            <div class="error-dot"></div>
+            <div>
+                <p class="text-xs font-black uppercase tracking-widest text-red-400 mb-0.5">Sync Failed</p>
+                <p id="error-msg" class="text-[10px] text-red-300 opacity-70">Could not reach the data sheet. Retrying in 60s…</p>
+            </div>
+            <button onclick="updateApp()" class="ml-auto text-[9px] font-black uppercase tracking-widest text-red-400 border border-red-500/30 rounded-lg px-3 py-1.5 hover:bg-red-500/10 transition-colors">Retry</button>
+        </div>
 
         <div id="view-main" class="space-y-6">
             <div id="mvp-spotlight"></div>
@@ -114,6 +111,10 @@
             <div id="strategy-list" class="space-y-4"></div>
         </div>
 
+        <div id="view-schedule" class="hidden pt-4">
+            <div id="schedule-list"></div>
+        </div>
+
         <footer class="text-center py-20 opacity-20 font-cyber text-[8px] uppercase tracking-[0.6em]">
             Precision Sync • Vedant Bhansali Edition
         </footer>
@@ -122,7 +123,6 @@
     <script>
         const SHEET_ID             = '1xIRCNr0tteFfMk6l7inIkKeSJMb7WLBswsXepHRqjio';
         const TOTAL_SEASON_MATCHES = 74;
-        let _allPlayersData        = []; // Global for search
 
         const ownerColors = {
             vedant:'#3498db', deep:'#e74c3c',    shlok:'#2ecc71',
@@ -132,153 +132,627 @@
             aamer:'#1dd1a1',  yashshah:'#f368e0', jash:'#e67e22',
         };
 
-        const fixID = s => s ? s.toString().toLowerCase().trim() : '';
         function getColor(raw) {
             const n = fixID(raw);
             if (ownerColors[n]) return ownerColors[n];
             for (const w of n.split(/\s+/)) if (ownerColors[w]) return ownerColors[w];
+            if (ownerColors[n.replace(/\s/g,'')]) return ownerColors[n.replace(/\s/g,'')];
             return '#64748b';
         }
+        const fixID = s => s ? s.toString().toLowerCase().trim() : '';
 
-        const IPL_TEAMS = { MI:{color:'#004BA0',accent:'#89CFF0'}, CSK:{color:'#F4C430',accent:'#ffffff'}, RCB:{color:'#C8102E',accent:'#FFD700'}, KKR:{color:'#3A225D',accent:'#B8960C'}, SRH:{color:'#F26522',accent:'#1a1a1a'}, DC:{color:'#00529A',accent:'#E8001C'}, PBKS:{color:'#ED1C24',accent:'#DCDDDF'}, RR:{color:'#EA1A85',accent:'#254AA5'}, GT:{color:'#1D4E89',accent:'#C8A84B'}, LSG:{color:'#A4D65E',accent:'#1a1a1a'} };
+        const IPL_TEAMS = {
+            MI:{color:'#004BA0',accent:'#89CFF0'}, CSK:{color:'#F4C430',accent:'#ffffff'},
+            RCB:{color:'#C8102E',accent:'#FFD700'}, KKR:{color:'#3A225D',accent:'#B8960C'},
+            SRH:{color:'#F26522',accent:'#1a1a1a'}, DC:{color:'#00529A',accent:'#E8001C'},
+            PBKS:{color:'#ED1C24',accent:'#DCDDDF'}, RR:{color:'#EA1A85',accent:'#254AA5'},
+            GT:{color:'#1D4E89',accent:'#C8A84B'}, LSG:{color:'#A4D65E',accent:'#1a1a1a'},
+        };
 
         function teamBadgeSVG(code, size=110) {
             const t = IPL_TEAMS[code]; if (!t) return '';
-            const fs = code.length <= 2 ? 22 : 18;
-            return `<svg viewBox="0 0 100 115" width="${size}" height="${size}"><defs><linearGradient id="sg${code}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="${t.color}" stop-opacity="0.9"/><stop offset="100%" stop-color="${t.color}" stop-opacity="0.5"/></linearGradient></defs><path d="M50 4 L92 18 L92 54 C92 80 50 110 50 110 C50 110 8 80 8 54 L8 18 Z" fill="url(#sg${code})" stroke="${t.accent}" stroke-width="2" stroke-opacity="0.6"/><text x="50" y="60" text-anchor="middle" font-family="Orbitron" font-size="${fs}" font-weight="900" fill="${t.accent}" fill-opacity="0.95">${code}</text></svg>`;
+            const fs = code.length <= 2 ? 22 : code.length === 3 ? 18 : 14;
+            return `<svg viewBox="0 0 100 115" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
+                <defs><linearGradient id="sg${code}" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="${t.color}" stop-opacity="0.9"/>
+                    <stop offset="100%" stop-color="${t.color}" stop-opacity="0.5"/>
+                </linearGradient></defs>
+                <path d="M50 4 L92 18 L92 54 C92 80 50 110 50 110 C50 110 8 80 8 54 L8 18 Z"
+                      fill="url(#sg${code})" stroke="${t.accent}" stroke-width="2" stroke-opacity="0.6"/>
+                <text x="50" y="${fs<=14?62:60}" text-anchor="middle" font-family="Orbitron,sans-serif"
+                      font-size="${fs}" font-weight="900" fill="${t.accent}" fill-opacity="0.95" letter-spacing="1">${code}</text>
+            </svg>`;
         }
 
         function getDominantTeams(squad) {
-            const counts = {}; squad.forEach(p => { const t=fixID(p.team).toUpperCase(); if(t) counts[t]=(counts[t]||0)+1; });
+            if (!squad || !squad.length) return [];
+            const counts = {};
+            squad.forEach(p => { const t=(p.team||'').toString().trim().toUpperCase(); if(t) counts[t]=(counts[t]||0)+1; });
             const max = Math.max(...Object.values(counts));
             return Object.entries(counts).filter(([,v])=>v===max).map(([t])=>t).filter(t=>IPL_TEAMS[t]);
         }
 
-        function dismissSplash() { const s = document.getElementById('splash'); s.classList.add('hide'); setTimeout(() => s.remove(), 900); }
-        function switchTab(t) { document.getElementById('view-main').classList.toggle('hidden', t !== 'main'); document.getElementById('view-strategy').classList.toggle('hidden', t !== 'strategy'); document.getElementById('btn-main').classList.toggle('active', t === 'main'); document.getElementById('btn-strat').classList.toggle('active', t === 'strategy'); }
+        // ── SPLASH ──
+        function dismissSplash() {
+            const s = document.getElementById('splash');
+            s.classList.add('hide');
+            setTimeout(() => s.remove(), 900);
+        }
+        setTimeout(dismissSplash, 5000);
+
+        function switchTab(t) {
+            document.getElementById('view-main').classList.toggle('hidden', t !== 'main');
+            document.getElementById('view-strategy').classList.toggle('hidden', t !== 'strategy');
+            document.getElementById('view-schedule').classList.toggle('hidden', t !== 'schedule');
+            document.getElementById('btn-main').classList.toggle('active', t === 'main');
+            document.getElementById('btn-strat').classList.toggle('active', t === 'strategy');
+            document.getElementById('btn-schedule').classList.toggle('active', t === 'schedule');
+        }
+
+        function showError(msg) {
+            document.getElementById('error-msg').textContent = msg || 'Could not reach the data sheet. Retrying in 60s…';
+            document.getElementById('error-banner').classList.remove('hidden');
+        }
+        function hideError() { document.getElementById('error-banner').classList.add('hidden'); }
+
+        function renderSkeleton() {
+            document.getElementById('podium-area').innerHTML = `
+                <div style="display:flex;justify-content:center;align-items:flex-end;gap:12px;width:100%;height:192px;">
+                    <div class="w-1/3"><div class="skel w-full h-24" style="border-radius:12px 12px 0 0"></div></div>
+                    <div class="w-1/3"><div class="skel w-full h-40" style="border-radius:12px 12px 0 0"></div></div>
+                    <div class="w-1/3"><div class="skel w-full h-16" style="border-radius:12px 12px 0 0"></div></div>
+                </div>`;
+            document.getElementById('leaderboard').innerHTML = Array.from({length:6}).map(()=>`
+                <div class="skel-card">
+                    <div class="flex items-center gap-5"><div class="skel w-4 h-4 rounded"></div><div class="skel w-28 h-3 rounded"></div></div>
+                    <div class="skel w-12 h-6 rounded"></div>
+                </div>`).join('');
+            document.getElementById('mvp-spotlight').innerHTML = `
+                <div class="skel-card mb-6" style="border-radius:20px;padding:15px 20px;">
+                    <div><div class="skel w-32 h-2 rounded mb-3"></div><div class="skel w-40 h-5 rounded mb-2"></div><div class="skel w-24 h-2 rounded"></div></div>
+                    <div class="skel w-14 h-8 rounded"></div>
+                </div>`;
+        }
 
         async function fetchSheet(name) {
             const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=0&sheet=${encodeURIComponent(name)}`;
-            const r = await fetch(url); const t = await r.text();
+            const r = await fetch(url);
+            if (!r.ok) throw new Error(`Sheet fetch failed: ${name} (${r.status})`);
+            const t = await r.text();
             const j = JSON.parse(t.substr(47).slice(0,-2));
             return j.table.rows.map(row => row.c.map(cell => cell ? (cell.v !== null ? cell.v : '') : ''));
         }
 
+        // Global state — used by shareCard
         let _state = { squads:{}, cumulScores:{}, completedMatches:[] };
 
         async function updateApp() {
+            hideError();
+            if (!document.getElementById('leaderboard').querySelector('.glass-card')) renderSkeleton();
+
             try {
-                const [lbRows, rosRows, pcRows] = await Promise.all([ fetchSheet('Leaderboard'), fetchSheet('Roster'), fetchSheet('PointsCalc') ]);
-                const completedMatches = [...new Set(pcRows.filter(r => r[0] && parseFloat(r[6]) > 0).map(r => r[0].toString().trim()))];
+                const [lbRows, rosRows, pcRows] = await Promise.all([
+                    fetchSheet('Leaderboard'),
+                    fetchSheet('Roster'),
+                    fetchSheet('PointsCalc'),
+                ]);
+
+                // Completed matches
+                const completedMatches = [...new Set(
+                    pcRows.filter(r => r[0] && parseFloat(r[6]) > 0).map(r => r[0].toString().trim())
+                )];
                 document.getElementById('match-counter').innerText = `MATCHES: ${completedMatches.length}/${TOTAL_SEASON_MATCHES}`;
 
+                // Player cumulative points
                 const pPoints = {};
-                pcRows.forEach(row => { if (!row[1]) return; const k = fixID(row[1]); const v = parseFloat(row[6])||0; const m = parseFloat(row[5])||1; if (!pPoints[k]) pPoints[k] = { act:0, raw:0 }; pPoints[k].act += v; pPoints[k].raw += (v/m); });
-
-                const squads = {}; _allPlayersData = [];
-                rosRows.forEach(row => {
-                    const oRaw = row[1]?row[1].toString():""; const oKey = fixID(oRaw); if (!oKey || oKey.includes('owner')) return;
-                    if (!squads[oKey]) squads[oKey] = [];
-                    const stats = pPoints[fixID(row[0])] || { act:0, raw:0 };
-                    const pData = { name:row[0], team:row[4], role:row[6], act:Math.round(stats.act), raw:stats.raw, cvc: parseFloat(row[2])===2 ? 'C' : parseFloat(row[2])===1.5 ? 'VC' : '', oFull: oRaw, oID: oKey };
-                    squads[oKey].push(pData); _allPlayersData.push(pData);
+                pcRows.forEach(row => {
+                    if (!row[1]) return;
+                    const k = fixID(row[1]);
+                    const v = parseFloat(row[6]) || 0;
+                    const m = parseFloat(row[5]) || 1;
+                    if (!pPoints[k]) pPoints[k] = { act:0, raw:0 };
+                    pPoints[k].act += v;
+                    pPoints[k].raw += (v / m);
                 });
 
-                let owners = lbRows.map(row => { const full = row[0]?row[0].toString().trim():''; const id = full.toLowerCase(); if (!full || ['owner name','owner'].includes(id)) return null; return { full, score: Math.round(parseFloat(row[1]))||0, id, first:full.split(' ')[0] }; }).filter(Boolean);
-                const active = owners.filter(o => o.id !== 'unsold').sort((a,b) => b.score - a.score);
-                const unsold = owners.find(o => o.id === 'unsold');
+                // Last match MVP
+                let matchPlayers = [], lastMatchName = '';
+                if (pcRows.length) {
+                    lastMatchName = pcRows[pcRows.length-1][0];
+                    pcRows.forEach(r => {
+                        if (r[0] === lastMatchName)
+                            matchPlayers.push({ name:r[1], pts:parseFloat(r[6])||0, owner:r[2] });
+                    });
+                }
+
+                // Squads
+                const squads = {};
+                rosRows.forEach(row => {
+                    const oKey = fixID(row[1]);
+                    if (!oKey || oKey.includes('owner')) return;
+                    if (!squads[oKey]) squads[oKey] = [];
+                    const stats = pPoints[fixID(row[0])] || { act:0, raw:0 };
+                    squads[oKey].push({
+                        name:row[0], team:row[4], role:row[6],
+                        act:Math.round(stats.act), raw:stats.raw,
+                        cvc: parseFloat(row[2])===2 ? 'C' : parseFloat(row[2])===1.5 ? 'VC' : ''
+                    });
+                });
+
+                // Owners
+                let owners = lbRows.map(row => {
+                    const full = row[0] ? row[0].toString().trim() : '';
+                    const id   = full.toLowerCase();
+                    if (!full || ['owner name','owner','name'].includes(id)) return null;
+                    return { full, score: Math.round(parseFloat(row[1]))||0, id, first:full.split(' ')[0] };
+                }).filter(Boolean);
+
+                const active  = owners.filter(o => o.id !== 'unsold').sort((a,b) => b.score - a.score);
+                const unsold  = owners.find(o => o.id === 'unsold');
                 const allOwners = unsold ? [...active, unsold] : active;
+
+                // Build cumulative scores (for streak + sparklines)
                 const cumulScores = buildCumulScores(active, pcRows, completedMatches);
+
+                // Save to global state
                 _state = { squads, cumulScores, completedMatches };
 
-                let matchPlayers = [], lastMatchName = pcRows.length ? pcRows[pcRows.length-1][0] : '';
-                pcRows.forEach(r => { if (r[0] === lastMatchName) matchPlayers.push({ name:r[1], pts:parseFloat(r[6])||0, owner:r[2] }); });
-                renderMVP(matchPlayers.sort((a,b)=>b.pts-a.pts)[0], lastMatchName);
+                // Render
+                renderMVP(matchPlayers.sort((a,b) => b.pts-a.pts)[0], lastMatchName);
                 renderPodium(active);
                 renderStreakTracker(active, cumulScores, completedMatches);
-                renderLeaderboard(allOwners, squads);
+                renderLeaderboard(allOwners, squads, cumulScores);
                 renderStrategy(active, squads);
-            } catch(e) { console.error(e); }
-        }
 
-        function handleSearch() {
-            const query = fixID(document.getElementById('playerSearch').value);
-            const res = document.getElementById('searchResults');
-            if (query.length < 2) { res.style.display = 'none'; return; }
-            const filtered = _allPlayersData.filter(p => fixID(p.name).includes(query)).slice(0, 10);
-            if (!filtered.length) { res.style.display = 'none'; return; }
-            res.innerHTML = filtered.map(p => {
-                const color = getColor(p.oID); const cID = 'c-' + p.oID.replace(/\s+/g,'-');
-                return `<div class="search-item" onclick="jumpToOwner('${cID}')"><div><p class="text-xs font-black uppercase italic">${p.name} <span class="opacity-40">(${p.team})</span></p><p class="text-[8px] font-bold uppercase tracking-widest" style="color:${color}">OWNER: ${p.oFull}</p></div><div class="text-right"><p class="font-cyber text-sm font-black gold-glow">${p.act}</p><p class="text-[8px] opacity-40 uppercase">PTS</p></div></div>`;
-            }).join('');
-            res.style.display = 'block';
-        }
-
-        function jumpToOwner(id) { 
-            const target = document.getElementById(id); 
-            if(target) { 
-                target.scrollIntoView({ behavior: 'smooth', block: 'center' }); 
-                const s = document.getElementById('sq-'+id); if(s) s.classList.add('open'); 
-                document.getElementById('searchResults').style.display='none'; 
-                document.getElementById('playerSearch').value=""; 
-            } 
+            } catch(e) {
+                console.error('Sync Error:', e);
+                showError(e.message || 'Could not reach the data sheet. Retrying in 60s…');
+            }
         }
 
         function buildCumulScores(owners, pcRows, completedMatches) {
-            const cumul = {}, running = {}; owners.forEach(o => { cumul[o.id]=[]; running[o.id]=0; });
-            const nameToId = {}; owners.forEach(o => { nameToId[fixID(o.full)] = o.id; nameToId[o.id] = o.id; });
+            const cumul   = {}, running = {};
+            owners.forEach(o => { cumul[o.id]=[]; running[o.id]=0; });
+
+            const nameToId = {};
+            owners.forEach(o => {
+                nameToId[fixID(o.full)]  = o.id;
+                nameToId[fixID(o.first)] = o.id;
+                nameToId[o.id]           = o.id;
+            });
+
             completedMatches.forEach(matchName => {
                 const totals = {};
-                pcRows.filter(r => r[0] && r[0].toString().trim() === matchName && r[2]).forEach(r => {
-                    const raw = fixID(r[2]); const id = nameToId[raw] || owners.find(o => raw.includes(o.id) || o.id.includes(raw))?.id;
-                    if (id) totals[id] = (totals[id]||0) + (parseFloat(r[6])||0);
+                pcRows
+                    .filter(r => r[0] && r[0].toString().trim() === matchName && r[2])
+                    .forEach(r => {
+                        const raw = fixID(r[2]);
+                        const id  = nameToId[raw]
+                            || owners.find(o => raw.includes(o.id) || o.id.includes(raw))?.id;
+                        if (!id) return;
+                        totals[id] = (totals[id]||0) + (parseFloat(r[6])||0);
+                    });
+                owners.forEach(o => {
+                    running[o.id] += (totals[o.id]||0);
+                    cumul[o.id].push(Math.round(running[o.id]));
                 });
-                owners.forEach(o => { running[o.id] += (totals[o.id]||0); cumul[o.id].push(Math.round(running[o.id])); });
             });
             return cumul;
         }
 
         function renderMVP(mvp, matchName) {
-            const el = document.getElementById('mvp-spotlight'); if (!mvp || !mvp.owner) { el.innerHTML=''; return; }
+            const el = document.getElementById('mvp-spotlight');
+            if (!mvp || !mvp.owner) { el.innerHTML=''; return; }
             const color = getColor(mvp.owner);
-            el.innerHTML = `<div class="mvp-banner flex justify-between items-center"><div><p class="text-[8px] font-black text-yellow-500 uppercase tracking-widest mb-1">MATCH HERO • ${matchName}</p><h2 class="text-xl font-black uppercase italic tracking-tighter">${mvp.name}</h2><p class="text-[10px] font-bold opacity-60 uppercase">OWNED BY <span style="color:${color}">${mvp.owner}</span></p></div><div class="text-right"><p class="font-cyber text-2xl gold-glow font-black italic tracking-tighter">${mvp.pts}</p><p class="text-[8px] font-bold opacity-40 uppercase">POINTS</p></div></div>`;
+            el.innerHTML = `
+                <div class="mvp-banner flex justify-between items-center">
+                    <div>
+                        <p class="text-[8px] font-black text-yellow-500 uppercase tracking-widest mb-1">MATCH HERO • ${matchName}</p>
+                        <h2 class="text-xl font-black uppercase italic tracking-tighter">${mvp.name}</h2>
+                        <p class="text-[10px] font-bold opacity-60 uppercase">OWNED BY <span style="color:${color}">${mvp.owner}</span></p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-cyber text-2xl gold-glow font-black italic tracking-tighter">${mvp.pts}</p>
+                        <p class="text-[8px] font-bold opacity-40 uppercase">POINTS</p>
+                    </div>
+                </div>`;
         }
 
         function renderPodium(top) {
-            const pod = document.getElementById('podium-area'); if (top.length < 3) { pod.innerHTML=''; return; }
-            pod.innerHTML = `<div class="w-1/3 flex flex-col items-center"><span class="text-[9px] font-cyber mb-2 opacity-60 uppercase">${top[1].first}</span><div class="podium-pillar pillar-rise w-full h-24 rounded-t-2xl"><span class="font-cyber text-lg mt-4">${top[1].score}</span><div class="podium-rank-label">2ND</div></div></div><div class="w-1/3 flex flex-col items-center"><span class="text-[10px] font-cyber mb-2 gold-glow italic uppercase tracking-widest">${top[0].first}</span><div class="podium-pillar pillar-rise w-full h-40 rounded-t-2xl shadow-[0_-10px_30px_rgba(241,196,15,0.1)]"><div class="trophy-bg"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18,2H6V4H2V9C2,12 4.24,14.64 7.28,14.94C8.25,17.29 10.3,19 12.82,19.26V22H10V24H14V22H11.18V19.26C13.7,19 15.75,17.29 16.72,14.94C19.76,14.64 22,12 22,9V4H18V2M4,9V6H6V12.75C4.83,12.28 4,11.23 4,9M18,12.75V6H20V9C20,11.23 19.17,12.28 18,12.75Z"/></svg></div><span class="font-cyber text-2xl font-black relative z-10 mt-12">${top[0].score}</span><div class="podium-rank-label">1ST</div></div></div><div class="w-1/3 flex flex-col items-center"><span class="text-[9px] font-cyber mb-2 opacity-60 uppercase">${top[2].first}</span><div class="podium-pillar pillar-rise w-full h-16 rounded-t-2xl"><span class="font-cyber text-base text-gray-400 mt-2">${top[2].score}</span><div class="podium-rank-label">3RD</div></div></div>`;
+            const pod = document.getElementById('podium-area');
+            if (top.length < 3) { pod.innerHTML=''; return; }
+            pod.innerHTML = `
+                <div class="w-1/3 flex flex-col items-center">
+                    <span class="text-[9px] font-cyber mb-2 opacity-60 uppercase">${top[1].first}</span>
+                    <div class="podium-pillar pillar-rise w-full h-24 rounded-t-2xl" style="animation-delay:0.15s">
+                        <span class="font-cyber text-lg mt-4">${top[1].score}</span>
+                        <div class="podium-rank-label">2ND</div>
+                    </div>
+                </div>
+                <div class="w-1/3 flex flex-col items-center">
+                    <span class="text-[10px] font-cyber mb-2 gold-glow italic uppercase tracking-widest">${top[0].first}</span>
+                    <div class="podium-pillar pillar-rise w-full h-40 rounded-t-2xl shadow-[0_-10px_30px_rgba(241,196,15,0.1)]" style="animation-delay:0s">
+                        <div class="trophy-bg"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18,2H6V4H2V9C2,12 4.24,14.64 7.28,14.94C8.25,17.29 10.3,19 12.82,19.26V22H10V24H14V22H11.18V19.26C13.7,19 15.75,17.29 16.72,14.94C19.76,14.64 22,12 22,9V4H18V2M4,9V6H6V12.75C4.83,12.28 4,11.23 4,9M18,12.75V6H20V9C20,11.23 19.17,12.28 18,12.75Z"/></svg></div>
+                        <span class="font-cyber text-2xl font-black relative z-10 mt-12">${top[0].score}</span>
+                        <div class="podium-rank-label">1ST</div>
+                    </div>
+                </div>
+                <div class="w-1/3 flex flex-col items-center">
+                    <span class="text-[9px] font-cyber mb-2 opacity-60 uppercase">${top[2].first}</span>
+                    <div class="podium-pillar pillar-rise w-full h-16 rounded-t-2xl" style="animation-delay:0.3s">
+                        <span class="font-cyber text-base text-gray-400 mt-2">${top[2].score}</span>
+                        <div class="podium-rank-label">3RD</div>
+                    </div>
+                </div>`;
         }
 
         function renderStreakTracker(owners, cumulScores, completedMatches) {
-            const el = document.getElementById('streak-tracker'); if (!el || !completedMatches.length) return;
-            const leadCount = {}; owners.forEach(o => leadCount[o.id] = 0);
-            for (let m = 0; m < completedMatches.length; m++) { let best=-1, bestId=null; owners.forEach(o => { const s=(cumulScores[o.id]||[])[m]||0; if(s>best){best=s;bestId=o.id;} }); if (bestId) leadCount[bestId]++; }
-            const leader = [...owners].sort((a,b) => b.score-a.score)[0]; let streak = 0;
-            if (leader) { for (let m = completedMatches.length-1; m >= 0; m--) { let best=-1, bestId=null; owners.forEach(o => { const s=(cumulScores[o.id]||[])[m]||0; if(s>best){best=s;bestId=o.id;} }); if (bestId === leader.id) streak++; else break; } }
-            const sorted = [...owners].sort((a,b) => (leadCount[b.id]||0)-(leadCount[a.id]||0)); const lc = leader ? getColor(leader.id) : '#f1c40f';
-            el.innerHTML = `<div style="background:rgba(10,15,25,0.98);border:1px solid rgba(255,255,255,0.07);border-radius:20px;padding:18px 20px;margin-bottom:1rem;"><p style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;letter-spacing:0.3em;color:#475569;text-transform:uppercase;margin-bottom:14px;">Streak Tracker</p>${leader && streak > 0 ? `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.05);"><div><p style="font-size:9px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:0.2em;margin-bottom:3px;">Current Leader Streak</p><p style="font-family:Orbitron,sans-serif;font-size:13px;font-weight:900;color:${lc};text-transform:uppercase;">${leader.first}</p></div><div style="text-align:right;"><p style="font-family:Orbitron,sans-serif;font-size:28px;font-weight:900;color:${lc};line-height:1;">${streak}</p><p style="font-size:8px;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:0.2em;">match days</p></div></div>` : ''}<div style="display:flex;flex-direction:column;gap:8px;">${sorted.slice(0,5).map((o,i) => { const c=getColor(o.id), cnt=leadCount[o.id]||0, pct=Math.round((cnt/completedMatches.length)*100); return `<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:8px;font-weight:900;color:#334155;width:14px;">${i+1}</span><span style="font-size:10px;font-weight:800;color:#94a3b8;text-transform:uppercase;flex:1;">${o.first}</span><div style="flex:2;background:rgba(255,255,255,0.04);border-radius:4px;height:4px;overflow:hidden;"><div style="height:100%;width:${pct}%;background:${c};border-radius:4px;transition:width 0.8s ease;"></div></div><span style="font-family:Orbitron,sans-serif;font-size:9px;font-weight:900;color:${c};min-width:28px;text-align:right;">${cnt}d</span></div>`; }).join('')}</div></div>`;
+            const el = document.getElementById('streak-tracker');
+            if (!el || completedMatches.length === 0) return;
+
+            const leadCount = {};
+            owners.forEach(o => leadCount[o.id] = 0);
+            for (let m = 0; m < completedMatches.length; m++) {
+                let best=-1, bestId=null;
+                owners.forEach(o => { const s=(cumulScores[o.id]||[])[m]||0; if(s>best){best=s;bestId=o.id;} });
+                if (bestId) leadCount[bestId]++;
+            }
+
+            const leader = [...owners].sort((a,b) => b.score-a.score)[0];
+            let streak = 0;
+            if (leader) {
+                for (let m = completedMatches.length-1; m >= 0; m--) {
+                    let best=-1, bestId=null;
+                    owners.forEach(o => { const s=(cumulScores[o.id]||[])[m]||0; if(s>best){best=s;bestId=o.id;} });
+                    if (bestId === leader.id) streak++; else break;
+                }
+            }
+
+            const sorted = [...owners].sort((a,b) => (leadCount[b.id]||0)-(leadCount[a.id]||0));
+            const lc     = leader ? getColor(leader.id) : '#f1c40f';
+
+            el.innerHTML = `
+                <div style="background:rgba(10,15,25,0.98);border:1px solid rgba(255,255,255,0.07);border-radius:20px;padding:18px 20px;margin-bottom:1rem;">
+                    <p style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;letter-spacing:0.3em;color:#475569;text-transform:uppercase;margin-bottom:14px;">Streak Tracker</p>
+                    ${leader && streak > 0 ? `
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.05);">
+                        <div>
+                            <p style="font-size:9px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:0.2em;margin-bottom:3px;">Current Leader Streak</p>
+                            <p style="font-family:Orbitron,sans-serif;font-size:13px;font-weight:900;color:${lc};text-transform:uppercase;">${leader.first}</p>
+                        </div>
+                        <div style="text-align:right;">
+                            <p style="font-family:Orbitron,sans-serif;font-size:28px;font-weight:900;color:${lc};line-height:1;">${streak}</p>
+                            <p style="font-size:8px;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:0.2em;">match days</p>
+                        </div>
+                    </div>` : ''}
+                    <div style="display:flex;flex-direction:column;gap:8px;">
+                        ${sorted.slice(0,5).map((o,i) => {
+                            const c=getColor(o.id), cnt=leadCount[o.id]||0;
+                            const pct=Math.round((cnt/completedMatches.length)*100);
+                            return `<div style="display:flex;align-items:center;gap:10px;">
+                                <span style="font-size:8px;font-weight:900;color:#334155;width:14px;">${i+1}</span>
+                                <span style="font-size:10px;font-weight:800;color:#94a3b8;text-transform:uppercase;flex:1;">${o.first}</span>
+                                <div style="flex:2;background:rgba(255,255,255,0.04);border-radius:4px;height:4px;overflow:hidden;">
+                                    <div style="height:100%;width:${pct}%;background:${c};border-radius:4px;transition:width 0.8s ease;"></div>
+                                </div>
+                                <span style="font-family:Orbitron,sans-serif;font-size:9px;font-weight:900;color:${c};min-width:28px;text-align:right;">${cnt}d</span>
+                            </div>`;
+                        }).join('')}
+                    </div>
+                </div>`;
         }
 
-        function renderLeaderboard(owners, squads) {
+        function renderLeaderboard(owners, squads, cumulScores) {
             document.getElementById('leaderboard').innerHTML = owners.map((o,i) => {
-                const color = getColor(o.id); const squad = squads[o.id] || []; const cID = 'c-' + o.id.replace(/\s+/g,'-'); const teams = getDominantTeams(squad);
-                const logoBg = teams.length ? `<div class="logo-bg">${teams.length === 1 ? teamBadgeSVG(teams[0],110) : `<div style="display:flex;gap:6px;">${teams.slice(0,2).map(t=>teamBadgeSVG(t,68)).join('')}</div>`}</div>` : '';
-                const playerRows = squad.sort((a,b)=>b.act-a.act).map((p,idx)=>`<div class="flex justify-between items-center ${p.act===0?'player-row-ghost':''}"> <div class="flex items-center"> <span class="text-[8px] font-bold text-gray-600 mr-3 w-3">${idx+1}</span> <span class="text-[11px] font-bold text-gray-200">${p.name} <span class="team-tag">(${p.team})</span></span> <span class="role-tag">${p.role}</span> ${p.cvc?`<span class="badge font-cyber" style="color:${color};border-color:${color}">${p.cvc}</span>`:''} </div> <span class="font-cyber text-xs font-bold" style="color:${p.act>0?color:'#334155'}">${p.act}</span> </div>`).join('') || '<p class="text-center py-4 text-[10px] opacity-40">No players</p>';
-                return `<div id="${cID}" class="glass-card ${o.id==='unsold'?'opacity-40 mt-12':''}" style="--owner-color:${color};--owner-glow:${color}33"> ${logoBg} <div class="p-6 flex justify-between items-center relative z-10" onclick="toggleSquad('${cID}')"> <div class="flex items-center gap-5"> <span class="font-cyber text-lg ${i<3&&o.id!=='unsold'?'gold-glow':'text-gray-700'}">${o.id==='unsold'?'•':i+1}</span> <span class="font-black text-sm uppercase tracking-widest italic">${o.full}</span> </div> <div class="flex items-center gap-3"> <span class="font-cyber text-2xl font-black italic tracking-tighter">${o.score}</span> ${o.id!=='unsold'?`<button class="share-btn" onclick="event.stopPropagation();shareCard('${cID}','${o.full}',${o.score},${i+1})">Share</button>`:''} </div> </div> <div id="sq-${cID}" class="squad-container"><div class="space-y-4 pt-4">${playerRows}</div></div> </div>`;
+                const color  = getColor(o.id);
+                const squad  = squads[o.id] || [];
+                const cID    = 'c-' + o.id.replace(/\s+/g,'-');
+                const teams  = getDominantTeams(squad);
+                const logoBg = teams.length === 0 ? ''
+                    : teams.length === 1
+                        ? `<div class="logo-bg">${teamBadgeSVG(teams[0],110)}</div>`
+                        : `<div class="logo-bg" style="display:flex;gap:6px;width:150px;align-items:center;justify-content:center;">${teams.slice(0,2).map(t=>teamBadgeSVG(t,68)).join('')}</div>`;
+
+                const playerRows = squad.length === 0
+                    ? `<p style="font-size:10px;color:#475569;text-transform:uppercase;font-weight:700;letter-spacing:0.1em;text-align:center;padding:16px 0;">No players in squad</p>`
+                    : squad.sort((a,b)=>b.act-a.act).map((p,idx)=>`
+                        <div class="flex justify-between items-center ${p.act===0?'player-row-ghost':''}">
+                            <div class="flex items-center">
+                                <span class="text-[8px] font-bold text-gray-600 mr-3 w-3">${idx+1}</span>
+                                <span class="text-[11px] font-bold text-gray-200">${p.name} <span class="team-tag">(${p.team})</span></span>
+                                <span class="role-tag">${p.role}</span>
+                                ${p.cvc?`<span class="badge font-cyber" style="color:${color};border-color:${color}">${p.cvc}</span>`:''}
+                            </div>
+                            <span class="font-cyber text-xs font-bold" style="color:${p.act>0?color:'#334155'}">${p.act}</span>
+                        </div>`).join('');
+
+                return `
+                <div id="${cID}" class="glass-card ${o.id==='unsold'?'opacity-40 mt-12':''}" style="--owner-color:${color};--owner-glow:${color}33">
+                    ${logoBg}
+                    <div class="p-6 flex justify-between items-center relative z-10" onclick="toggleSquad('${cID}')">
+                        <div class="flex items-center gap-5">
+                            <span class="font-cyber text-lg ${i<3&&o.id!=='unsold'?'gold-glow':'text-gray-700'}">${o.id==='unsold'?'•':i+1}</span>
+                            <span class="font-black text-sm uppercase tracking-widest italic">${o.full}</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="font-cyber text-2xl font-black italic tracking-tighter">${o.score}</span>
+                            ${o.id!=='unsold'?`<button class="share-btn" onclick="event.stopPropagation();shareCard('${cID}','${o.full}',${o.score},${i+1})">Share</button>`:''}
+                        </div>
+                    </div>
+                    <div id="sq-${cID}" class="squad-container">
+                        <div class="space-y-4 pt-4">${playerRows}</div>
+                    </div>
+                </div>`;
             }).join('');
         }
 
-        function toggleSquad(id) { const s = document.getElementById('sq-'+id); if (s) s.classList.toggle('open'); }
-        function renderStrategy(owners, squads) { const data = owners.map(o => { const s=squads[o.id]||[], sorted=[...s].sort((a,b)=>b.raw-a.raw); const pot=Math.round((sorted[0]?.raw||0)*2+(sorted[1]?.raw||0)*1.5+sorted.slice(2).reduce((sum,p)=>sum+p.raw,0)); return {...o, pot, diff:pot-o.score, ideal:[sorted[0]?.name||'—',sorted[1]?.name||'—']}; }).sort((a,b)=>b.pot-a.pot); document.getElementById('strategy-list').innerHTML = data.map((d,i) => { const color=getColor(d.id), curRank=owners.findIndex(o=>o.id===d.id)+1; const icon=curRank>i+1?'🟢 ↑':curRank<i+1?'🔴 ↓':'⚪'; return `<div class="glass-card p-5" style="border-left:4px solid ${color};--owner-color:${color};--owner-glow:${color}33"><div class="flex justify-between items-center mb-4"><div><span class="font-cyber text-[10px]" style="color:${color}">${icon} POTENTIAL RANK #${i+1}</span><h3 class="font-black uppercase italic">${d.full}</h3></div><div class="text-right"><span class="font-cyber text-2xl font-black">${d.pot}</span><p class="text-[8px] font-bold opacity-40">MAX POTENTIAL</p></div></div><div class="grid grid-cols-2 gap-4 border-t border-white/5 pt-4 text-[10px] font-bold"><div><p class="opacity-40 uppercase mb-1">Ideal C/VC</p><p class="text-yellow-500 uppercase">${d.ideal[0]} / ${d.ideal[1]}</p></div><div class="text-right"><p class="opacity-40 uppercase mb-1">Points Lost</p><p class="text-red-500">-${d.diff} PTS</p></div></div></div>`; }).join(''); }
-        
-        async function shareCard(cID, ownerFull, score, rank) {
-            const color = getColor(cID.replace('c-','').replace(/-/g,' ')); const squad = (_state.squads[fixID(ownerFull)] || []).sort((a,b) => b.act - a.act); const W=600, H=200+Math.max(squad.length,1)*26+60; const canvas = document.createElement('canvas'); canvas.width=W*2; canvas.height=H*2; const ctx=canvas.getContext('2d'); ctx.scale(2,2); const bg=ctx.createLinearGradient(0,0,W,H); bg.addColorStop(0,'#0f172a'); bg.addColorStop(1,'#020617'); ctx.fillStyle=bg; ctx.fillRect(0,0,W,H); ctx.fillStyle=color; ctx.fillRect(0,0,W,4); const glow=ctx.createRadialGradient(W*0.8,H*0.25,0,W*0.8,H*0.25,180); glow.addColorStop(0,color+'22'); glow.addColorStop(1,'transparent'); ctx.fillStyle=glow; ctx.fillRect(0,0,W,H); ctx.font='700 11px monospace'; ctx.fillStyle=color+'aa'; ctx.fillText(`RANK #${rank}`,28,48); ctx.font='900 30px monospace'; ctx.fillStyle='#f8fafc'; ctx.fillText(ownerFull.toUpperCase(),28,82); ctx.font='900 48px monospace'; ctx.fillStyle=color; ctx.textAlign='right'; ctx.fillText(score,W-28,82); ctx.textAlign='left'; ctx.font='700 9px monospace'; ctx.fillStyle='#334155'; ctx.fillText('TOTAL POINTS • REVOLUTION IPL 2026',28,102); ctx.strokeStyle='rgba(255,255,255,0.07)'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(28,118); ctx.lineTo(W-28,118); ctx.stroke(); ctx.font='700 9px monospace'; ctx.fillStyle='#475569'; ctx.fillText('SQUAD',28,140); squad.forEach((p,i) => { const y=160+i*26; ctx.font='600 12px monospace'; ctx.fillStyle=i%2===0?'#94a3b8':'#64748b'; ctx.fillText(`${p.name} (${p.team})`,28,y); ctx.font='900 12px monospace'; ctx.fillStyle=color; ctx.textAlign='right'; ctx.fillText(`${p.act}`,W-28,y); ctx.textAlign='left'; }); ctx.font='700 8px monospace'; ctx.fillStyle='#1e293b'; ctx.fillText('REVOLUTION • VEDANT BHANSALI EDITION',28,H-16);
-            if (navigator.share) { const blob = await new Promise(res => canvas.toBlob(res, 'image/png')); const file = new File([blob], "share.png", { type: 'image/png' }); navigator.share({ files: [file], title: `Rank #${rank}`, text: `${ownerFull}: ${score} pts 🏏` }).catch(()=>{}); }
-            else { const a = document.createElement('a'); a.download = "share.png"; a.href = canvas.toDataURL('image/png'); a.click(); }
+        function toggleSquad(id) {
+            const s = document.getElementById('sq-'+id);
+            if (s) s.classList.toggle('open');
         }
 
-        updateApp(); setInterval(updateApp, 60000);
-        document.addEventListener('click', e => { if (!document.getElementById('playerSearch').contains(e.target)) document.getElementById('searchResults').style.display = 'none'; });
+        function renderStrategy(owners, squads) {
+            const data = owners.map(o => {
+                const s=squads[o.id]||[], sorted=[...s].sort((a,b)=>b.raw-a.raw);
+                const pot=Math.round((sorted[0]?.raw||0)*2+(sorted[1]?.raw||0)*1.5+sorted.slice(2).reduce((sum,p)=>sum+p.raw,0));
+                return {...o, pot, diff:pot-o.score, ideal:[sorted[0]?.name||'—',sorted[1]?.name||'—']};
+            }).sort((a,b)=>b.pot-a.pot);
+
+            document.getElementById('strategy-list').innerHTML = data.map((d,i) => {
+                const color=getColor(d.id), curRank=owners.findIndex(o=>o.id===d.id)+1;
+                const icon=curRank>i+1?'🟢 ↑':curRank<i+1?'🔴 ↓':'⚪';
+                return `
+                <div class="glass-card p-5" style="border-left:4px solid ${color};--owner-color:${color};--owner-glow:${color}33">
+                    <div class="flex justify-between items-center mb-4">
+                        <div><span class="font-cyber text-[10px]" style="color:${color}">${icon} POTENTIAL RANK #${i+1}</span><h3 class="font-black uppercase italic">${d.full}</h3></div>
+                        <div class="text-right"><span class="font-cyber text-2xl font-black">${d.pot}</span><p class="text-[8px] font-bold opacity-40">MAX POTENTIAL</p></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 border-t border-white/5 pt-4 text-[10px] font-bold">
+                        <div><p class="opacity-40 uppercase mb-1">Ideal C/VC</p><p class="text-yellow-500 uppercase">${d.ideal[0]} / ${d.ideal[1]}</p></div>
+                        <div class="text-right"><p class="opacity-40 uppercase mb-1">Points Lost</p><p class="text-red-500">-${d.diff} PTS</p></div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        async function shareCard(cID, ownerFull, score, rank) {
+            const color = getColor(cID.replace('c-','').replace(/-/g,' '));
+            const squad = (_state.squads[fixID(ownerFull)] || []).sort((a,b) => b.act - a.act);
+
+            // Build canvas image
+            const W=600, H=200+Math.max(squad.length,1)*26+60;
+            const canvas = document.createElement('canvas');
+            canvas.width=W*2; canvas.height=H*2;
+            const ctx=canvas.getContext('2d');
+            ctx.scale(2,2);
+
+            const bg=ctx.createLinearGradient(0,0,W,H);
+            bg.addColorStop(0,'#0f172a'); bg.addColorStop(1,'#020617');
+            ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+            ctx.fillStyle=color; ctx.fillRect(0,0,W,4);
+
+            const glow=ctx.createRadialGradient(W*0.8,H*0.25,0,W*0.8,H*0.25,180);
+            glow.addColorStop(0,color+'22'); glow.addColorStop(1,'transparent');
+            ctx.fillStyle=glow; ctx.fillRect(0,0,W,H);
+
+            ctx.font='700 11px monospace'; ctx.fillStyle=color+'aa';
+            ctx.fillText(`RANK #${rank}`,28,48);
+
+            ctx.font='900 30px monospace'; ctx.fillStyle='#f8fafc';
+            ctx.fillText(ownerFull.toUpperCase(),28,82);
+
+            ctx.font='900 48px monospace'; ctx.fillStyle=color;
+            ctx.textAlign='right'; ctx.fillText(score,W-28,82); ctx.textAlign='left';
+
+            ctx.font='700 9px monospace'; ctx.fillStyle='#334155';
+            ctx.fillText('TOTAL POINTS • REVOLUTION IPL 2026',28,102);
+
+            ctx.strokeStyle='rgba(255,255,255,0.07)'; ctx.lineWidth=1;
+            ctx.beginPath(); ctx.moveTo(28,118); ctx.lineTo(W-28,118); ctx.stroke();
+
+            ctx.font='700 9px monospace'; ctx.fillStyle='#475569';
+            ctx.fillText('SQUAD',28,140);
+            squad.forEach((p,i) => {
+                const y=160+i*26;
+                ctx.font='600 12px monospace'; ctx.fillStyle=i%2===0?'#94a3b8':'#64748b';
+                ctx.fillText(`${p.name} (${p.team})`,28,y);
+                ctx.font='900 12px monospace'; ctx.fillStyle=color;
+                ctx.textAlign='right'; ctx.fillText(`${p.act}`,W-28,y); ctx.textAlign='left';
+            });
+
+            ctx.font='700 8px monospace'; ctx.fillStyle='#1e293b';
+            ctx.fillText('REVOLUTION • VEDANT BHANSALI EDITION',28,H-16);
+
+            const filename = `revo-${ownerFull.toLowerCase().replace(/\s/g,'-')}.png`;
+
+            // Mobile: use Web Share API with file
+            if (navigator.share && navigator.canShare) {
+                try {
+                    const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+                    const file = new File([blob], filename, { type: 'image/png' });
+                    if (navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            files: [file],
+                            title: `${ownerFull} — Revolution IPL 2026`,
+                            text:  `${ownerFull} is ranked #${rank} with ${score} points 🏏`,
+                        });
+                        return;
+                    }
+                } catch(e) {
+                    if (e.name === 'AbortError') return; // user cancelled — silent
+                    // fall through to download
+                }
+            }
+
+            // Desktop fallback: direct download
+            const a = document.createElement('a');
+            a.download = filename;
+            a.href = canvas.toDataURL('image/png');
+            a.click();
+        }
+
+        // ── POLLING ──
+        let _tid = null;
+        function startPolling() { if (!_tid) _tid=setInterval(updateApp,60000); }
+        function stopPolling()  { clearInterval(_tid); _tid=null; }
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) stopPolling(); else { updateApp(); startPolling(); }
+        });
+
+
+        // ── SCHEDULE DATA ──
+        // Results known up to Match 16 (Apr 5, 2026). Today = Apr 5 2026.
+        const SCHEDULE = [
+          {m:1,  date:'28 Mar',day:'Sat', t1:'RCB',  t2:'SRH',  venue:'Bengaluru',      winner:'RCB',  result:'RCB won by 6 wkts'},
+          {m:2,  date:'29 Mar',day:'Sun', t1:'MI',   t2:'KKR',  venue:'Mumbai',         winner:'MI',   result:'MI won by 7 wkts'},
+          {m:3,  date:'30 Mar',day:'Mon', t1:'RR',   t2:'CSK',  venue:'Guwahati',       winner:'RR',   result:'RR won by 8 wkts'},
+          {m:4,  date:'31 Mar',day:'Tue', t1:'PBKS', t2:'GT',   venue:'New Chandigarh', winner:'PBKS', result:'PBKS won by 5 wkts'},
+          {m:5,  date:'01 Apr',day:'Wed', t1:'LSG',  t2:'DC',   venue:'Lucknow',        winner:'DC',   result:'DC won by 6 wkts'},
+          {m:6,  date:'02 Apr',day:'Thu', t1:'KKR',  t2:'SRH',  venue:'Kolkata',        winner:'SRH',  result:'SRH won by 66 runs'},
+          {m:7,  date:'03 Apr',day:'Fri', t1:'CSK',  t2:'PBKS', venue:'Chennai',        winner:'CSK',  result:'CSK won by 4 wkts'},
+          {m:8,  date:'04 Apr',day:'Sat', t1:'MI',   t2:'DC',   venue:'Mumbai',         winner:'MI',   result:'MI won by 5 wkts'},
+          {m:9,  date:'04 Apr',day:'Sat', t1:'RR',   t2:'GT',   venue:'Ahmedabad',      winner:'RR',   result:'RR won by 6 runs'},
+          {m:10, date:'05 Apr',day:'Sun', t1:'SRH',  t2:'LSG',  venue:'Hyderabad',      winner:'LSG',  result:'LSG won by 5 wkts'},
+          {m:11, date:'05 Apr',day:'Sun', t1:'RCB',  t2:'CSK',  venue:'Bengaluru',      winner:'RCB',  result:'RCB won by 43 runs'},
+          {m:12, date:'06 Apr',day:'Mon', t1:'KKR',  t2:'PBKS', venue:'Kolkata',        winner:null,   result:''},
+          {m:13, date:'07 Apr',day:'Tue', t1:'RR',   t2:'MI',   venue:'Guwahati',       winner:null,   result:''},
+          {m:14, date:'08 Apr',day:'Wed', t1:'DC',   t2:'GT',   venue:'Delhi',          winner:null,   result:''},
+          {m:15, date:'09 Apr',day:'Thu', t1:'KKR',  t2:'LSG',  venue:'Kolkata',        winner:null,   result:''},
+          {m:16, date:'10 Apr',day:'Fri', t1:'RR',   t2:'RCB',  venue:'Guwahati',       winner:null,   result:''},
+          {m:17, date:'11 Apr',day:'Sat', t1:'PBKS', t2:'SRH',  venue:'New Chandigarh', winner:null,   result:''},
+          {m:18, date:'11 Apr',day:'Sat', t1:'CSK',  t2:'DC',   venue:'Chennai',        winner:null,   result:''},
+          {m:19, date:'12 Apr',day:'Sun', t1:'LSG',  t2:'GT',   venue:'Lucknow',        winner:null,   result:''},
+          {m:20, date:'12 Apr',day:'Sun', t1:'MI',   t2:'RCB',  venue:'Mumbai',         winner:null,   result:''},
+          {m:21, date:'13 Apr',day:'Mon', t1:'SRH',  t2:'RR',   venue:'Hyderabad',      winner:null,   result:''},
+          {m:22, date:'14 Apr',day:'Tue', t1:'CSK',  t2:'KKR',  venue:'Chennai',        winner:null,   result:''},
+          {m:23, date:'15 Apr',day:'Wed', t1:'RCB',  t2:'LSG',  venue:'Bengaluru',      winner:null,   result:''},
+          {m:24, date:'16 Apr',day:'Thu', t1:'MI',   t2:'PBKS', venue:'Mumbai',         winner:null,   result:''},
+          {m:25, date:'17 Apr',day:'Fri', t1:'GT',   t2:'KKR',  venue:'Ahmedabad',      winner:null,   result:''},
+          {m:26, date:'18 Apr',day:'Sat', t1:'RCB',  t2:'DC',   venue:'Bengaluru',      winner:null,   result:''},
+          {m:27, date:'18 Apr',day:'Sat', t1:'SRH',  t2:'CSK',  venue:'Hyderabad',      winner:null,   result:''},
+          {m:28, date:'19 Apr',day:'Sun', t1:'KKR',  t2:'RR',   venue:'Kolkata',        winner:null,   result:''},
+          {m:29, date:'19 Apr',day:'Sun', t1:'PBKS', t2:'LSG',  venue:'New Chandigarh', winner:null,   result:''},
+          {m:30, date:'20 Apr',day:'Mon', t1:'GT',   t2:'MI',   venue:'Ahmedabad',      winner:null,   result:''},
+          {m:31, date:'21 Apr',day:'Tue', t1:'DC',   t2:'SRH',  venue:'Delhi',          winner:null,   result:''},
+          {m:32, date:'22 Apr',day:'Wed', t1:'RR',   t2:'CSK',  venue:'Jaipur',         winner:null,   result:''},
+          {m:33, date:'23 Apr',day:'Thu', t1:'MI',   t2:'RCB',  venue:'Mumbai',         winner:null,   result:''},
+          {m:34, date:'24 Apr',day:'Fri', t1:'GT',   t2:'PBKS', venue:'Ahmedabad',      winner:null,   result:''},
+          {m:35, date:'25 Apr',day:'Sat', t1:'LSG',  t2:'KKR',  venue:'Lucknow',        winner:null,   result:''},
+          {m:36, date:'25 Apr',day:'Sat', t1:'RR',   t2:'DC',   venue:'Jaipur',         winner:null,   result:''},
+          {m:37, date:'26 Apr',day:'Sun', t1:'SRH',  t2:'CSK',  venue:'Hyderabad',      winner:null,   result:''},
+          {m:38, date:'26 Apr',day:'Sun', t1:'GT',   t2:'RCB',  venue:'Ahmedabad',      winner:null,   result:''},
+          {m:39, date:'27 Apr',day:'Mon', t1:'KKR',  t2:'DC',   venue:'Kolkata',        winner:null,   result:''},
+          {m:40, date:'28 Apr',day:'Tue', t1:'RR',   t2:'PBKS', venue:'Jaipur',         winner:null,   result:''},
+          {m:41, date:'29 Apr',day:'Wed', t1:'LSG',  t2:'MI',   venue:'Lucknow',        winner:null,   result:''},
+          {m:42, date:'30 Apr',day:'Thu', t1:'RCB',  t2:'GT',   venue:'Bengaluru',      winner:null,   result:''},
+          {m:43, date:'01 May',day:'Fri', t1:'DC',   t2:'RR',   venue:'Delhi',          winner:null,   result:''},
+          {m:44, date:'02 May',day:'Sat', t1:'MI',   t2:'CSK',  venue:'Mumbai',         winner:null,   result:''},
+          {m:45, date:'03 May',day:'Sun', t1:'KKR',  t2:'SRH',  venue:'Kolkata',        winner:null,   result:''},
+          {m:46, date:'03 May',day:'Sun', t1:'PBKS', t2:'GT',   venue:'Ahmedabad',      winner:null,   result:''},
+          {m:47, date:'04 May',day:'Mon', t1:'LSG',  t2:'MI',   venue:'Mumbai',         winner:null,   result:''},
+          {m:48, date:'05 May',day:'Tue', t1:'CSK',  t2:'DC',   venue:'Chennai',        winner:null,   result:''},
+          {m:49, date:'06 May',day:'Wed', t1:'RCB',  t2:'SRH',  venue:'Hyderabad',      winner:null,   result:''},
+          {m:50, date:'07 May',day:'Thu', t1:'KKR',  t2:'LSG',  venue:'Kolkata',        winner:null,   result:''},
+          {m:51, date:'08 May',day:'Fri', t1:'DC',   t2:'RCB',  venue:'Delhi',          winner:null,   result:''},
+          {m:52, date:'09 May',day:'Sat', t1:'RR',   t2:'GT',   venue:'Jaipur',         winner:null,   result:''},
+          {m:53, date:'10 May',day:'Sun', t1:'CSK',  t2:'PBKS', venue:'Chennai',        winner:null,   result:''},
+          {m:54, date:'10 May',day:'Sun', t1:'RCB',  t2:'MI',   venue:'Raipur',         winner:null,   result:''},
+          {m:55, date:'11 May',day:'Mon', t1:'PBKS', t2:'DC',   venue:'Dharamshala',    winner:null,   result:''},
+          {m:56, date:'12 May',day:'Tue', t1:'SRH',  t2:'KKR',  venue:'Hyderabad',      winner:null,   result:''},
+          {m:57, date:'13 May',day:'Wed', t1:'GT',   t2:'LSG',  venue:'Ahmedabad',      winner:null,   result:''},
+          {m:58, date:'14 May',day:'Thu', t1:'MI',   t2:'RR',   venue:'Mumbai',         winner:null,   result:''},
+          {m:59, date:'15 May',day:'Fri', t1:'DC',   t2:'CSK',  venue:'Delhi',          winner:null,   result:''},
+          {m:60, date:'16 May',day:'Sat', t1:'RCB',  t2:'PBKS', venue:'Dharamshala',    winner:null,   result:''},
+          {m:61, date:'17 May',day:'Sun', t1:'KKR',  t2:'GT',   venue:'Kolkata',        winner:null,   result:''},
+          {m:62, date:'17 May',day:'Sun', t1:'PBKS', t2:'RCB',  venue:'Dharamshala',    winner:null,   result:''},
+          {m:63, date:'18 May',day:'Mon', t1:'DC',   t2:'CSK',  venue:'Delhi',          winner:null,   result:''},
+          {m:64, date:'19 May',day:'Tue', t1:'LSG',  t2:'RR',   venue:'Lucknow',        winner:null,   result:''},
+          {m:65, date:'20 May',day:'Wed', t1:'RR',   t2:'SRH',  venue:'Jaipur',         winner:null,   result:''},
+          {m:66, date:'21 May',day:'Thu', t1:'KKR',  t2:'CSK',  venue:'Kolkata',        winner:null,   result:''},
+          {m:67, date:'22 May',day:'Fri', t1:'GT',   t2:'MI',   venue:'Chennai',        winner:null,   result:''},
+          {m:68, date:'23 May',day:'Sat', t1:'SRH',  t2:'LSG',  venue:'Hyderabad',      winner:null,   result:''},
+          {m:69, date:'24 May',day:'Sun', t1:'RCB',  t2:'DC',   venue:'Bengaluru',      winner:null,   result:''},
+          {m:70, date:'24 May',day:'Sun', t1:'MI',   t2:'KKR',  venue:'Mumbai',         winner:null,   result:''},
+          {m:71, date:'TBD',   day:'',    t1:'TBD',  t2:'TBD',  venue:'TBD',            winner:null,   result:'Qualifier 1'},
+          {m:72, date:'TBD',   day:'',    t1:'TBD',  t2:'TBD',  venue:'TBD',            winner:null,   result:'Eliminator'},
+          {m:73, date:'TBD',   day:'',    t1:'TBD',  t2:'TBD',  venue:'TBD',            winner:null,   result:'Qualifier 2'},
+          {m:74, date:'31 May',day:'Sun', t1:'TBD',  t2:'TBD',  venue:'TBD',            winner:null,   result:'FINAL'},
+        ];
+
+        const TEAM_COLORS = {
+            RCB:'#C8102E', MI:'#004BA0', CSK:'#F4C430', KKR:'#3A225D',
+            SRH:'#F26522', RR:'#EA1A85', PBKS:'#ED1C24', GT:'#1D4E89',
+            LSG:'#A4D65E', DC:'#00529A', TBD:'#334155'
+        };
+
+        function renderSchedule() {
+            const today = new Date('2026-04-05');
+            const el = document.getElementById('schedule-list');
+
+            // Group by month
+            const groups = {};
+            SCHEDULE.forEach(m => {
+                const key = m.date === 'TBD' ? 'Playoffs' : m.date.split(' ')[1] + ' 2026';
+                if (!groups[key]) groups[key] = [];
+                groups[key].push(m);
+            });
+
+            el.innerHTML = Object.entries(groups).map(([month, matches]) => `
+                <div style="margin-bottom:1.5rem;">
+                    <p style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;letter-spacing:0.35em;color:#475569;text-transform:uppercase;margin-bottom:10px;padding:0 4px;">${month}</p>
+                    <div style="display:flex;flex-direction:column;gap:6px;">
+                        ${matches.map(m => {
+                            const isDone   = m.winner !== null;
+                            const isPlayoff = m.date === 'TBD' || ['FINAL','Qualifier 1','Qualifier 2','Eliminator'].includes(m.result);
+                            const c1 = TEAM_COLORS[m.t1] || '#334155';
+                            const c2 = TEAM_COLORS[m.t2] || '#334155';
+                            const w1 = m.winner === m.t1;
+                            const w2 = m.winner === m.t2;
+
+                            return `
+                            <div style="background:rgba(10,15,25,0.98);border:1px solid rgba(255,255,255,${isDone?'0.09':'0.05'});border-radius:16px;padding:12px 16px;display:flex;align-items:center;gap:10px;position:relative;overflow:hidden;">
+                                ${isDone ? `<div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:${TEAM_COLORS[m.winner]||'#f1c40f'};"></div>` : ''}
+                                <!-- Match no + date -->
+                                <div style="min-width:38px;text-align:center;flex-shrink:0;">
+                                    <p style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;color:#334155;">${isPlayoff?'':m.m}</p>
+                                    <p style="font-size:8px;font-weight:700;color:#475569;white-space:nowrap;">${m.date}</p>
+                                    <p style="font-size:7px;font-weight:600;color:#334155;">${m.day}</p>
+                                </div>
+                                <!-- Team 1 -->
+                                <div style="flex:1;text-align:right;">
+                                    <p style="font-family:Orbitron,sans-serif;font-size:${m.t1.length>3?'9':'11'}px;font-weight:900;color:${w1?c1:'#64748b'};${w1?'text-shadow:0 0 8px '+c1+'55;':''}">${m.t1}</p>
+                                </div>
+                                <!-- VS / result -->
+                                <div style="min-width:42px;text-align:center;flex-shrink:0;">
+                                    ${isDone
+                                        ? `<p style="font-size:7px;font-weight:800;color:${TEAM_COLORS[m.winner]||'#f1c40f'};text-transform:uppercase;line-height:1.3;">${m.winner}</p>
+                                           <p style="font-size:6px;color:#334155;text-transform:uppercase;">WON</p>`
+                                        : isPlayoff
+                                            ? `<p style="font-size:7px;font-weight:900;color:#f1c40f;font-family:Orbitron,sans-serif;">★</p>`
+                                            : `<p style="font-size:8px;font-weight:900;color:#334155;font-family:Orbitron,sans-serif;">VS</p>`
+                                    }
+                                </div>
+                                <!-- Team 2 -->
+                                <div style="flex:1;">
+                                    <p style="font-family:Orbitron,sans-serif;font-size:${m.t2.length>3?'9':'11'}px;font-weight:900;color:${w2?c2:'#64748b'};${w2?'text-shadow:0 0 8px '+c2+'55;':''}">${m.t2}</p>
+                                </div>
+                                <!-- Venue -->
+                                <div style="min-width:60px;text-align:right;flex-shrink:0;">
+                                    <p style="font-size:7px;font-weight:700;color:#334155;text-transform:uppercase;">${m.venue}</p>
+                                    ${isDone && m.result ? `<p style="font-size:6px;color:#475569;margin-top:2px;line-height:1.2;">${m.result}</p>` : ''}
+                                    ${isPlayoff && m.result && !isDone ? `<p style="font-size:7px;font-weight:800;color:#f1c40f;font-family:Orbitron,sans-serif;">${m.result}</p>` : ''}
+                                </div>
+                            </div>`;
+                        }).join('')}
+                    </div>
+                </div>`
+            ).join('');
+        }
+
+        renderSchedule();
+
+        updateApp();
+        startPolling();
     </script>
 </body>
 </html>
