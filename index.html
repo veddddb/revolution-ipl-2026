@@ -60,6 +60,12 @@
         .sp7 { animation:fadeUp 0.6s ease 1.8s forwards, blink 1.4s ease 2.4s infinite; }
 
         @keyframes fadeUp  { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+        #player-search::placeholder { color:#334155; }
+        #player-search:focus { border-color:rgba(255,255,255,0.2); }
+        .search-item:hover { background:rgba(255,255,255,0.05); }
+        #search-dropdown::-webkit-scrollbar { width:4px; }
+        #search-dropdown::-webkit-scrollbar-track { background:transparent; }
+        #search-dropdown::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:2px; }
         @keyframes slideIn { from{opacity:0;transform:translateY(-5px)} to{opacity:1;transform:translateY(0)} }
         @keyframes blink   { 0%,100%{opacity:0.4} 50%{opacity:1} }
     </style>
@@ -101,6 +107,16 @@
         </div>
 
         <div id="view-main" class="space-y-6">
+            <!-- PLAYER SEARCH -->
+            <div style="position:relative;">
+                <input id="player-search" type="text" placeholder="Search player…"
+                    oninput="onSearchInput(this.value)"
+                    onfocus="onSearchInput(this.value)"
+                    style="width:100%;background:rgba(10,15,25,0.98);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:12px 16px 12px 38px;color:#f8fafc;font-size:12px;font-family:Inter,sans-serif;font-weight:600;outline:none;box-sizing:border-box;"
+                    autocomplete="off">
+                <svg style="position:absolute;left:13px;top:50%;transform:translateY(-50%);opacity:0.3;pointer-events:none;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                <div id="search-dropdown" style="display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:rgba(8,12,20,0.99);border:1px solid rgba(255,255,255,0.1);border-radius:14px;overflow:hidden;z-index:100;max-height:320px;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.5);"></div>
+            </div>
             <div id="mvp-spotlight"></div>
             <div id="podium-area" class="flex justify-center items-end gap-3 mb-16 h-48 text-center px-2"></div>
             <div id="streak-tracker"></div>
@@ -231,10 +247,11 @@
             if (!document.getElementById('leaderboard').querySelector('.glass-card')) renderSkeleton();
 
             try {
-                const [lbRows, rosRows, pcRows] = await Promise.all([
+                const [lbRows, rosRows, pcRows, schedRows] = await Promise.all([
                     fetchSheet('Leaderboard'),
                     fetchSheet('Roster'),
                     fetchSheet('PointsCalc'),
+                    fetchSheet('Schedule').catch(() => []),
                 ]);
 
                 // Completed matches
@@ -295,7 +312,7 @@
                 const cumulScores = buildCumulScores(active, pcRows, completedMatches);
 
                 // Save to global state
-                _state = { squads, cumulScores, completedMatches };
+                _state = { squads, cumulScores, completedMatches, rosRows, pPoints };
 
                 // Render
                 renderMVP(matchPlayers.sort((a,b) => b.pts-a.pts)[0], lastMatchName);
@@ -303,6 +320,7 @@
                 renderStreakTracker(active, cumulScores, completedMatches);
                 renderLeaderboard(allOwners, squads, cumulScores);
                 renderStrategy(active, squads);
+                if (schedRows && schedRows.length) renderSchedule(schedRows);
 
             } catch(e) {
                 console.error('Sync Error:', e);
@@ -685,14 +703,31 @@
             LSG:'#A4D65E', DC:'#00529A', TBD:'#334155'
         };
 
-        function renderSchedule() {
-            const today = new Date('2026-04-05');
+        function renderSchedule(rows) {
             const el = document.getElementById('schedule-list');
+            // If live rows passed, parse them; otherwise fall back to hardcoded SCHEDULE
+            let matches = SCHEDULE;
+            if (rows && rows.length > 0) {
+                const parsed = rows
+                    .filter(r => r[0] && !isNaN(parseInt(r[0])))
+                    .map(r => ({
+                        m:      parseInt(r[0]),
+                        date:   (r[1] || '').toString().trim(),
+                        day:    (r[2] || '').toString().trim(),
+                        t1:     (r[3] || '').toString().trim().toUpperCase(),
+                        t2:     (r[4] || '').toString().trim().toUpperCase(),
+                        venue:  (r[5] || '').toString().trim(),
+                        winner: (r[6] || '').toString().trim().toUpperCase() || null,
+                        result: (r[7] || '').toString().trim(),
+                    }));
+                if (parsed.length > 0) matches = parsed;
+            }
 
             // Group by month
             const groups = {};
-            SCHEDULE.forEach(m => {
-                const key = m.date === 'TBD' ? 'Playoffs' : m.date.split(' ')[1] + ' 2026';
+            matches.forEach(m => {
+                const parts = m.date ? m.date.split(' ') : [];
+                const key = (!m.date || m.date === 'TBD' || parts.length < 2) ? 'Playoffs' : parts[1] + ' 2026';
                 if (!groups[key]) groups[key] = [];
                 groups[key].push(m);
             });
@@ -749,7 +784,77 @@
             ).join('');
         }
 
-        renderSchedule();
+
+        // ── PLAYER SEARCH ──
+        let _allPlayers = [];
+
+        function buildPlayerIndex() {
+            const { rosRows, pPoints } = _state;
+            if (!rosRows) return;
+            _allPlayers = [];
+            rosRows.forEach(row => {
+                const name  = (row[0] || '').toString().trim();
+                const owner = (row[1] || '').toString().trim();
+                const team  = (row[4] || '').toString().trim();
+                const role  = (row[6] || '').toString().trim();
+                if (!name || fixID(owner).includes('owner')) return;
+                const stats = pPoints[fixID(name)] || { act: 0 };
+                _allPlayers.push({ name, owner, team, role, pts: Math.round(stats.act) });
+            });
+        }
+
+        function onSearchInput(q) {
+            const dd = document.getElementById('search-dropdown');
+            buildPlayerIndex();
+            const query = q.trim().toLowerCase();
+            if (!query) { dd.style.display = 'none'; return; }
+
+            const results = _allPlayers
+                .filter(p => p.name.toLowerCase().includes(query) || p.team.toLowerCase().includes(query))
+                .sort((a, b) => b.pts - a.pts)
+                .slice(0, 12);
+
+            if (!results.length) {
+                dd.style.display = 'block';
+                dd.innerHTML = `<div style="padding:14px 16px;font-size:11px;color:#475569;text-align:center;">No players found</div>`;
+                return;
+            }
+
+            dd.style.display = 'block';
+            dd.innerHTML = results.map(p => {
+                const color  = getColor(fixID(p.owner));
+                const tc     = TEAM_COLORS[p.team.toUpperCase()] || '#334155';
+                return `
+                <div class="search-item" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;transition:0.15s;border-bottom:1px solid rgba(255,255,255,0.04);"
+                     onclick="closeSearch()">
+                    <div style="flex:1;min-width:0;">
+                        <p style="font-size:12px;font-weight:800;color:#f1f5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</p>
+                        <p style="font-size:9px;font-weight:700;color:#475569;text-transform:uppercase;margin-top:2px;">
+                            <span style="color:${tc}">${p.team}</span>
+                            <span style="opacity:0.4;margin:0 4px;">•</span>
+                            <span style="color:${color}">${p.owner}</span>
+                            <span style="opacity:0.4;margin:0 4px;">•</span>
+                            ${p.role}
+                        </p>
+                    </div>
+                    <div style="text-align:right;flex-shrink:0;">
+                        <p style="font-family:Orbitron,sans-serif;font-size:13px;font-weight:900;color:${color};">${p.pts}</p>
+                        <p style="font-size:7px;color:#334155;text-transform:uppercase;font-weight:700;">pts</p>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function closeSearch() {
+            document.getElementById('player-search').value = '';
+            document.getElementById('search-dropdown').style.display = 'none';
+        }
+
+        // Close dropdown when tapping outside
+        document.addEventListener('click', e => {
+            if (!e.target.closest('#player-search') && !e.target.closest('#search-dropdown'))
+                document.getElementById('search-dropdown').style.display = 'none';
+        });
 
         updateApp();
         startPolling();
