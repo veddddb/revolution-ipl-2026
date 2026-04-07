@@ -7,50 +7,38 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        /* ── DARK MODE (default) ── */
-        :root {
-            --accent:#f1c40f; --border:rgba(255,255,255,0.1);
-            --bg1:#0f172a; --bg2:#020617;
-            --text-pri:#f8fafc; --text-sec:#94a3b8; --text-muted:#475569;
-            /* Liquid glass */
-            --glass-bg:rgba(15,23,42,0.55);
-            --glass-blur:blur(28px) saturate(160%) brightness(1.08);
-            --glass-border:rgba(255,255,255,0.12);
-            --glass-shine:linear-gradient(135deg,rgba(255,255,255,0.10) 0%,rgba(255,255,255,0.02) 50%,rgba(255,255,255,0.06) 100%);
-            --glass-shadow:0 8px 32px rgba(0,0,0,0.45);
-        }
+        :root { --accent: #f1c40f; --glass: rgba(10,15,25,0.98); --border: rgba(255,255,255,0.08); }
+
         /* ── LIGHT MODE ── */
         body.light {
-            --bg1:#e8eef8; --bg2:#d0daea;
-            --text-pri:#0f172a; --text-sec:#334155; --text-muted:#64748b;
-            --glass-bg:rgba(255,255,255,0.45);
-            --glass-blur:blur(28px) saturate(180%) brightness(1.05);
-            --glass-border:rgba(255,255,255,0.7);
-            --glass-shine:linear-gradient(135deg,rgba(255,255,255,0.6) 0%,rgba(255,255,255,0.15) 60%,rgba(255,255,255,0.35) 100%);
-            --glass-shadow:0 8px 32px rgba(100,130,180,0.18);
-            --border:rgba(0,0,0,0.08);
+            --glass: rgba(240,244,255,0.92);
+            --border: rgba(0,0,0,0.1);
+            background: radial-gradient(circle at top, #e8eef8 0%, #c8d8f0 100%) fixed !important;
+            color: #0f172a;
         }
-        body { background: radial-gradient(circle at 30% 20%, var(--bg1) 0%, var(--bg2) 100%) fixed; color: var(--text-pri); font-family: 'Inter', sans-serif; min-height: 100vh; transition: background 0.4s ease, color 0.3s ease; }
+        body.light .gold-glow  { color: #b8860b; text-shadow: none; }
+        body.light .font-cyber { color: #1e293b; }
+        body.light .role-tag   { background: rgba(0,0,0,0.06); color: #475569; }
+        body.light .team-tag   { color: #64748b; }
+        body.light .tab-btn    { color: #475569; border-color: rgba(0,0,0,0.1); background: rgba(0,0,0,0.04); }
+        body.light .tab-btn.active { background: #b8860b; color: #fff; border-color: #b8860b; }
+        body.light .podium-pillar  { background: linear-gradient(180deg,rgba(0,0,0,0.06),rgba(0,0,0,0.02)); border-color: rgba(0,0,0,0.08); }
+        body.light .podium-rank-label { color: #334155; }
+        body.light .squad-container { border-top-color: rgba(0,0,0,0.06); }
+        body.light #player-search  { background: rgba(240,244,255,0.95) !important; color: #0f172a !important; border-color: rgba(0,0,0,0.12) !important; }
+        body.light #search-dropdown { background: rgba(240,244,255,0.99) !important; border-color: rgba(0,0,0,0.1) !important; }
+        body.light .search-item:hover { background: rgba(0,0,0,0.04) !important; }
+        body.light .skel { background: linear-gradient(90deg,rgba(0,0,0,0.04) 25%,rgba(0,0,0,0.1) 50%,rgba(0,0,0,0.04) 75%); }
+        body.light .error-banner { background: rgba(220,38,38,0.08); }
+        body.light .mvp-banner { background: linear-gradient(90deg,rgba(184,134,11,0.1),rgba(184,134,11,0.04)); border-color: rgba(184,134,11,0.3); }
+        body.light .player-row-ghost { opacity: 0.35; }
+
+        body { background: radial-gradient(circle at top, #0f172a 0%, #020617 100%) fixed; color: #f8fafc; font-family: 'Inter', sans-serif; min-height: 100vh; transition: background 0.4s ease, color 0.3s ease; }
         .font-cyber { font-family: 'Orbitron', sans-serif; }
         .gold-glow  { color: var(--accent); text-shadow: 0 0 15px rgba(241,196,15,0.5); }
 
-        /* ── LIQUID GLASS CARD ── */
-        .glass-card {
-            background: var(--glass-bg);
-            backdrop-filter: var(--glass-blur);
-            -webkit-backdrop-filter: var(--glass-blur);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            box-shadow: var(--glass-shadow);
-            transition: 0.4s cubic-bezier(0.4,0,0.2,1);
-            margin-bottom: 1rem; position: relative; overflow: hidden; cursor: pointer;
-        }
-        .glass-card::before {
-            content:''; position:absolute; inset:0; border-radius:24px;
-            background: var(--glass-shine);
-            pointer-events:none; z-index:1;
-        }
-        .glass-card:hover { transform: translateY(-4px); border-color: var(--owner-color, var(--accent)); box-shadow: 0 0 30px -5px var(--owner-glow, rgba(241,196,15,0.25)), var(--glass-shadow); z-index: 20; }
+        .glass-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 24px; transition: 0.4s cubic-bezier(0.4,0,0.2,1); margin-bottom: 1rem; position: relative; overflow: hidden; cursor: pointer; }
+        .glass-card:hover { transform: translateY(-4px); border-color: var(--owner-color, var(--accent)); box-shadow: 0 0 30px -5px var(--owner-glow, rgba(241,196,15,0.2)); z-index: 20; }
 
         .logo-bg { position: absolute; right: 8%; top: 50%; transform: translateY(-50%); width: 120px; height: 120px; opacity: 0.13; pointer-events: none; z-index: 0; filter: blur(0.5px); transition: opacity 0.4s ease, filter 0.4s ease, transform 0.4s ease; }
         .glass-card:hover .logo-bg { opacity: 0.4; filter: blur(0px); transform: translateY(-50%) scale(1.08); }
@@ -105,6 +93,8 @@
         #search-dropdown::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:2px; }
         @keyframes slideIn { from{opacity:0;transform:translateY(-5px)} to{opacity:1;transform:translateY(0)} }
         @keyframes blink      { 0%,100%{opacity:0.4} 50%{opacity:1} }
+        @keyframes livePulse  { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
+        .live-dot { display:inline-block; width:7px; height:7px; border-radius:50%; background:#4ade80; margin-left:6px; vertical-align:middle; flex-shrink:0; animation:livePulse 1.2s ease-in-out infinite; box-shadow:0 0 6px #4ade80; }
         @keyframes todayGlow  { 0%,100%{box-shadow:0 0 12px 2px rgba(241,196,15,0.15),inset 0 0 0 1px rgba(241,196,15,0.2)} 50%{box-shadow:0 0 26px 8px rgba(241,196,15,0.32),inset 0 0 0 1px rgba(241,196,15,0.5)} }
     </style>
 </head>
@@ -160,21 +150,7 @@
                 <svg style="position:absolute;left:13px;top:50%;transform:translateY(-50%);opacity:0.3;pointer-events:none;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
                 <div id="search-dropdown" style="display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:rgba(8,12,20,0.99);border:1px solid rgba(255,255,255,0.1);border-radius:14px;overflow:hidden;z-index:100;max-height:320px;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.5);"></div>
             </div>
-            <!-- IPL TEAM FILTER -->
-            <div id="team-filter-bar" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;">
-                <button class="team-filter-btn active" data-team="ALL" onclick="setTeamFilter('ALL')" style="flex-shrink:0;font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.06);color:var(--text-sec);cursor:pointer;transition:0.2s;letter-spacing:0.05em;">ALL</button>
-                <button class="team-filter-btn" data-team="MI"   onclick="setTeamFilter('MI')"   style="flex-shrink:0;font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 10px;border-radius:20px;border:1px solid rgba(0,75,160,0.4);background:rgba(0,75,160,0.15);color:#89CFF0;cursor:pointer;transition:0.2s;">MI</button>
-                <button class="team-filter-btn" data-team="CSK"  onclick="setTeamFilter('CSK')"  style="flex-shrink:0;font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 10px;border-radius:20px;border:1px solid rgba(244,196,48,0.4);background:rgba(244,196,48,0.12);color:#F4C430;cursor:pointer;transition:0.2s;">CSK</button>
-                <button class="team-filter-btn" data-team="RCB"  onclick="setTeamFilter('RCB')"  style="flex-shrink:0;font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 10px;border-radius:20px;border:1px solid rgba(200,16,46,0.4);background:rgba(200,16,46,0.12);color:#F87171;cursor:pointer;transition:0.2s;">RCB</button>
-                <button class="team-filter-btn" data-team="KKR"  onclick="setTeamFilter('KKR')"  style="flex-shrink:0;font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 10px;border-radius:20px;border:1px solid rgba(58,34,93,0.5);background:rgba(58,34,93,0.2);color:#c4b5fd;cursor:pointer;transition:0.2s;">KKR</button>
-                <button class="team-filter-btn" data-team="SRH"  onclick="setTeamFilter('SRH')"  style="flex-shrink:0;font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 10px;border-radius:20px;border:1px solid rgba(242,101,34,0.4);background:rgba(242,101,34,0.12);color:#fb923c;cursor:pointer;transition:0.2s;">SRH</button>
-                <button class="team-filter-btn" data-team="DC"   onclick="setTeamFilter('DC')"   style="flex-shrink:0;font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 10px;border-radius:20px;border:1px solid rgba(0,82,154,0.4);background:rgba(0,82,154,0.15);color:#60a5fa;cursor:pointer;transition:0.2s;">DC</button>
-                <button class="team-filter-btn" data-team="PBKS" onclick="setTeamFilter('PBKS')" style="flex-shrink:0;font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 10px;border-radius:20px;border:1px solid rgba(237,28,36,0.4);background:rgba(237,28,36,0.12);color:#fca5a5;cursor:pointer;transition:0.2s;">PBKS</button>
-                <button class="team-filter-btn" data-team="RR"   onclick="setTeamFilter('RR')"   style="flex-shrink:0;font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 10px;border-radius:20px;border:1px solid rgba(234,26,133,0.4);background:rgba(234,26,133,0.12);color:#f9a8d4;cursor:pointer;transition:0.2s;">RR</button>
-                <button class="team-filter-btn" data-team="GT"   onclick="setTeamFilter('GT')"   style="flex-shrink:0;font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 10px;border-radius:20px;border:1px solid rgba(29,78,137,0.4);background:rgba(29,78,137,0.15);color:#93c5fd;cursor:pointer;transition:0.2s;">GT</button>
-                <button class="team-filter-btn" data-team="LSG"  onclick="setTeamFilter('LSG')"  style="flex-shrink:0;font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 10px;border-radius:20px;border:1px solid rgba(164,214,94,0.4);background:rgba(164,214,94,0.12);color:#a4d65e;cursor:pointer;transition:0.2s;">LSG</button>
-            </div>
-            <div id="mvp-spotlight"></div>
+                        <div id="mvp-spotlight"></div>
             <div id="podium-area" class="flex justify-center items-end gap-3 mb-16 h-48 text-center px-2"></div>
             <div id="streak-tracker"></div>
             <div id="leaderboard" class="space-y-2"></div>
@@ -283,19 +259,7 @@
             if (btn) btn.scrollIntoView({ inline:'center', behavior:'smooth', block:'nearest' });
         }
 
-        // ── SWIPE GESTURE ──
-        (function() {
-            let sx = 0, sy = 0;
-            document.addEventListener('touchstart', e => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive:true });
-            document.addEventListener('touchend', e => {
-                const dx = e.changedTouches[0].clientX - sx;
-                const dy = e.changedTouches[0].clientY - sy;
-                if (Math.abs(dx) < 50 || Math.abs(dy) > Math.abs(dx) * 0.8) return; // not a horiz swipe
-                const idx = TAB_ORDER.indexOf(_currentTab);
-                if (dx < 0 && idx < TAB_ORDER.length - 1) switchTab(TAB_ORDER[idx + 1], true);
-                if (dx > 0 && idx > 0) switchTab(TAB_ORDER[idx - 1], true);
-            }, { passive:true });
-        })();
+
 
         function showError(msg) {
             document.getElementById('error-msg').textContent = msg || 'Could not reach the data sheet. Retrying in 60s…';
@@ -404,7 +368,7 @@
                 const cumulScores = buildCumulScores(active, pcRows, completedMatches);
 
                 // Save to global state
-                _state = { squads, cumulScores, completedMatches, rosRows, pPoints, pcRows, active };
+                _state = { squads, cumulScores, completedMatches, rosRows, pPoints, pcRows, active, schedRows };
 
                 // Render
                 renderMVP(matchPlayers.sort((a,b) => b.pts-a.pts)[0], lastMatchName);
@@ -554,6 +518,33 @@
                 </div>`;
         }
 
+        // ── TODAY'S PLAYING TEAMS ──
+        function todaysTeams() {
+            const rows = _state.schedRows || [];
+            const today = new Date();
+            const playing = new Set();
+            rows.forEach(r => {
+                if (!r[1]) return;
+                const d = parseDate(r[1]);
+                if (d.ts && isToday(d.ts)) {
+                    const t1 = toCode((r[3]||'').toString().trim());
+                    const t2 = toCode((r[4]||'').toString().trim());
+                    if (t1) playing.add(t1.toUpperCase());
+                    if (t2) playing.add(t2.toUpperCase());
+                }
+            });
+            // Fallback: use hardcoded SCHEDULE if sheet not available
+            if (!playing.size) {
+                SCHEDULE.forEach(m => {
+                    if (m.dateObj && isToday(m.dateObj.ts)) {
+                        playing.add(m.t1.toUpperCase());
+                        playing.add(m.t2.toUpperCase());
+                    }
+                });
+            }
+            return playing;
+        }
+
         function renderLeaderboard(owners, squads, cumulScores) {
             document.getElementById('leaderboard').innerHTML = owners.map((o,i) => {
                 const color  = getColor(o.id);
@@ -565,18 +556,23 @@
                         ? `<div class="logo-bg">${teamBadgeSVG(teams[0],110)}</div>`
                         : `<div class="logo-bg" style="display:flex;gap:6px;width:150px;align-items:center;justify-content:center;">${teams.slice(0,2).map(t=>teamBadgeSVG(t,68)).join('')}</div>`;
 
+                const _todayTeams = todaysTeams();
                 const playerRows = squad.length === 0
                     ? `<p style="font-size:10px;color:#475569;text-transform:uppercase;font-weight:700;letter-spacing:0.1em;text-align:center;padding:16px 0;">No players in squad</p>`
-                    : squad.sort((a,b)=>b.act-a.act).map((p,idx)=>`
+                : squad.sort((a,b)=>b.act-a.act).map((p,idx)=>{
+                        const isPlaying = _todayTeams.has((p.team||'').toString().trim().toUpperCase());
+                        return `
                         <div class="flex justify-between items-center ${p.act===0?'player-row-ghost':''}">
-                            <div class="flex items-center">
+                            <div class="flex items-center flex-wrap" style="gap:0;">
                                 <span class="text-[8px] font-bold text-gray-600 mr-3 w-3">${idx+1}</span>
                                 <span class="text-[11px] font-bold text-gray-200">${p.name} <span class="team-tag">(${p.team})</span></span>
                                 <span class="role-tag">${p.role}</span>
                                 ${p.cvc?`<span class="badge font-cyber" style="color:${color};border-color:${color}">${p.cvc}</span>`:''}
+                                ${isPlaying?'<span class="live-dot" title="Playing today"></span>':''}
                             </div>
                             <span class="font-cyber text-xs font-bold" style="color:${p.act>0?color:'#334155'}">${p.act}</span>
-                        </div>`).join('');
+                        </div>`;
+                    }).join('');
 
                 return `
                 <div id="${cID}" class="glass-card ${o.id==='unsold'?'opacity-40 mt-12':''}" style="--owner-color:${color};--owner-glow:${color}33">
@@ -1102,26 +1098,7 @@
             document.getElementById('theme-toggle').textContent = '☀️';
         }
 
-        // ── TEAM FILTER ──
-        let _activeTeamFilter = 'ALL';
-        function setTeamFilter(team) {
-            _activeTeamFilter = team;
-            document.querySelectorAll('.team-filter-btn').forEach(b => {
-                b.style.opacity = (b.dataset.team === team) ? '1' : '0.45';
-                b.style.transform = (b.dataset.team === team) ? 'scale(1.08)' : 'scale(1)';
-            });
-            const cards = document.querySelectorAll('#leaderboard .glass-card');
-            cards.forEach(card => {
-                if (team === 'ALL') { card.style.display = ''; card.style.opacity = '1'; return; }
-                // Check if this owner has any player from the selected team
-                const teamTags = card.querySelectorAll('.team-tag');
-                const hasTeam  = Array.from(teamTags).some(t => t.textContent.includes('(' + team + ')') || t.textContent.trim() === team);
-                card.style.display   = hasTeam ? '' : 'none';
-                card.style.opacity   = '1';
-            });
-        }
-
-        // ── RANK CHANGE ARROWS ──
+                // ── RANK CHANGE ARROWS ──
         let _prevRanks = {};
         function renderRankArrows(active) {
             active.forEach((o, i) => {
@@ -1145,42 +1122,7 @@
             });
         }
 
-        // ── PUSH NOTIFICATIONS ──
-        async function requestPushPermission() {
-            if (!('Notification' in window)) return;
-            if (Notification.permission === 'granted') return;
-            const perm = await Notification.requestPermission();
-            if (perm === 'granted') showLocalNotif('Revo IPL 2026', 'Notifications enabled! You\'ll be alerted when rankings change.');
-        }
-        function showLocalNotif(title, body) {
-            if (Notification.permission === 'granted') new Notification(title, { body, icon: '' });
-        }
-        // Check for rank change and notify
-        let _notifRanks = {};
-        function checkAndNotify(active) {
-            if (Notification.permission !== 'granted') return;
-            active.forEach((o, i) => {
-                const prev = _notifRanks[o.id];
-                if (prev !== undefined && prev !== i + 1) {
-                    const up = i + 1 < prev;
-                    showLocalNotif(`${o.first} moved ${up?'up':'down'}!`, `Now ranked #${i+1} with ${o.score} pts`);
-                }
-                _notifRanks[o.id] = i + 1;
-            });
-        }
-        // Show notification prompt button subtly after 3s
-        setTimeout(() => {
-            if ('Notification' in window && Notification.permission === 'default') {
-                const btn = document.createElement('button');
-                btn.textContent = '🔔 Enable alerts';
-                btn.style.cssText = 'position:fixed;bottom:24px;right:16px;z-index:500;font-size:10px;font-family:Orbitron,sans-serif;font-weight:900;letter-spacing:0.05em;padding:8px 14px;border-radius:20px;border:1px solid rgba(241,196,15,0.3);background:rgba(10,15,25,0.92);backdrop-filter:blur(12px);color:#f1c40f;cursor:pointer;transition:0.3s;';
-                btn.onclick = () => { requestPushPermission(); btn.remove(); };
-                document.body.appendChild(btn);
-                setTimeout(() => { if (btn.parentNode) btn.style.opacity='0'; setTimeout(()=>btn.remove(),500); }, 8000);
-            }
-        }, 3000);
-
-        // ── WEEKLY REPORT ──
+                // ── WEEKLY REPORT ──
         function renderWeekly(active, pcRows, completedMatches, squads) {
             const el = document.getElementById('weekly-list');
             if (!el || !completedMatches.length) return;
