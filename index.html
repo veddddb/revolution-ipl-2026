@@ -1219,23 +1219,16 @@
             });
         }
 
-                // ── WEEKLY REPORT ──
+        // ── WEEKLY REPORT ──
         function renderWeekly(active, pcRows, completedMatches, squads) {
             const el = document.getElementById('weekly-list');
             if (!el || !completedMatches.length) return;
 
-            // Last 7 match days
             const last7 = completedMatches.slice(-7);
             const all   = completedMatches;
 
-            // Per-owner: total in last7, total overall, best player in last7
             const weeklyData = active.map(o => {
-                // Build owner name→id map
-                const sqPlayers = squads[o.id] || [];
-                const playerNames = new Set(sqPlayers.map(p => fixID(p.name)));
-
-                let weekPts = 0, totalPts = o.score, bestPlayer = null, bestPts = 0;
-
+                let weekPts = 0, bestPlayer = null, bestPts = 0;
                 pcRows.forEach(r => {
                     if (!r[1] || !r[2]) return;
                     const ownerRaw = fixID(r[2]);
@@ -1243,7 +1236,7 @@
                                      ownerRaw.includes(o.id.split(' ')[0]) ||
                                      o.id.includes(ownerRaw.split(' ')[0]);
                     if (!isOwner) return;
-                    const pts = parseFloat(r[6]) || 0;
+                    const pts   = parseFloat(r[6]) || 0;
                     const match = r[0] ? r[0].toString().trim() : '';
                     if (last7.includes(match)) {
                         weekPts += pts;
@@ -1251,51 +1244,84 @@
                     }
                 });
 
-                const avgMatch = all.length > 0 ? totalPts / all.length : 0;
+                const avgMatch = all.length > 0 ? o.score / all.length : 0;
                 const weekAvg  = last7.length > 0 ? weekPts / last7.length : 0;
                 const trend    = weekAvg > avgMatch ? 'hot' : weekAvg < avgMatch * 0.8 ? 'cold' : 'steady';
-
                 return { ...o, weekPts: Math.round(weekPts), avgMatch: Math.round(avgMatch), weekAvg: Math.round(weekAvg), trend, bestPlayer, bestPts: Math.round(bestPts) };
             }).sort((a, b) => b.weekPts - a.weekPts);
 
-            el.innerHTML = `
-                <div style="background:var(--glass-bg);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-border);border-radius:20px;padding:16px 18px;margin-bottom:1rem;">
-                    <p style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;letter-spacing:0.3em;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Last 7 Matches</p>
-                    <p style="font-size:10px;font-weight:700;color:var(--text-sec);">Who's been on fire lately?</p>
-                </div>
-                ${weeklyData.map((d, i) => {
-                    const color  = getColor(d.id);
-                    const tIcon  = d.trend === 'hot' ? '🔥' : d.trend === 'cold' ? '🧊' : '➡️';
-                    const tColor = d.trend === 'hot' ? '#4ade80' : d.trend === 'cold' ? '#60a5fa' : '#94a3b8';
-                    const weekPct = d.avgMatch > 0 ? Math.min(100, Math.round((d.weekAvg / d.avgMatch) * 100)) : 50;
-                    return `
-                    <div style="background:var(--glass-bg);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-border);border-radius:20px;padding:14px 18px;margin-bottom:8px;box-shadow:var(--glass-shadow);position:relative;overflow:hidden;">
-                        <div style="position:absolute;inset:0;background:var(--glass-shine);border-radius:20px;pointer-events:none;"></div>
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;position:relative;z-index:1;">
-                            <div style="display:flex;align-items:center;gap:10px;">
-                                <span style="font-family:Orbitron,sans-serif;font-size:9px;font-weight:900;color:#334155;">${i+1}</span>
-                                <div>
-                                    <p style="font-size:13px;font-weight:800;color:var(--text-pri);text-transform:uppercase;letter-spacing:0.05em;">${d.first}</p>
-                                    <p style="font-size:9px;font-weight:700;color:var(--text-muted);margin-top:1px;">${tIcon} <span style="color:${tColor}">${d.trend.toUpperCase()}</span> &nbsp;·&nbsp; avg/match: ${d.weekAvg} pts</p>
-                                </div>
-                            </div>
-                            <div style="text-align:right;">
-                                <p style="font-family:Orbitron,sans-serif;font-size:22px;font-weight:900;color:${color};line-height:1;">${d.weekPts}</p>
-                                <p style="font-size:8px;color:var(--text-muted);text-transform:uppercase;">last 7 matches</p>
+            // Header banner
+            const headerHTML = `
+                <div style="background:rgba(10,15,25,0.98);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:16px 20px;margin-bottom:1rem;position:relative;overflow:hidden;">
+                    <div style="position:absolute;top:0;left:16px;right:16px;height:1px;background:linear-gradient(90deg,transparent,rgba(241,196,15,0.5),transparent);"></div>
+                    <p style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;letter-spacing:0.35em;color:#475569;text-transform:uppercase;margin-bottom:3px;">Last 7 Matches</p>
+                    <p style="font-size:11px;font-weight:800;color:#64748b;">Who's been on fire lately?</p>
+                </div>`;
+
+            const cardsHTML = weeklyData.map((d, i) => {
+                const color   = getColor(d.id);
+                const tIcon   = d.trend === 'hot' ? '🔥' : d.trend === 'cold' ? '🧊' : '➡️';
+                const tColor  = d.trend === 'hot' ? '#4ade80' : d.trend === 'cold' ? '#60a5fa' : '#94a3b8';
+                const weekPct = d.avgMatch > 0 ? Math.min(100, Math.round((d.weekAvg / d.avgMatch) * 100)) : 50;
+                const isLeader = i === 0;
+
+                return `
+                <div style="
+                    background:rgba(10,15,25,0.98);
+                    border:1px solid ${isLeader ? color+'55' : 'rgba(255,255,255,0.07)'};
+                    border-left:3px solid ${color};
+                    border-radius:20px;
+                    padding:16px 20px;
+                    margin-bottom:8px;
+                    position:relative;
+                    overflow:hidden;
+                    transition:0.3s;
+                    box-shadow:${isLeader ? '0 0 20px -5px '+color+'44' : 'none'};
+                ">
+                    <!-- owner color glow bg -->
+                    <div style="position:absolute;right:-20px;top:-20px;width:100px;height:100px;border-radius:50%;background:${color};opacity:0.04;pointer-events:none;filter:blur(20px);"></div>
+
+                    <!-- rank + name + trend row -->
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;position:relative;z-index:1;">
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <span style="font-family:Orbitron,sans-serif;font-size:${isLeader?'16':'11'}px;font-weight:900;color:${isLeader?color:'#334155'};${isLeader?'text-shadow:0 0 10px '+color+'66;':''}">
+                                ${isLeader ? '👑' : i+1}
+                            </span>
+                            <div>
+                                <p style="font-family:Orbitron,sans-serif;font-size:13px;font-weight:900;color:#f1f5f9;text-transform:uppercase;letter-spacing:0.05em;">${d.first}</p>
+                                <p style="font-size:9px;font-weight:700;color:#475569;margin-top:2px;letter-spacing:0.05em;">
+                                    ${tIcon} <span style="color:${tColor}">${d.trend.toUpperCase()}</span>
+                                    <span style="color:#334155;margin:0 4px;">·</span>
+                                    <span>${d.weekAvg} avg/match</span>
+                                </p>
                             </div>
                         </div>
-                        <!-- Progress bar: week avg vs season avg -->
-                        <div style="position:relative;z-index:1;">
-                            <div style="display:flex;justify-content:space-between;font-size:7px;color:var(--text-muted);text-transform:uppercase;font-weight:700;margin-bottom:4px;">
-                                <span>Week avg vs season avg</span><span>${d.weekAvg} / ${d.avgMatch}</span>
-                            </div>
-                            <div style="background:rgba(255,255,255,0.06);border-radius:4px;height:4px;overflow:hidden;">
-                                <div style="height:100%;width:${weekPct}%;background:${color};border-radius:4px;transition:width 0.8s ease;"></div>
-                            </div>
-                            ${d.bestPlayer ? `<p style="font-size:8px;color:var(--text-muted);margin-top:6px;">⭐ Best: <span style="color:${color};font-weight:800;">${d.bestPlayer}</span> <span style="color:#334155;">(${d.bestPts} pts)</span></p>` : ''}
+                        <div style="text-align:right;">
+                            <p style="font-family:Orbitron,sans-serif;font-size:26px;font-weight:900;color:${color};line-height:1;text-shadow:0 0 12px ${color}55;">${d.weekPts}</p>
+                            <p style="font-size:7px;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:0.15em;">7-match pts</p>
                         </div>
-                    </div>`;
-                }).join('')}`;
+                    </div>
+
+                    <!-- progress bar -->
+                    <div style="position:relative;z-index:1;">
+                        <div style="display:flex;justify-content:space-between;font-size:7px;color:#475569;text-transform:uppercase;font-weight:700;letter-spacing:0.1em;margin-bottom:5px;">
+                            <span>Week avg vs season avg</span>
+                            <span style="color:${tColor}">${d.weekAvg} / ${d.avgMatch}</span>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.05);border-radius:4px;height:4px;overflow:hidden;">
+                            <div style="height:100%;width:${weekPct}%;background:linear-gradient(90deg,${color}99,${color});border-radius:4px;transition:width 0.9s ease;"></div>
+                        </div>
+                        ${d.bestPlayer ? `
+                        <div style="display:flex;align-items:center;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.05);">
+                            <span style="font-size:8px;color:#475569;font-weight:700;">⭐ WEEK BEST</span>
+                            <span style="font-size:10px;font-weight:800;color:${color};text-shadow:0 0 8px ${color}44;">${d.bestPlayer}</span>
+                            <span style="font-family:Orbitron,sans-serif;font-size:9px;font-weight:900;color:#334155;margin-left:auto;">${d.bestPts} pts</span>
+                        </div>` : ''}
+                    </div>
+                </div>`;
+            }).join('');
+
+            el.innerHTML = headerHTML + cardsHTML;
         }
 
         updateApp();
