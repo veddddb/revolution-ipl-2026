@@ -383,6 +383,7 @@
                 renderTodayBar(schedRows || []);
                 renderWeekly(active, pcRows, completedMatches, squads);
                 renderRankArrows(active);
+                if (!window._confettiFired) { window._confettiFired = true; setTimeout(fireConfetti, 800); }
 
             } catch(e) {
                 console.error('Sync Error:', e);
@@ -720,80 +721,208 @@
             }).join('');
         }
 
+        const SITE_URL = 'revolution-ipl-2026.vercel.app';
+
         async function shareCard(cID, ownerFull, score, rank) {
             const color = getColor(cID.replace('c-','').replace(/-/g,' '));
             const squad = (_state.squads[fixID(ownerFull)] || []).sort((a,b) => b.act - a.act);
 
-            // Build canvas image
-            const W=600, H=200+Math.max(squad.length,1)*26+60;
+            // Identify C and VC
+            const captain = squad.find(p => p.cvc === 'C');
+            const vice    = squad.find(p => p.cvc === 'VC');
+
+            // Canvas dimensions — extra rows for C/VC block + URL footer
+            const PLAYER_ROW_H = 24;
+            const W  = 600;
+            const H  = 240                          // header block
+                     + 50                           // C/VC block
+                     + 16                           // divider gap
+                     + Math.max(squad.length,1) * PLAYER_ROW_H
+                     + 60;                          // footer
+
             const canvas = document.createElement('canvas');
-            canvas.width=W*2; canvas.height=H*2;
-            const ctx=canvas.getContext('2d');
+            canvas.width = W*2; canvas.height = H*2;
+            const ctx = canvas.getContext('2d');
             ctx.scale(2,2);
 
-            const bg=ctx.createLinearGradient(0,0,W,H);
+            // ── Background ──
+            const bg = ctx.createLinearGradient(0,0,W,H);
             bg.addColorStop(0,'#0f172a'); bg.addColorStop(1,'#020617');
-            ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
-            ctx.fillStyle=color; ctx.fillRect(0,0,W,4);
+            ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
 
-            const glow=ctx.createRadialGradient(W*0.8,H*0.25,0,W*0.8,H*0.25,180);
-            glow.addColorStop(0,color+'22'); glow.addColorStop(1,'transparent');
-            ctx.fillStyle=glow; ctx.fillRect(0,0,W,H);
+            // Top accent bar
+            ctx.fillStyle = color; ctx.fillRect(0,0,W,4);
 
-            ctx.font='700 11px monospace'; ctx.fillStyle=color+'aa';
-            ctx.fillText(`RANK #${rank}`,28,48);
+            // Glow blob
+            const glow = ctx.createRadialGradient(W*0.78,H*0.2,0,W*0.78,H*0.2,200);
+            glow.addColorStop(0, color+'28'); glow.addColorStop(1,'transparent');
+            ctx.fillStyle = glow; ctx.fillRect(0,0,W,H);
 
-            ctx.font='900 30px monospace'; ctx.fillStyle='#f8fafc';
-            ctx.fillText(ownerFull.toUpperCase(),28,82);
+            // ── Rank ──
+            ctx.font = '700 10px monospace'; ctx.fillStyle = color+'99';
+            ctx.fillText(`RANK #${rank}  ·  REVOLUTION IPL 2026`, 28, 46);
 
-            ctx.font='900 48px monospace'; ctx.fillStyle=color;
-            ctx.textAlign='right'; ctx.fillText(score,W-28,82); ctx.textAlign='left';
+            // ── Owner name ──
+            ctx.font = '900 28px monospace'; ctx.fillStyle = '#f8fafc';
+            ctx.fillText(ownerFull.toUpperCase(), 28, 80);
 
-            ctx.font='700 9px monospace'; ctx.fillStyle='#334155';
-            ctx.fillText('TOTAL POINTS • REVOLUTION IPL 2026',28,102);
+            // ── Score (right-aligned) ──
+            ctx.font = '900 44px monospace'; ctx.fillStyle = color;
+            ctx.textAlign = 'right';
+            ctx.fillText(score, W-28, 80);
+            ctx.textAlign = 'left';
 
-            ctx.strokeStyle='rgba(255,255,255,0.07)'; ctx.lineWidth=1;
-            ctx.beginPath(); ctx.moveTo(28,118); ctx.lineTo(W-28,118); ctx.stroke();
+            // ── Sub label ──
+            ctx.font = '600 9px monospace'; ctx.fillStyle = '#334155';
+            ctx.fillText('TOTAL POINTS', 28, 100);
 
-            ctx.font='700 9px monospace'; ctx.fillStyle='#475569';
-            ctx.fillText('SQUAD',28,140);
-            squad.forEach((p,i) => {
-                const y=160+i*26;
-                ctx.font='600 12px monospace'; ctx.fillStyle=i%2===0?'#94a3b8':'#64748b';
-                ctx.fillText(`${p.name} (${p.team})`,28,y);
-                ctx.font='900 12px monospace'; ctx.fillStyle=color;
-                ctx.textAlign='right'; ctx.fillText(`${p.act}`,W-28,y); ctx.textAlign='left';
+            // ── Divider ──
+            ctx.strokeStyle = 'rgba(255,255,255,0.07)'; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(28,114); ctx.lineTo(W-28,114); ctx.stroke();
+
+            // ── C / VC block ──
+            let cy = 138;
+            if (captain || vice) {
+                // C badge
+                if (captain) {
+                    ctx.font = '900 10px monospace'; ctx.fillStyle = color;
+                    ctx.fillText('C', 28, cy);
+                    ctx.font = '700 11px monospace'; ctx.fillStyle = '#94a3b8';
+                    ctx.fillText(captain.name, 44, cy);
+                    ctx.font = '900 10px monospace'; ctx.fillStyle = color;
+                    ctx.textAlign = 'right';
+                    ctx.fillText(`${captain.act} pts`, W/2-10, cy);
+                    ctx.textAlign = 'left';
+                }
+                // VC badge
+                if (vice) {
+                    ctx.font = '900 10px monospace'; ctx.fillStyle = '#94a3b8';
+                    ctx.fillText('VC', W/2+10, cy);
+                    ctx.font = '700 11px monospace'; ctx.fillStyle = '#64748b';
+                    ctx.fillText(vice.name, W/2+34, cy);
+                    ctx.font = '900 10px monospace'; ctx.fillStyle = '#64748b';
+                    ctx.textAlign = 'right';
+                    ctx.fillText(`${vice.act} pts`, W-28, cy);
+                    ctx.textAlign = 'left';
+                }
+                cy += 20;
+            }
+
+            // ── Squad divider ──
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(28, cy); ctx.lineTo(W-28, cy); ctx.stroke();
+            cy += 16;
+
+            // ── Squad label ──
+            ctx.font = '700 8px monospace'; ctx.fillStyle = '#334155';
+            ctx.fillText('FULL SQUAD', 28, cy);
+            ctx.textAlign = 'right';
+            ctx.fillText('PTS', W-28, cy);
+            ctx.textAlign = 'left';
+            cy += 18;
+
+            // ── Players ──
+            squad.forEach((p, i) => {
+                const y = cy + i * PLAYER_ROW_H;
+                // C/VC tag inline
+                const tag = p.cvc ? ` [${p.cvc}]` : '';
+                ctx.font = `${p.cvc ? '800' : '500'} 11px monospace`;
+                ctx.fillStyle = p.cvc ? color : (i%2===0 ? '#94a3b8' : '#64748b');
+                ctx.fillText(`${p.name}${tag}  (${p.team})`, 28, y);
+                ctx.font = `${p.cvc ? '900' : '700'} 11px monospace`;
+                ctx.fillStyle = p.cvc ? color : '#475569';
+                ctx.textAlign = 'right';
+                ctx.fillText(`${p.act}`, W-28, y);
+                ctx.textAlign = 'left';
             });
 
-            ctx.font='700 8px monospace'; ctx.fillStyle='#1e293b';
-            ctx.fillText('REVOLUTION • VEDANT BHANSALI EDITION',28,H-16);
+            // ── Footer: site URL ──
+            const footerY = H - 28;
+            ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(28, footerY-14); ctx.lineTo(W-28, footerY-14); ctx.stroke();
+
+            ctx.font = '700 9px monospace'; ctx.fillStyle = color+'bb';
+            ctx.fillText(`🏏 ${SITE_URL}`, 28, footerY);
+            ctx.font = '600 8px monospace'; ctx.fillStyle = '#1e293b';
+            ctx.textAlign = 'right';
+            ctx.fillText('REVOLUTION • VEDANT BHANSALI EDITION', W-28, footerY);
+            ctx.textAlign = 'left';
 
             const filename = `revo-${ownerFull.toLowerCase().replace(/\s/g,'-')}.png`;
+            const shareText = `${ownerFull} is ranked #${rank} with ${score} pts 🏏\nC: ${captain?.name||'—'}  |  VC: ${vice?.name||'—'}\n\n🔗 ${SITE_URL}`;
 
-            // Mobile: use Web Share API with file
+            // Mobile: Web Share API
             if (navigator.share && navigator.canShare) {
                 try {
                     const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
-                    const file = new File([blob], filename, { type: 'image/png' });
-                    if (navigator.canShare({ files: [file] })) {
+                    const file = new File([blob], filename, { type:'image/png' });
+                    if (navigator.canShare({ files:[file] })) {
                         await navigator.share({
                             files: [file],
                             title: `${ownerFull} — Revolution IPL 2026`,
-                            text:  `${ownerFull} is ranked #${rank} with ${score} points 🏏`,
+                            text:  shareText,
                         });
                         return;
                     }
                 } catch(e) {
-                    if (e.name === 'AbortError') return; // user cancelled — silent
-                    // fall through to download
+                    if (e.name === 'AbortError') return;
                 }
             }
 
-            // Desktop fallback: direct download
+            // Desktop fallback: download
             const a = document.createElement('a');
             a.download = filename;
             a.href = canvas.toDataURL('image/png');
             a.click();
+        }
+
+        // ── CONFETTI BURST ──
+        function fireConfetti() {
+            const colors = ['#f1c40f','#3498db','#2ecc71','#e74c3c','#9b59b6','#f368e0','#1abc9c','#ff9f43'];
+            const count  = 90;
+            const origin = { x: window.innerWidth/2, y: 0 };
+
+            for (let i = 0; i < count; i++) {
+                const el   = document.createElement('div');
+                const size = Math.random()*8+4;
+                const col  = colors[Math.floor(Math.random()*colors.length)];
+                const isRect = Math.random() > 0.5;
+                el.style.cssText = `
+                    position:fixed;z-index:9999;pointer-events:none;
+                    width:${isRect?size+'px':'6px'};height:${isRect?size*0.4+'px':size+'px'};
+                    background:${col};border-radius:${isRect?'1px':'50%'};
+                    left:${origin.x + (Math.random()-0.5)*120}px;
+                    top:${origin.y}px;opacity:1;`;
+                document.body.appendChild(el);
+
+                const angle  = (Math.random()*160 + 10) * Math.PI/180;
+                const speed  = Math.random()*12+6;
+                const vx     = Math.cos(angle)*speed*(Math.random()>0.5?1:-1);
+                const vy     = Math.sin(angle)*speed+4;
+                const spin   = (Math.random()-0.5)*20;
+                let   posX   = parseFloat(el.style.left);
+                let   posY   = parseFloat(el.style.top);
+                let   velY   = -vy;
+                let   rot    = 0;
+                let   life   = 0;
+                const maxLife = 80 + Math.floor(Math.random()*40);
+
+                const tick = () => {
+                    life++;
+                    posX  += vx * 0.6;
+                    velY  += 0.35;
+                    posY  += velY;
+                    rot   += spin;
+                    const opacity = Math.max(0, 1 - life/maxLife);
+                    el.style.left      = posX + 'px';
+                    el.style.top       = posY + 'px';
+                    el.style.opacity   = opacity;
+                    el.style.transform = `rotate(${rot}deg)`;
+                    if (life < maxLife && posY < window.innerHeight + 40) requestAnimationFrame(tick);
+                    else el.remove();
+                };
+                setTimeout(() => requestAnimationFrame(tick), i * 12);
+            }
         }
 
         // ── POLLING ──
