@@ -1463,7 +1463,7 @@
         }
 
 
-// ── IPL STANDINGS ──
+// ── IPL STANDINGS ── (Mobile Optimized - No Logos)
 function renderStandings(rows) {
     const el = document.getElementById('standings-list');
     if (!el) return;
@@ -1502,21 +1502,21 @@ function renderStandings(rows) {
             </div>
         </div>`;
 
-    // Column headers
+    // Column Headers - Optimized for mobile
     const colHeader = `
-        <div style="display:grid;grid-template-columns:28px 1fr 36px 36px 36px 36px 52px 60px;gap:0;padding:6px 14px;margin-bottom:8px;">
-            <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;">#</span>
-            <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;">Team</span>
-            <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;text-align:center;">P</span>
-            <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;text-align:center;">W</span>
-            <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;text-align:center;">L</span>
-            <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;text-align:center;">N/R</span>
-            <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;text-align:right;">PTS</span>
-            <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;text-align:right;">NRR</span>
+        <div style="display:grid;grid-template-columns:28px 1fr 30px 30px 30px 30px 46px 54px;gap:4px;padding:8px 12px;margin-bottom:8px;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;letter-spacing:0.4px;">
+            <span style="text-align:center;">#</span>
+            <span>TEAM</span>
+            <span style="text-align:center;">P</span>
+            <span style="text-align:center;">W</span>
+            <span style="text-align:center;">L</span>
+            <span style="text-align:center;">NR</span>
+            <span style="text-align:right;">PTS</span>
+            <span style="text-align:right;">NRR</span>
         </div>`;
 
-    // Build rows + divider after 4th team
     let rowsHTML = '';
+
     data.forEach((t, i) => {
         const isPlayoff = t.rank <= 4;
         const isTop = t.rank === 1;
@@ -1524,10 +1524,10 @@ function renderStandings(rows) {
         const nrrStr = (t.nrr >= 0 ? '+' : '') + t.nrr.toFixed(3);
         const nrrColor = t.nrr >= 0 ? '#4ade80' : '#f87171';
 
-        // Add divider AFTER the 4th team (before the 5th)
+        // Divider after 4th team
         if (i === 4) {
             rowsHTML += `
-                <div style="display:flex;align-items:center;gap:8px;margin:14px 0 10px;padding:0 4px;">
+                <div style="display:flex;align-items:center;gap:8px;margin:16px 0 10px;padding:0 4px;">
                     <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(241,196,15,0.45),transparent);"></div>
                     <span style="font-family:Orbitron,sans-serif;font-size:7.5px;font-weight:900;color:#f1c40f;letter-spacing:0.3em;white-space:nowrap;">PLAYOFF ZONE ↑ (TOP 4)</span>
                     <div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(241,196,15,0.45));"></div>
@@ -1540,44 +1540,40 @@ function renderStandings(rows) {
             border:1px solid ${isPlayoff ? 'rgba(241,196,15,0.25)' : 'rgba(255,255,255,0.06)'};
             border-left:3px solid ${isPlayoff ? (isTop ? '#f1c40f' : tc) : 'rgba(255,255,255,0.06)'};
             border-radius:14px;
-            padding:11px 14px;
-            margin-bottom:6px;
+            padding:12px 12px;
+            margin-bottom:7px;
             display:grid;
-            grid-template-columns:28px 1fr 36px 36px 36px 36px 52px 60px;
-            gap:0;
+            grid-template-columns:28px 1fr 30px 30px 30px 30px 46px 54px;
+            gap:6px;
             align-items:center;
             position:relative;
             overflow:hidden;
             ${isTop ? 'box-shadow:0 0 18px -4px rgba(241,196,15,0.3);' : ''}
         ">
             ${isPlayoff ? `<div style="position:absolute;inset:0;background:radial-gradient(ellipse at left,${tc}0a,transparent 75%);pointer-events:none;"></div>` : ''}
-            
+
             <!-- Rank -->
-            <span style="font-family:Orbitron,sans-serif;font-size:${isTop ? '13' : '10'}px;font-weight:900;
-                color:${isTop ? '#f1c40f' : isPlayoff ? tc : '#334155'};
-                ${isTop ? 'text-shadow:0 0 8px rgba(241,196,15,0.5);' : ''}
-                position:relative;z-index:1;">${t.rank}</span>
-            
-            <!-- Team -->
-            <div style="position:relative;z-index:1;">
-                <div style="display:flex;align-items:center;gap:6px;">
-                    <span style="font-family:Orbitron,sans-serif;font-size:11px;font-weight:900;color:${isPlayoff ? tc : '#475569'};white-space:nowrap;">${t.code}</span>
-                    <span style="font-size:7px;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px;">${t.team}</span>
-                </div>
+            <span style="font-family:Orbitron,sans-serif;font-size:${isTop ? '14' : '11'}px;font-weight:900;color:${isTop ? '#f1c40f' : isPlayoff ? tc : '#334155'};text-align:center;">${t.rank}</span>
+
+            <!-- Team Name -->
+            <div style="position:relative;z-index:1;min-width:0;">
+                <div style="font-family:Orbitron,sans-serif;font-size:12px;font-weight:900;color:${isPlayoff ? tc : '#e2e8f0'};white-space:nowrap;">${t.code}</div>
+                <div style="font-size:7.5px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;">${t.team}</div>
             </div>
-            
-            <span style="font-size:11px;font-weight:700;color:${isPlayoff?'#94a3b8':'#334155'};text-align:center;">${t.played}</span>
-            <span style="font-size:11px;font-weight:${isPlayoff?'800':'600'};color:${isPlayoff?'#4ade80':'#334155'};text-align:center;">${t.won}</span>
-            <span style="font-size:11px;font-weight:600;color:${isPlayoff?'#f87171':'#334155'};text-align:center;">${t.lost}</span>
-            <span style="font-size:11px;font-weight:600;color:#334155;text-align:center;">${t.nr}</span>
-            <span style="font-family:Orbitron,sans-serif;font-size:${isPlayoff?'13':'11'}px;font-weight:900;color:${isPlayoff?'#f1c40f':'#334155'};text-align:right;">${t.pts}</span>
-            <span style="font-family:Orbitron,sans-serif;font-size:9px;font-weight:800;color:${isPlayoff ? nrrColor : '#334155'};text-align:right;">${nrrStr}</span>
+
+            <!-- Stats -->
+            <span style="font-size:11px;font-weight:700;color:${isPlayoff?'#94a3b8':'#64748b'};text-align:center;">${t.played}</span>
+            <span style="font-size:11px;font-weight:${isPlayoff?'800':'600'};color:${isPlayoff?'#4ade80':'#64748b'};text-align:center;">${t.won}</span>
+            <span style="font-size:11px;font-weight:600;color:${isPlayoff?'#f87171':'#64748b'};text-align:center;">${t.lost}</span>
+            <span style="font-size:11px;font-weight:600;color:#64748b;text-align:center;">${t.nr}</span>
+            <span style="font-family:Orbitron,sans-serif;font-size:${isPlayoff?'13.5':'11.5'}px;font-weight:900;color:${isPlayoff?'#f1c40f':'#e2e8f0'};text-align:right;">${t.pts}</span>
+            <span style="font-family:Orbitron,sans-serif;font-size:9px;font-weight:800;color:${isPlayoff ? nrrColor : '#64748b'};text-align:right;">${nrrStr}</span>
         </div>`;
     });
 
     // Legend
     const legendHTML = `
-        <div style="display:flex;gap:16px;justify-content:center;margin-top:16px;padding:10px;flex-wrap:wrap;">
+        <div style="display:flex;gap:16px;justify-content:center;margin-top:18px;padding:10px;flex-wrap:wrap;">
             <div style="display:flex;align-items:center;gap:5px;">
                 <div style="width:10px;height:10px;border-radius:50%;background:#f1c40f;"></div>
                 <span style="font-size:8px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.1em;">Top 4 — Playoff Qualified</span>
@@ -1589,7 +1585,8 @@ function renderStandings(rows) {
         </div>`;
 
     el.innerHTML = headerHTML + colHeader + rowsHTML + legendHTML;
-}        updateApp();
+}
+        updateApp();
         startPolling();
     </script>
 </body>
