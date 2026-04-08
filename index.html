@@ -1486,7 +1486,7 @@ function renderStandings(rows) {
         return;
     }
 
-    // Header
+    // Header banner
     const headerHTML = `
         <div style="background:rgba(10,15,25,0.98);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:14px 20px;margin-bottom:12px;position:relative;overflow:hidden;">
             <div style="position:absolute;top:0;left:16px;right:16px;height:1px;background:linear-gradient(90deg,transparent,rgba(241,196,15,0.5),transparent);"></div>
@@ -1504,7 +1504,7 @@ function renderStandings(rows) {
 
     // Column headers
     const colHeader = `
-        <div style="display:grid;grid-template-columns:28px 1fr 36px 36px 36px 36px 52px 60px;gap:0;padding:6px 14px;margin-bottom:4px;">
+        <div style="display:grid;grid-template-columns:28px 1fr 36px 36px 36px 36px 52px 60px;gap:0;padding:6px 14px;margin-bottom:8px;">
             <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;">#</span>
             <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;">Team</span>
             <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;text-align:center;">P</span>
@@ -1515,26 +1515,26 @@ function renderStandings(rows) {
             <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;text-align:right;">NRR</span>
         </div>`;
 
-    // Playoff divider - appears AFTER the 4th team
-    const playoffLabel = `
-        <div style="display:flex;align-items:center;gap:8px;margin:14px 0 10px;padding:0 4px;">
-            <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(241,196,15,0.45),transparent);"></div>
-            <span style="font-family:Orbitron,sans-serif;font-size:7.5px;font-weight:900;color:#f1c40f;letter-spacing:0.3em;white-space:nowrap;">PLAYOFF ZONE ↑ (TOP 4)</span>
-            <div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(241,196,15,0.45));"></div>
-        </div>`;
-
-    const rowsHTML = data.map((t, i) => {
+    // Build rows + divider after 4th team
+    let rowsHTML = '';
+    data.forEach((t, i) => {
         const isPlayoff = t.rank <= 4;
         const isTop = t.rank === 1;
         const tc = TEAM_COLORS[t.code] || '#475569';
         const nrrStr = (t.nrr >= 0 ? '+' : '') + t.nrr.toFixed(3);
         const nrrColor = t.nrr >= 0 ? '#4ade80' : '#f87171';
 
-        // Show divider ONLY after rank 4 (i === 3 because index starts at 0)
-        const divider = (i === 3) ? playoffLabel : '';
+        // Add divider AFTER the 4th team (before the 5th)
+        if (i === 4) {
+            rowsHTML += `
+                <div style="display:flex;align-items:center;gap:8px;margin:14px 0 10px;padding:0 4px;">
+                    <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(241,196,15,0.45),transparent);"></div>
+                    <span style="font-family:Orbitron,sans-serif;font-size:7.5px;font-weight:900;color:#f1c40f;letter-spacing:0.3em;white-space:nowrap;">PLAYOFF ZONE ↑ (TOP 4)</span>
+                    <div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(241,196,15,0.45));"></div>
+                </div>`;
+        }
 
-        return `
-        ${divider}
+        rowsHTML += `
         <div style="
             background:${isPlayoff ? 'rgba(15,20,10,0.98)' : 'rgba(10,15,25,0.98)'};
             border:1px solid ${isPlayoff ? 'rgba(241,196,15,0.25)' : 'rgba(255,255,255,0.06)'};
@@ -1573,7 +1573,7 @@ function renderStandings(rows) {
             <span style="font-family:Orbitron,sans-serif;font-size:${isPlayoff?'13':'11'}px;font-weight:900;color:${isPlayoff?'#f1c40f':'#334155'};text-align:right;">${t.pts}</span>
             <span style="font-family:Orbitron,sans-serif;font-size:9px;font-weight:800;color:${isPlayoff ? nrrColor : '#334155'};text-align:right;">${nrrStr}</span>
         </div>`;
-    }).join('');
+    });
 
     // Legend
     const legendHTML = `
@@ -1589,8 +1589,7 @@ function renderStandings(rows) {
         </div>`;
 
     el.innerHTML = headerHTML + colHeader + rowsHTML + legendHTML;
-}
-        updateApp();
+}        updateApp();
         startPolling();
     </script>
 </body>
