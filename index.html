@@ -94,8 +94,6 @@
         @keyframes slideIn { from{opacity:0;transform:translateY(-5px)} to{opacity:1;transform:translateY(0)} }
         @keyframes blink      { 0%,100%{opacity:0.4} 50%{opacity:1} }
         @keyframes neonPulse  { 0%,100%{opacity:0.7} 50%{opacity:1} }
-        #sched-search::placeholder { color:#334155; }
-        #sched-search:focus { border-color:rgba(255,255,255,0.2); }
         .sched-pill:hover { opacity:1 !important; transform:scale(1.05); }
         .sched-pill.active { opacity:1 !important; transform:scale(1.05); box-shadow:0 0 10px -2px currentColor; }
         @keyframes livePulse  { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
@@ -130,7 +128,7 @@
             <div style="width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;">
                 <div style="display:flex;justify-content:center;gap:6px;background:rgba(0,0,0,0.4);padding:5px;border-radius:18px;border:1px solid rgba(255,255,255,0.05);min-width:fit-content;margin:0 auto;">
                     <button onclick="switchTab('main')"     id="btn-main"     class="tab-btn active">Live Ranks</button>
-                    <button onclick="switchTab('strategy')" id="btn-strat"    class="tab-btn">Luckiest</button>
+                    <button onclick="switchTab('strategy')" id="btn-strat"    class="tab-btn">If Tu..</button>
                     <button onclick="switchTab('weekly')"   id="btn-weekly"   class="tab-btn">Weekly</button>
                     <button onclick="switchTab('schedule')"  id="btn-schedule"  class="tab-btn">Schedule</button>
                     <button onclick="switchTab('standings')" id="btn-standings" class="tab-btn">Standings</button>
@@ -176,32 +174,24 @@
 
         <div id="view-schedule" class="hidden pt-4">
             <!-- TEAM SCHEDULE FILTER -->
-            <div style="margin-bottom:12px;">
-                <!-- Search input -->
-                <div style="position:relative;margin-bottom:10px;">
-                    <input id="sched-search" type="text" placeholder="Search team…"
-                        oninput="filterSchedule()"
-                        style="width:100%;background:rgba(10,15,25,0.98);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:10px 16px 10px 36px;color:#f8fafc;font-size:12px;font-family:Inter,sans-serif;font-weight:600;outline:none;box-sizing:border-box;"
-                        autocomplete="off">
-                    <svg style="position:absolute;left:13px;top:50%;transform:translateY(-50%);opacity:0.3;pointer-events:none;" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-                </div>
-                <!-- Team pill filters -->
-                <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;-webkit-overflow-scrolling:touch;">
+            <div style="margin-bottom:14px;">
+                <!-- Centered pill filters -->
+                <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px;padding:2px 0 6px;">
                     <button class="sched-pill active" data-team="ALL" onclick="setSchedFilter('ALL')"
-                        style="flex-shrink:0;font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#f1c40f;cursor:pointer;transition:0.2s;letter-spacing:0.05em;white-space:nowrap;">ALL</button>
-                    <button class="sched-pill" data-team="MI"   onclick="setSchedFilter('MI')"   style="flex-shrink:0;font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 12px;border-radius:20px;border:1px solid rgba(0,75,160,0.5);background:rgba(0,75,160,0.15);color:#89CFF0;cursor:pointer;transition:0.2s;white-space:nowrap;opacity:0.6;">MI</button>
-                    <button class="sched-pill" data-team="CSK"  onclick="setSchedFilter('CSK')"  style="flex-shrink:0;font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 12px;border-radius:20px;border:1px solid rgba(244,196,48,0.5);background:rgba(244,196,48,0.12);color:#F4C430;cursor:pointer;transition:0.2s;white-space:nowrap;opacity:0.6;">CSK</button>
-                    <button class="sched-pill" data-team="RCB"  onclick="setSchedFilter('RCB')"  style="flex-shrink:0;font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 12px;border-radius:20px;border:1px solid rgba(200,16,46,0.5);background:rgba(200,16,46,0.12);color:#F87171;cursor:pointer;transition:0.2s;white-space:nowrap;opacity:0.6;">RCB</button>
-                    <button class="sched-pill" data-team="KKR"  onclick="setSchedFilter('KKR')"  style="flex-shrink:0;font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 12px;border-radius:20px;border:1px solid rgba(58,34,93,0.6);background:rgba(58,34,93,0.2);color:#c4b5fd;cursor:pointer;transition:0.2s;white-space:nowrap;opacity:0.6;">KKR</button>
-                    <button class="sched-pill" data-team="SRH"  onclick="setSchedFilter('SRH')"  style="flex-shrink:0;font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 12px;border-radius:20px;border:1px solid rgba(242,101,34,0.5);background:rgba(242,101,34,0.12);color:#fb923c;cursor:pointer;transition:0.2s;white-space:nowrap;opacity:0.6;">SRH</button>
-                    <button class="sched-pill" data-team="DC"   onclick="setSchedFilter('DC')"   style="flex-shrink:0;font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 12px;border-radius:20px;border:1px solid rgba(0,82,154,0.5);background:rgba(0,82,154,0.15);color:#60a5fa;cursor:pointer;transition:0.2s;white-space:nowrap;opacity:0.6;">DC</button>
-                    <button class="sched-pill" data-team="PBKS" onclick="setSchedFilter('PBKS')" style="flex-shrink:0;font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 12px;border-radius:20px;border:1px solid rgba(237,28,36,0.5);background:rgba(237,28,36,0.12);color:#fca5a5;cursor:pointer;transition:0.2s;white-space:nowrap;opacity:0.6;">PBKS</button>
-                    <button class="sched-pill" data-team="RR"   onclick="setSchedFilter('RR')"   style="flex-shrink:0;font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 12px;border-radius:20px;border:1px solid rgba(234,26,133,0.5);background:rgba(234,26,133,0.12);color:#f9a8d4;cursor:pointer;transition:0.2s;white-space:nowrap;opacity:0.6;">RR</button>
-                    <button class="sched-pill" data-team="GT"   onclick="setSchedFilter('GT')"   style="flex-shrink:0;font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 12px;border-radius:20px;border:1px solid rgba(29,78,137,0.5);background:rgba(29,78,137,0.15);color:#93c5fd;cursor:pointer;transition:0.2s;white-space:nowrap;opacity:0.6;">GT</button>
-                    <button class="sched-pill" data-team="LSG"  onclick="setSchedFilter('LSG')"  style="flex-shrink:0;font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 12px;border-radius:20px;border:1px solid rgba(164,214,94,0.5);background:rgba(164,214,94,0.12);color:#a4d65e;cursor:pointer;transition:0.2s;white-space:nowrap;opacity:0.6;">LSG</button>
+                        style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#f1c40f;cursor:pointer;transition:0.2s;letter-spacing:0.05em;white-space:nowrap;">ALL</button>
+                    <button class="sched-pill" data-team="MI"   onclick="setSchedFilter('MI')"   style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 12px;border-radius:20px;border:1px solid rgba(0,75,160,0.5);background:rgba(0,75,160,0.15);color:#89CFF0;cursor:pointer;transition:0.2s;white-space:nowrap;opacity:0.55;">MI</button>
+                    <button class="sched-pill" data-team="CSK"  onclick="setSchedFilter('CSK')"  style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 12px;border-radius:20px;border:1px solid rgba(244,196,48,0.5);background:rgba(244,196,48,0.12);color:#F4C430;cursor:pointer;transition:0.2s;white-space:nowrap;opacity:0.55;">CSK</button>
+                    <button class="sched-pill" data-team="RCB"  onclick="setSchedFilter('RCB')"  style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 12px;border-radius:20px;border:1px solid rgba(200,16,46,0.5);background:rgba(200,16,46,0.12);color:#F87171;cursor:pointer;transition:0.2s;white-space:nowrap;opacity:0.55;">RCB</button>
+                    <button class="sched-pill" data-team="KKR"  onclick="setSchedFilter('KKR')"  style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 12px;border-radius:20px;border:1px solid rgba(58,34,93,0.6);background:rgba(58,34,93,0.2);color:#c4b5fd;cursor:pointer;transition:0.2s;white-space:nowrap;opacity:0.55;">KKR</button>
+                    <button class="sched-pill" data-team="SRH"  onclick="setSchedFilter('SRH')"  style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 12px;border-radius:20px;border:1px solid rgba(242,101,34,0.5);background:rgba(242,101,34,0.12);color:#fb923c;cursor:pointer;transition:0.2s;white-space:nowrap;opacity:0.55;">SRH</button>
+                    <button class="sched-pill" data-team="DC"   onclick="setSchedFilter('DC')"   style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 12px;border-radius:20px;border:1px solid rgba(0,82,154,0.5);background:rgba(0,82,154,0.15);color:#60a5fa;cursor:pointer;transition:0.2s;white-space:nowrap;opacity:0.55;">DC</button>
+                    <button class="sched-pill" data-team="PBKS" onclick="setSchedFilter('PBKS')" style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 12px;border-radius:20px;border:1px solid rgba(237,28,36,0.5);background:rgba(237,28,36,0.12);color:#fca5a5;cursor:pointer;transition:0.2s;white-space:nowrap;opacity:0.55;">PBKS</button>
+                    <button class="sched-pill" data-team="RR"   onclick="setSchedFilter('RR')"   style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 12px;border-radius:20px;border:1px solid rgba(234,26,133,0.5);background:rgba(234,26,133,0.12);color:#f9a8d4;cursor:pointer;transition:0.2s;white-space:nowrap;opacity:0.55;">RR</button>
+                    <button class="sched-pill" data-team="GT"   onclick="setSchedFilter('GT')"   style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 12px;border-radius:20px;border:1px solid rgba(29,78,137,0.5);background:rgba(29,78,137,0.15);color:#93c5fd;cursor:pointer;transition:0.2s;white-space:nowrap;opacity:0.55;">GT</button>
+                    <button class="sched-pill" data-team="LSG"  onclick="setSchedFilter('LSG')"  style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 12px;border-radius:20px;border:1px solid rgba(164,214,94,0.5);background:rgba(164,214,94,0.12);color:#a4d65e;cursor:pointer;transition:0.2s;white-space:nowrap;opacity:0.55;">LSG</button>
                 </div>
-                <!-- Match count label -->
-                <p id="sched-count" style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;letter-spacing:0.2em;margin-top:8px;text-align:right;"></p>
+                <!-- Stats bar: matches played / remaining -->
+                <div id="sched-stats" style="display:flex;justify-content:center;gap:16px;margin-top:8px;"></div>
             </div>
             <div id="schedule-list"></div>
         </div>
@@ -1214,6 +1204,7 @@
                             <div class="sched-match-row"
                                 data-t1="${m.t1}" data-t2="${m.t2}"
                                 data-full="${(m.t1+' '+m.t2).toLowerCase()}"
+                                data-done="${isDone?'1':'0'}"
                                 style="
                                 background:rgba(10,15,25,0.98);
                                 border:1px solid rgba(255,255,255,${today?'0.0':'0.06'});
@@ -1655,26 +1646,14 @@
 
         function setSchedFilter(team) {
             _schedTeamFilter = team;
-            // Update pill active states
             document.querySelectorAll('.sched-pill').forEach(b => {
-                const isActive = b.dataset.team === team;
-                b.classList.toggle('active', isActive);
+                b.classList.toggle('active', b.dataset.team === team);
             });
-            // Clear search box when a pill is selected
-            const searchEl = document.getElementById('sched-search');
-            if (searchEl) { searchEl.value = ''; _schedSearchQuery = ''; }
             applyScheduleFilter();
         }
 
         function filterSchedule() {
-            const searchEl = document.getElementById('sched-search');
-            _schedSearchQuery = searchEl ? searchEl.value.trim().toLowerCase() : '';
-            // If typing in search, reset pill to ALL
-            if (_schedSearchQuery) {
-                _schedTeamFilter = 'ALL';
-                document.querySelectorAll('.sched-pill').forEach(b => b.classList.remove('active'));
-                document.querySelector('.sched-pill[data-team="ALL"]').classList.add('active');
-            }
+            // kept for compatibility — no search box anymore
             applyScheduleFilter();
         }
 
@@ -1717,6 +1696,25 @@
                 const visibleInGroup = group.querySelectorAll('.sched-match-row:not([style*="display: none"]):not([style*="display:none"])').length;
                 group.style.display = visibleInGroup > 0 ? '' : 'none';
             });
+
+            // Update stats bar: played / remaining
+            const statsEl = document.getElementById('sched-stats');
+            if (statsEl) {
+                const allVisible = Array.from(rows).filter(r => r.style.display !== 'none');
+                const played    = allVisible.filter(r => r.dataset.done === '1').length;
+                const remaining = allVisible.length - played;
+                const teamLabel = _schedTeamFilter !== 'ALL' ? _schedTeamFilter + ' — ' : '';
+                statsEl.innerHTML = `
+                    <div style="display:flex;align-items:center;gap:5px;">
+                        <span style="width:7px;height:7px;border-radius:50%;background:#4ade80;display:inline-block;"></span>
+                        <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#4ade80;letter-spacing:0.15em;">${played} PLAYED</span>
+                    </div>
+                    <span style="font-size:8px;color:#1e293b;">|</span>
+                    <div style="display:flex;align-items:center;gap:5px;">
+                        <span style="width:7px;height:7px;border-radius:50%;background:#f1c40f;display:inline-block;"></span>
+                        <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#f1c40f;letter-spacing:0.15em;">${remaining} REMAINING</span>
+                    </div>`;
+            }
         }
 
         updateApp();
