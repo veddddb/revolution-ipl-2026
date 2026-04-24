@@ -109,6 +109,7 @@
         .sched-pill.active { opacity:1 !important; transform:scale(1.05); box-shadow:0 0 10px -2px currentColor; }
         @keyframes livePulse  { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
         .live-dot { display:inline-block; width:7px; height:7px; border-radius:50%; background:#4ade80; margin-left:6px; vertical-align:middle; flex-shrink:0; animation:livePulse 1.2s ease-in-out infinite; box-shadow:0 0 6px #4ade80; }
+        @keyframes countUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
         @keyframes todayGlow  { 0%,100%{box-shadow:0 0 12px 2px rgba(241,196,15,0.15),inset 0 0 0 1px rgba(241,196,15,0.2)} 50%{box-shadow:0 0 26px 8px rgba(241,196,15,0.32),inset 0 0 0 1px rgba(241,196,15,0.5)} }
     </style>
 </head>
@@ -139,10 +140,12 @@
             <div style="width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;">
                 <div style="display:flex;justify-content:center;gap:6px;background:rgba(0,0,0,0.4);padding:5px;border-radius:18px;border:1px solid rgba(255,255,255,0.05);min-width:fit-content;margin:0 auto;">
                     <button onclick="switchTab('main')"     id="btn-main"     class="tab-btn active">Live Ranks</button>
-                    <button onclick="switchTab('strategy')" id="btn-strat"    class="tab-btn">If Tu..</button>
+                    <button onclick="switchTab('strategy')" id="btn-strat"    class="tab-btn">Luckiest</button>
                     <button onclick="switchTab('weekly')"   id="btn-weekly"   class="tab-btn">Weekly</button>
                     <button onclick="switchTab('schedule')"  id="btn-schedule"  class="tab-btn">Schedule</button>
                     <button onclick="switchTab('standings')" id="btn-standings" class="tab-btn">Standings</button>
+                    <button onclick="switchTab('hof')"      id="btn-hof"      class="tab-btn">🏆 HOF</button>
+                    <button onclick="switchTab('gems')"     id="btn-gems"     class="tab-btn">💎 Gems</button>
                 </div>
             </div>
         </header>
@@ -211,10 +214,26 @@
             <div id="standings-list"></div>
         </div>
 
+        <div id="view-hof" class="hidden pt-4">
+            <div id="hof-list"></div>
+        </div>
+
+        <div id="view-gems" class="hidden pt-4">
+            <div id="gems-list"></div>
+        </div>
+
         <footer class="text-center py-20 opacity-20 font-cyber text-[8px] uppercase tracking-[0.6em]">
             Precision Sync • Vedant Bhansali Edition
         </footer>
     </div>
+
+    <!-- SCROLL TO TOP -->
+    <button id="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})"
+        style="display:none;position:fixed;bottom:28px;right:16px;z-index:400;
+               width:40px;height:40px;border-radius:50%;
+               border:1px solid rgba(241,196,15,0.4);background:rgba(10,15,25,0.95);
+               backdrop-filter:blur(12px);color:#f1c40f;font-size:16px;cursor:pointer;
+               transition:opacity 0.3s;box-shadow:0 0 16px rgba(241,196,15,0.15);">↑</button>
 
     <script>
         const SHEET_ID             = '1xIRCNr0tteFfMk6l7inIkKeSJMb7WLBswsXepHRqjio';
@@ -276,12 +295,12 @@
         }
         setTimeout(dismissSplash, 5000);
 
-        const TAB_ORDER = ['main','strategy','weekly','schedule','standings'];
+        const TAB_ORDER = ['main','strategy','weekly','schedule','standings','hof','gems'];
         let _currentTab = 'main';
 
         function switchTab(t, animate) {
-            const views = { main:'view-main', strategy:'view-strategy', weekly:'view-weekly', schedule:'view-schedule', standings:'view-standings' };
-            const btns  = { main:'btn-main', strategy:'btn-strat', weekly:'btn-weekly', schedule:'btn-schedule', standings:'btn-standings' };
+            const views = { main:'view-main', strategy:'view-strategy', weekly:'view-weekly', schedule:'view-schedule', standings:'view-standings', hof:'view-hof', gems:'view-gems' };
+            const btns  = { main:'btn-main', strategy:'btn-strat', weekly:'btn-weekly', schedule:'btn-schedule', standings:'btn-standings', hof:'btn-hof', gems:'btn-gems' };
             Object.keys(views).forEach(k => {
                 const el = document.getElementById(views[k]);
                 if (k === t) {
@@ -429,6 +448,10 @@
                 renderRankArrows(active);
                 if (!window._confettiFired) { window._confettiFired = true; setTimeout(fireConfetti, 800); }
                 renderStandings(standRows || []);
+                renderMatchDayBanner(active, pcRows, completedMatches);
+                renderLastMatchLeaderboard(active, pcRows, completedMatches);
+                renderHallOfFame(active, pcRows, completedMatches, squads);
+                renderGems(rosRows, pPoints, squads);
 
             } catch(e) {
                 console.error('Sync Error:', e);
@@ -717,24 +740,64 @@
                         </div>`;
                     }).join('');
 
+                // Points gap, progress, rival, overtake
+                const leader     = owners.filter(o2 => o2.id !== 'unsold')[0];
+                const gap        = (leader && o.id !== leader.id && o.id !== 'unsold') ? leader.score - o.score : 0;
+                const pct        = (leader && leader.score > 0 && o.id !== 'unsold') ? Math.min(100, Math.round((o.score / leader.score) * 100)) : 100;
+                const above      = i > 0 && o.id !== 'unsold' ? owners[i-1] : null;
+                const toOvertake = above ? above.score - o.score + 1 : 0;
+                // Rival: closest owner in score
+                const isRival    = i > 0 && o.id !== 'unsold' && owners[i-1] && (owners[i-1].score - o.score) <= 30;
+
                 return `
                 <div id="${cID}" class="glass-card ${o.id==='unsold'?'opacity-40 mt-12':''}" style="--owner-color:${color};--owner-glow:${color}33">
                     ${logoBg}
+                    ${isRival ? `<div style="position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:30;font-size:9px;font-weight:900;color:#f87171;font-family:Orbitron,sans-serif;letter-spacing:0.1em;background:rgba(248,113,113,0.12);border:1px solid rgba(248,113,113,0.3);border-radius:8px;padding:2px 8px;">⚔️ RIVAL · ${owners[i-1].score - o.score} PTS BEHIND</div>` : ''}
                     <div class="p-6 flex justify-between items-center relative z-10" onclick="toggleSquad('${cID}')">
                         <div class="flex items-center gap-5">
                             <span class="font-cyber text-lg ${i<3&&o.id!=='unsold'?'gold-glow':'text-gray-700'}">${o.id==='unsold'?'•':i+1}</span>
-                            <span class="font-black text-sm uppercase tracking-widest italic">${o.full}</span>
+                            <div>
+                                <span class="font-black text-sm uppercase tracking-widest italic">${o.full}</span>
+                                ${gap > 0 ? `<p style="font-size:7px;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:0.1em;margin-top:1px;">−${gap} from #1</p>` : ''}
+                            </div>
                         </div>
                         <div class="flex items-center gap-3">
-                            <span class="font-cyber text-2xl font-black italic tracking-tighter">${o.score}</span>
+                            <div style="text-align:right;">
+                                <span class="font-cyber text-2xl font-black italic tracking-tighter score-animated" data-score="${o.score}">${o.score}</span>
+                                ${toOvertake > 0 ? `<p style="font-size:7px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.05em;margin-top:1px;">+${toOvertake} to overtake</p>` : ''}
+                            </div>
                             ${o.id!=='unsold'?`<button class="share-btn" onclick="event.stopPropagation();shareCard('${cID}','${o.full}',${o.score},${i+1})">Share</button>`:''}
                         </div>
                     </div>
+                    ${o.id !== 'unsold' && i > 0 ? `
+                    <div style="height:2px;background:rgba(255,255,255,0.04);margin:0 24px 0 24px;border-radius:2px;overflow:hidden;">
+                        <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,${color}66,${color});border-radius:2px;transition:width 1.2s ease;"></div>
+                    </div>` : ''}
                     <div id="sq-${cID}" class="squad-container">
                         <div class="space-y-4 pt-4">${playerRows}</div>
                     </div>
                 </div>`;
             }).join('');
+
+            // Animate score counters on first render
+            if (!window._scoresAnimated) {
+                window._scoresAnimated = true;
+                requestAnimationFrame(() => {
+                    document.querySelectorAll('.score-animated').forEach(el => {
+                        const target = parseInt(el.dataset.score) || 0;
+                        const dur    = 900;
+                        const start  = performance.now();
+                        const tick   = (now) => {
+                            const p = Math.min(1, (now - start) / dur);
+                            const ease = 1 - Math.pow(1 - p, 3);
+                            el.textContent = Math.round(ease * target);
+                            if (p < 1) requestAnimationFrame(tick);
+                            else el.textContent = target;
+                        };
+                        requestAnimationFrame(tick);
+                    });
+                });
+            }
         }
 
         function toggleSquad(id) {
@@ -1503,133 +1566,153 @@
         }
 
 
-// ── IPL STANDINGS ──
-function renderStandings(rows) {
-    const el = document.getElementById('standings-list');
-    if (!el) return;
+        // ── IPL STANDINGS ──
+        function renderStandings(rows) {
+            const el = document.getElementById('standings-list');
+            if (!el) return;
 
-    // Parse data
-    const data = rows.filter(r => r[0] && !isNaN(parseInt(r[0]))).map(r => ({
-        rank: parseInt(r[0]),
-        team: (r[1] || '').toString().trim(),
-        code: (r[2] || '').toString().trim().toUpperCase(),
-        played: parseInt(r[3]) || 0,
-        won: parseInt(r[4]) || 0,
-        lost: parseInt(r[5]) || 0,
-        nr: parseInt(r[6]) || 0,
-        pts: parseInt(r[7]) || 0,
-        nrr: parseFloat(r[8]) || 0,
-    })).sort((a, b) => a.rank - b.rank);
+            // Filter out header row and empty rows
+            // Sheet columns: Rank, Team, Short, Played, Won, Lost, N/R, Points, NRR
+            const data = rows.filter(r => r[0] && !isNaN(parseInt(r[0]))).map(r => ({
+                rank:   parseInt(r[0]),
+                team:   (r[1] || '').toString().trim(),
+                code:   (r[2] || '').toString().trim().toUpperCase(),
+                played: parseInt(r[3]) || 0,
+                won:    parseInt(r[4]) || 0,
+                lost:   parseInt(r[5]) || 0,
+                nr:     parseInt(r[6]) || 0,
+                pts:    parseInt(r[7]) || 0,
+                nrr:    parseFloat(r[8]) || 0,
+            })).sort((a, b) => a.rank - b.rank);
 
-    if (!data.length) {
-        el.innerHTML = `<div style="text-align:center;padding:40px 20px;font-size:11px;color:#334155;font-family:Orbitron,sans-serif;letter-spacing:0.2em;text-transform:uppercase;">No standings data yet</div>`;
-        return;
-    }
+            if (!data.length) {
+                el.innerHTML = `<div style="text-align:center;padding:40px 20px;font-size:11px;color:#334155;font-family:Orbitron,sans-serif;letter-spacing:0.2em;text-transform:uppercase;">No standings data yet</div>`;
+                return;
+            }
 
-    // Header banner
-    const headerHTML = `
-        <div style="background:rgba(10,15,25,0.98);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:14px 20px;margin-bottom:12px;position:relative;overflow:hidden;">
-            <div style="position:absolute;top:0;left:16px;right:16px;height:1px;background:linear-gradient(90deg,transparent,rgba(241,196,15,0.5),transparent);"></div>
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-                <div>
-                    <p style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;letter-spacing:0.35em;color:#475569;text-transform:uppercase;margin-bottom:2px;">IPL 2026</p>
-                    <p style="font-family:Orbitron,sans-serif;font-size:13px;font-weight:900;color:#f1c40f;">Points Table</p>
-                </div>
-                <div style="display:flex;align-items:center;gap:6px;">
-                    <span style="width:6px;height:6px;border-radius:50%;background:#4ade80;display:inline-block;animation:livePulse 1.2s ease-in-out infinite;box-shadow:0 0 5px #4ade80;"></span>
-                    <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#4ade80;letter-spacing:0.15em;">LIVE</span>
-                </div>
-            </div>
-        </div>`;
-
-    // Column headers
-    const colHeader = `
-        <div style="display:grid;grid-template-columns:28px 1fr 36px 36px 36px 36px 52px 60px;gap:0;padding:6px 14px;margin-bottom:8px;">
-            <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;">#</span>
-            <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;">Team</span>
-            <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;text-align:center;">P</span>
-            <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;text-align:center;">W</span>
-            <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;text-align:center;">L</span>
-            <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;text-align:center;">N/R</span>
-            <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;text-align:right;">PTS</span>
-            <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;text-align:right;">NRR</span>
-        </div>`;
-
-    // Build rows + divider after 4th team
-    let rowsHTML = '';
-    data.forEach((t, i) => {
-        const isPlayoff = t.rank <= 4;
-        const isTop = t.rank === 1;
-        const tc = TEAM_COLORS[t.code] || '#475569';
-        const nrrStr = (t.nrr >= 0 ? '+' : '') + t.nrr.toFixed(3);
-        const nrrColor = t.nrr >= 0 ? '#4ade80' : '#f87171';
-
-        // Add divider AFTER the 4th team (before the 5th)
-        if (i === 4) {
-            rowsHTML += `
-                <div style="display:flex;align-items:center;gap:8px;margin:14px 0 10px;padding:0 4px;">
-                    <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(241,196,15,0.45),transparent);"></div>
-                    <span style="font-family:Orbitron,sans-serif;font-size:7.5px;font-weight:900;color:#f1c40f;letter-spacing:0.3em;white-space:nowrap;">PLAYOFF ZONE ↑ (TOP 4)</span>
-                    <div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(241,196,15,0.45));"></div>
+            // Header banner
+            const headerHTML = `
+                <div style="background:rgba(10,15,25,0.98);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:14px 20px;margin-bottom:12px;position:relative;overflow:hidden;">
+                    <div style="position:absolute;top:0;left:16px;right:16px;height:1px;background:linear-gradient(90deg,transparent,rgba(241,196,15,0.5),transparent);"></div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <div>
+                            <p style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;letter-spacing:0.35em;color:#475569;text-transform:uppercase;margin-bottom:2px;">IPL 2026</p>
+                            <p style="font-family:Orbitron,sans-serif;font-size:13px;font-weight:900;color:#f1c40f;">Points Table</p>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <span style="width:6px;height:6px;border-radius:50%;background:#4ade80;display:inline-block;animation:livePulse 1.2s ease-in-out infinite;box-shadow:0 0 5px #4ade80;"></span>
+                            <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#4ade80;letter-spacing:0.15em;">LIVE</span>
+                        </div>
+                    </div>
                 </div>`;
+
+            // Column header row
+            const colHeader = `
+                <div style="display:grid;grid-template-columns:28px 1fr 36px 36px 36px 36px 52px 60px;gap:0;padding:6px 14px;margin-bottom:4px;">
+                    <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;">#</span>
+                    <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;">Team</span>
+                    <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;text-align:center;">P</span>
+                    <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;text-align:center;">W</span>
+                    <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;text-align:center;">L</span>
+                    <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;text-align:center;">N/R</span>
+                    <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;text-align:right;">PTS</span>
+                    <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;text-align:right;">NRR</span>
+                </div>`;
+
+            // Playoff divider label
+            const playoffLabel = `
+                <div style="display:flex;align-items:center;gap:8px;margin:8px 0 6px;padding:0 4px;">
+                    <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(241,196,15,0.4),transparent);"></div>
+                    <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#f1c40f;letter-spacing:0.2em;white-space:nowrap;">PLAYOFF ZONE ↑</span>
+                    <div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(241,196,15,0.4));"></div>
+                </div>`;
+
+            const rowsHTML = data.map((t, i) => {
+                const isPlayoff  = t.rank <= 4;
+                const isTop      = t.rank === 1;
+                const tc         = TEAM_COLORS[t.code] || '#475569';
+                const nrrStr     = (t.nrr >= 0 ? '+' : '') + t.nrr.toFixed(3);
+                const nrrColor   = t.nrr >= 0 ? '#4ade80' : '#f87171';
+                const divider    = i === 3 ? playoffLabel : '';
+
+                return `
+                ${divider}
+                <div style="
+                    background:${isPlayoff ? 'rgba(15,20,10,0.98)' : 'rgba(10,15,25,0.98)'};
+                    border:1px solid ${isPlayoff ? 'rgba(241,196,15,0.2)' : 'rgba(255,255,255,0.06)'};
+                    border-left:3px solid ${isPlayoff ? (isTop ? '#f1c40f' : tc) : 'rgba(255,255,255,0.06)'};
+                    border-radius:14px;
+                    padding:10px 14px;
+                    margin-bottom:5px;
+                    display:grid;
+                    grid-template-columns:28px 1fr 36px 36px 36px 36px 52px 60px;
+                    gap:0;
+                    align-items:center;
+                    position:relative;
+                    overflow:hidden;
+                    transition:0.2s;
+                    ${isTop ? 'box-shadow:0 0 16px -4px rgba(241,196,15,0.25);' : ''}
+                ">
+                    ${isPlayoff ? `<div style="position:absolute;inset:0;background:radial-gradient(ellipse at left,${tc}08,transparent 70%);pointer-events:none;"></div>` : ''}
+
+                    <!-- Rank -->
+                    <span style="font-family:Orbitron,sans-serif;font-size:${isTop?'13':'10'}px;font-weight:900;
+                        color:${isTop?'#f1c40f':isPlayoff?tc:'#334155'};
+                        ${isTop?'text-shadow:0 0 8px rgba(241,196,15,0.5);':''}
+                        position:relative;z-index:1;">${t.rank}</span>
+
+                    <!-- Team name + code badge -->
+                    <div style="position:relative;z-index:1;overflow:hidden;">
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <span style="font-family:Orbitron,sans-serif;font-size:11px;font-weight:900;
+                                color:${isPlayoff?tc:'#475569'};
+                                ${isPlayoff?'text-shadow:0 0 8px '+tc+'44;':''}
+                                white-space:nowrap;">${t.code}</span>
+                            ${isPlayoff ? `<span style="font-size:7px;font-weight:700;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80px;">${t.team}</span>` : `<span style="font-size:7px;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px;">${t.team}</span>`}
+                        </div>
+                    </div>
+
+                    <!-- Played -->
+                    <span style="font-size:11px;font-weight:700;color:${isPlayoff?'#94a3b8':'#334155'};text-align:center;position:relative;z-index:1;">${t.played}</span>
+
+                    <!-- Won -->
+                    <span style="font-size:11px;font-weight:${isPlayoff?'800':'600'};color:${isPlayoff?'#4ade80':'#334155'};text-align:center;position:relative;z-index:1;">${t.won}</span>
+
+                    <!-- Lost -->
+                    <span style="font-size:11px;font-weight:600;color:${isPlayoff?'#f87171':'#334155'};text-align:center;position:relative;z-index:1;">${t.lost}</span>
+
+                    <!-- N/R -->
+                    <span style="font-size:11px;font-weight:600;color:#334155;text-align:center;position:relative;z-index:1;">${t.nr}</span>
+
+                    <!-- Points -->
+                    <span style="font-family:Orbitron,sans-serif;font-size:${isPlayoff?'13':'11'}px;font-weight:900;
+                        color:${isPlayoff?'#f1c40f':'#334155'};
+                        ${isPlayoff?'text-shadow:0 0 8px rgba(241,196,15,0.4);':''}
+                        text-align:right;position:relative;z-index:1;">${t.pts}</span>
+
+                    <!-- NRR -->
+                    <span style="font-family:Orbitron,sans-serif;font-size:9px;font-weight:800;
+                        color:${isPlayoff?nrrColor:'#334155'};
+                        text-align:right;position:relative;z-index:1;">${nrrStr}</span>
+                </div>`;
+            }).join('');
+
+            // Legend
+            const legendHTML = `
+                <div style="display:flex;gap:16px;justify-content:center;margin-top:12px;padding:10px;flex-wrap:wrap;">
+                    <div style="display:flex;align-items:center;gap:5px;">
+                        <div style="width:10px;height:10px;border-radius:50%;background:#f1c40f;"></div>
+                        <span style="font-size:8px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.1em;">Top 4 — Playoff Qualified</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:5px;">
+                        <div style="width:10px;height:10px;border-radius:50%;background:#334155;"></div>
+                        <span style="font-size:8px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.1em;">Eliminated Zone</span>
+                    </div>
+                </div>`;
+
+            el.innerHTML = headerHTML + colHeader + rowsHTML + legendHTML;
         }
 
-        rowsHTML += `
-        <div style="
-            background:${isPlayoff ? 'rgba(15,20,10,0.98)' : 'rgba(10,15,25,0.98)'};
-            border:1px solid ${isPlayoff ? 'rgba(241,196,15,0.25)' : 'rgba(255,255,255,0.06)'};
-            border-left:3px solid ${isPlayoff ? (isTop ? '#f1c40f' : tc) : 'rgba(255,255,255,0.06)'};
-            border-radius:14px;
-            padding:11px 14px;
-            margin-bottom:6px;
-            display:grid;
-            grid-template-columns:28px 1fr 36px 36px 36px 36px 52px 60px;
-            gap:0;
-            align-items:center;
-            position:relative;
-            overflow:hidden;
-            ${isTop ? 'box-shadow:0 0 18px -4px rgba(241,196,15,0.3);' : ''}
-        ">
-            ${isPlayoff ? `<div style="position:absolute;inset:0;background:radial-gradient(ellipse at left,${tc}0a,transparent 75%);pointer-events:none;"></div>` : ''}
-            
-            <!-- Rank -->
-            <span style="font-family:Orbitron,sans-serif;font-size:${isTop ? '13' : '10'}px;font-weight:900;
-                color:${isTop ? '#f1c40f' : isPlayoff ? tc : '#334155'};
-                ${isTop ? 'text-shadow:0 0 8px rgba(241,196,15,0.5);' : ''}
-                position:relative;z-index:1;">${t.rank}</span>
-            
-            <!-- Team -->
-            <div style="position:relative;z-index:1;">
-                <div style="display:flex;align-items:center;gap:6px;">
-                    <span style="font-family:Orbitron,sans-serif;font-size:11px;font-weight:900;color:${isPlayoff ? tc : '#475569'};white-space:nowrap;">${t.code}</span>
-                    <span style="font-size:7px;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px;">${t.team}</span>
-                </div>
-            </div>
-            
-            <span style="font-size:11px;font-weight:700;color:${isPlayoff?'#94a3b8':'#334155'};text-align:center;">${t.played}</span>
-            <span style="font-size:11px;font-weight:${isPlayoff?'800':'600'};color:${isPlayoff?'#4ade80':'#334155'};text-align:center;">${t.won}</span>
-            <span style="font-size:11px;font-weight:600;color:${isPlayoff?'#f87171':'#334155'};text-align:center;">${t.lost}</span>
-            <span style="font-size:11px;font-weight:600;color:#334155;text-align:center;">${t.nr}</span>
-            <span style="font-family:Orbitron,sans-serif;font-size:${isPlayoff?'13':'11'}px;font-weight:900;color:${isPlayoff?'#f1c40f':'#334155'};text-align:right;">${t.pts}</span>
-            <span style="font-family:Orbitron,sans-serif;font-size:9px;font-weight:800;color:${isPlayoff ? nrrColor : '#334155'};text-align:right;">${nrrStr}</span>
-        </div>`;
-    });
-
-    // Legend
-    const legendHTML = `
-        <div style="display:flex;gap:16px;justify-content:center;margin-top:16px;padding:10px;flex-wrap:wrap;">
-            <div style="display:flex;align-items:center;gap:5px;">
-                <div style="width:10px;height:10px;border-radius:50%;background:#f1c40f;"></div>
-                <span style="font-size:8px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.1em;">Top 4 — Playoff Qualified</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:5px;">
-                <div style="width:10px;height:10px;border-radius:50%;background:#334155;"></div>
-                <span style="font-size:8px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.1em;">Eliminated Zone</span>
-            </div>
-        </div>`;
-
-    el.innerHTML = headerHTML + colHeader + rowsHTML + legendHTML;
-}
 
         // ── SCHEDULE TEAM FILTER ──
         let _schedTeamFilter = 'ALL';
@@ -1706,6 +1789,300 @@ function renderStandings(rows) {
                         <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#f1c40f;letter-spacing:0.15em;">${remaining} REMAINING</span>
                     </div>`;
             }
+        }
+
+
+        // ── SCROLL TO TOP ──
+        window.addEventListener('scroll', () => {
+            const btn = document.getElementById('scroll-top-btn');
+            if (btn) btn.style.display = window.scrollY > 400 ? 'flex' : 'none';
+        }, { passive: true });
+
+        // ── MATCH DAY WINNER BANNER ──
+        function renderMatchDayBanner(active, pcRows, completedMatches) {
+            if (!completedMatches.length) return;
+            const lastMatch = completedMatches[completedMatches.length - 1];
+
+            // Sum each owner's points in the last match
+            const matchTotals = {};
+            const nameToId = {};
+            active.forEach(o => {
+                nameToId[fixID(o.full)] = o.id;
+                nameToId[fixID(o.first)] = o.id;
+                nameToId[o.id] = o.id;
+                matchTotals[o.id] = 0;
+            });
+            pcRows.filter(r => r[0] && r[0].toString().trim() === lastMatch).forEach(r => {
+                const raw = fixID(r[2]);
+                const id  = nameToId[raw] || active.find(o => raw.includes(o.id) || o.id.includes(raw))?.id;
+                if (id) matchTotals[id] = (matchTotals[id] || 0) + (parseFloat(r[6]) || 0);
+            });
+
+            const sorted = Object.entries(matchTotals).sort((a,b) => b[1]-a[1]);
+            if (!sorted.length || sorted[0][1] === 0) return;
+
+            const winnerId = sorted[0][0];
+            const winner   = active.find(o => o.id === winnerId);
+            const pts      = Math.round(sorted[0][1]);
+            if (!winner) return;
+
+            const color = getColor(winnerId);
+            const mvpEl = document.getElementById('mvp-spotlight');
+            if (!mvpEl) return;
+
+            // Insert match day banner right after MVP spotlight
+            let banner = document.getElementById('matchday-winner-banner');
+            if (!banner) {
+                banner = document.createElement('div');
+                banner.id = 'matchday-winner-banner';
+                mvpEl.parentNode.insertBefore(banner, mvpEl.nextSibling);
+            }
+            banner.innerHTML = `
+                <div style="background:rgba(10,15,25,0.98);border:1px solid ${color}44;border-left:3px solid ${color};border-radius:18px;padding:12px 18px;margin-bottom:0;position:relative;overflow:hidden;">
+                    <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,${color}88,transparent);"></div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <div>
+                            <p style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;letter-spacing:0.3em;color:#475569;text-transform:uppercase;margin-bottom:3px;">🏅 Match Day Winner · ${lastMatch}</p>
+                            <p style="font-family:Orbitron,sans-serif;font-size:14px;font-weight:900;color:${color};text-transform:uppercase;">${winner.full}</p>
+                        </div>
+                        <div style="text-align:right;">
+                            <p style="font-family:Orbitron,sans-serif;font-size:22px;font-weight:900;color:${color};text-shadow:0 0 10px ${color}66;line-height:1;">${pts}</p>
+                            <p style="font-size:7px;color:#334155;text-transform:uppercase;font-weight:700;letter-spacing:0.1em;">match pts</p>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        // ── LAST MATCH LEADERBOARD (inside streak tracker) ──
+        function renderLastMatchLeaderboard(active, pcRows, completedMatches) {
+            if (!completedMatches.length) return;
+            const lastMatch = completedMatches[completedMatches.length - 1];
+            const nameToId  = {};
+            active.forEach(o => {
+                nameToId[fixID(o.full)]  = o.id;
+                nameToId[fixID(o.first)] = o.id;
+                nameToId[o.id]           = o.id;
+            });
+            const totals = {};
+            active.forEach(o => totals[o.id] = 0);
+            pcRows.filter(r => r[0] && r[0].toString().trim() === lastMatch).forEach(r => {
+                const raw = fixID(r[2]);
+                const id  = nameToId[raw] || active.find(o => raw.includes(o.id) || o.id.includes(raw))?.id;
+                if (id) totals[id] = (totals[id]||0) + (parseFloat(r[6])||0);
+            });
+            const sorted = active.map(o => ({ ...o, matchPts: Math.round(totals[o.id]||0) })).sort((a,b)=>b.matchPts-a.matchPts);
+            const maxPts = sorted[0]?.matchPts || 1;
+
+            const streakEl = document.getElementById('streak-tracker');
+            if (!streakEl) return;
+            let miniLb = document.getElementById('mini-match-lb');
+            if (!miniLb) {
+                miniLb = document.createElement('div');
+                miniLb.id = 'mini-match-lb';
+                streakEl.appendChild(miniLb);
+            }
+            miniLb.innerHTML = `
+                <div style="background:rgba(10,15,25,0.98);border:1px solid rgba(255,255,255,0.07);border-radius:20px;padding:18px 20px;margin-top:1rem;">
+                    <p style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;letter-spacing:0.3em;color:#475569;text-transform:uppercase;margin-bottom:14px;">Last Match · ${lastMatch}</p>
+                    <div style="display:flex;flex-direction:column;gap:8px;">
+                        ${sorted.map((o,i) => {
+                            const c = getColor(o.id);
+                            const pct = maxPts > 0 ? Math.round((o.matchPts/maxPts)*100) : 0;
+                            return `<div style="display:flex;align-items:center;gap:10px;">
+                                <span style="font-size:8px;font-weight:900;color:${i===0?c:'#334155'};width:14px;">${i+1}</span>
+                                <span style="font-size:10px;font-weight:800;color:${i===0?'#f1f5f9':'#94a3b8'};text-transform:uppercase;flex:1;">${o.first}</span>
+                                <div style="flex:2;background:rgba(255,255,255,0.04);border-radius:4px;height:4px;overflow:hidden;">
+                                    <div style="height:100%;width:${pct}%;background:${c};border-radius:4px;transition:width 0.8s ease;"></div>
+                                </div>
+                                <span style="font-family:Orbitron,sans-serif;font-size:9px;font-weight:900;color:${c};min-width:36px;text-align:right;">${o.matchPts}</span>
+                            </div>`;
+                        }).join('')}
+                    </div>
+                </div>`;
+        }
+
+        // ── HALL OF FAME ──
+        function renderHallOfFame(active, pcRows, completedMatches, squads) {
+            const el = document.getElementById('hof-list');
+            if (!el) return;
+
+            // Build per-owner match day totals
+            const nameToId = {};
+            active.forEach(o => {
+                nameToId[fixID(o.full)]  = o.id;
+                nameToId[fixID(o.first)] = o.id;
+                nameToId[o.id]           = o.id;
+            });
+
+            // Best single match score per owner
+            const bestMatch   = {};  // { ownerId: { pts, matchName } }
+            // Best single player score ever
+            let bestPlayer    = { name:'—', pts:0, owner:'—', match:'—' };
+            // Biggest comeback (most ranks gained in one match)
+            const matchRanks  = {};  // matchName → sorted owner ranking
+
+            completedMatches.forEach(matchName => {
+                const matchTotals = {};
+                active.forEach(o => matchTotals[o.id] = 0);
+                pcRows.filter(r => r[0] && r[0].toString().trim() === matchName).forEach(r => {
+                    const raw = fixID(r[2]);
+                    const id  = nameToId[raw] || active.find(o => raw.includes(o.id) || o.id.includes(raw))?.id;
+                    if (!id) return;
+                    const pts = parseFloat(r[6]) || 0;
+                    matchTotals[id] = (matchTotals[id]||0) + pts;
+                    // Check best individual player
+                    if (pts > bestPlayer.pts) {
+                        bestPlayer = { name: r[1], pts: Math.round(pts), owner: r[2], match: matchName };
+                    }
+                });
+                active.forEach(o => {
+                    const pts = Math.round(matchTotals[o.id]||0);
+                    if (!bestMatch[o.id] || pts > bestMatch[o.id].pts) {
+                        bestMatch[o.id] = { pts, matchName };
+                    }
+                });
+                matchRanks[matchName] = Object.entries(matchTotals).sort((a,b)=>b[1]-a[1]).map(([id])=>id);
+            });
+
+            // Biggest single match score across all owners
+            const allBest = Object.entries(bestMatch).sort((a,b)=>b[1].pts-a[1].pts);
+            const topOwner = allBest[0] ? active.find(o=>o.id===allBest[0][0]) : null;
+            const topColor = topOwner ? getColor(topOwner.id) : '#f1c40f';
+
+            // Most match day wins
+            const dayWins = {};
+            active.forEach(o => dayWins[o.id] = 0);
+            completedMatches.forEach(m => {
+                const ranks = matchRanks[m];
+                if (ranks && ranks[0]) dayWins[ranks[0]] = (dayWins[ranks[0]]||0)+1;
+            });
+            const topDayWinner = Object.entries(dayWins).sort((a,b)=>b[1]-a[1])[0];
+            const dayWinOwner  = topDayWinner ? active.find(o=>o.id===topDayWinner[0]) : null;
+
+            el.innerHTML = `
+                <div style="background:rgba(10,15,25,0.98);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:14px 20px;margin-bottom:12px;position:relative;overflow:hidden;">
+                    <div style="position:absolute;top:0;left:16px;right:16px;height:1px;background:linear-gradient(90deg,transparent,rgba(241,196,15,0.5),transparent);"></div>
+                    <p style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;letter-spacing:0.35em;color:#475569;text-transform:uppercase;margin-bottom:2px;">Season</p>
+                    <p style="font-family:Orbitron,sans-serif;font-size:13px;font-weight:900;color:#f1c40f;">Hall of Fame</p>
+                </div>
+
+                ${[
+                    // Best single match score
+                    topOwner ? {
+                        icon:'🔥', label:'Highest Single Match Score',
+                        name: topOwner.full, value: allBest[0][1].pts + ' pts',
+                        sub: allBest[0][1].matchName, color: topColor
+                    } : null,
+                    // Best individual player performance
+                    bestPlayer.pts > 0 ? {
+                        icon:'⭐', label:'Best Individual Player',
+                        name: bestPlayer.name, value: bestPlayer.pts + ' pts',
+                        sub: `${bestPlayer.match} · Owned by ${bestPlayer.owner}`, color: getColor(bestPlayer.owner)
+                    } : null,
+                    // Most match day wins
+                    dayWinOwner ? {
+                        icon:'🏅', label:'Most Match Day Wins',
+                        name: dayWinOwner.full, value: topDayWinner[1] + ' days',
+                        sub: `out of ${completedMatches.length} match days`, color: getColor(dayWinOwner.id)
+                    } : null,
+                    // Highest season score (current #1)
+                    active[0] ? {
+                        icon:'👑', label:'Overall Season Leader',
+                        name: active[0].full, value: active[0].score + ' pts',
+                        sub: 'total this season', color: getColor(active[0].id)
+                    } : null,
+                ].filter(Boolean).map(card => `
+                    <div style="background:rgba(10,15,25,0.98);border:1px solid ${card.color}33;border-left:3px solid ${card.color};border-radius:18px;padding:14px 18px;margin-bottom:8px;position:relative;overflow:hidden;">
+                        <div style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:32px;opacity:0.07;pointer-events:none;">${card.icon}</div>
+                        <p style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;letter-spacing:0.25em;color:#475569;text-transform:uppercase;margin-bottom:4px;">${card.icon} ${card.label}</p>
+                        <div style="display:flex;justify-content:space-between;align-items:baseline;">
+                            <p style="font-size:13px;font-weight:900;color:${card.color};text-transform:uppercase;text-shadow:0 0 8px ${card.color}44;">${card.name}</p>
+                            <p style="font-family:Orbitron,sans-serif;font-size:16px;font-weight:900;color:${card.color};">${card.value}</p>
+                        </div>
+                        <p style="font-size:8px;color:#334155;margin-top:3px;">${card.sub}</p>
+                    </div>`).join('')}
+
+                <!-- Per-owner best match scores -->
+                <div style="background:rgba(10,15,25,0.98);border:1px solid rgba(255,255,255,0.07);border-radius:18px;padding:16px 18px;margin-top:4px;">
+                    <p style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;letter-spacing:0.25em;color:#475569;text-transform:uppercase;margin-bottom:12px;">Personal Bests</p>
+                    ${allBest.map(([id, data]) => {
+                        const o = active.find(x=>x.id===id);
+                        if (!o) return '';
+                        const c = getColor(id);
+                        return `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                            <div>
+                                <span style="font-size:11px;font-weight:800;color:#94a3b8;text-transform:uppercase;">${o.first}</span>
+                                <span style="font-size:8px;color:#334155;margin-left:6px;">${data.matchName}</span>
+                            </div>
+                            <span style="font-family:Orbitron,sans-serif;font-size:11px;font-weight:900;color:${c};">${data.pts}</span>
+                        </div>`;
+                    }).join('')}
+                </div>`;
+        }
+
+        // ── UNSOLD GEMS ──
+        function renderGems(rosRows, pPoints, squads) {
+            const el = document.getElementById('gems-list');
+            if (!el) return;
+
+            // Collect all owned player names
+            const ownedNames = new Set();
+            Object.values(squads).forEach(sq => sq.forEach(p => ownedNames.add(fixID(p.name))));
+
+            // Find Unsold/unowned players with points
+            const gems = [];
+            rosRows.forEach(row => {
+                const name  = (row[0] || '').toString().trim();
+                const owner = fixID(row[1] || '');
+                const team  = (row[4] || '').toString().trim();
+                const role  = (row[6] || '').toString().trim();
+                if (!name) return;
+                // Include if owner is 'unsold' OR player has no owner
+                if (owner !== 'unsold' && owner !== '' && !owner.includes('unsold')) return;
+                const stats = pPoints[fixID(name)] || { act: 0 };
+                if (stats.act > 0) gems.push({ name, team, role, pts: Math.round(stats.act) });
+            });
+
+            gems.sort((a,b) => b.pts - a.pts);
+
+            const totalMissed = gems.reduce((s,g) => s+g.pts, 0);
+
+            el.innerHTML = `
+                <div style="background:rgba(10,15,25,0.98);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:14px 20px;margin-bottom:12px;position:relative;overflow:hidden;">
+                    <div style="position:absolute;top:0;left:16px;right:16px;height:1px;background:linear-gradient(90deg,transparent,rgba(72,219,251,0.5),transparent);"></div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <div>
+                            <p style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;letter-spacing:0.35em;color:#475569;text-transform:uppercase;margin-bottom:2px;">💎 Unsold</p>
+                            <p style="font-family:Orbitron,sans-serif;font-size:13px;font-weight:900;color:#48dbfb;">Hidden Gems</p>
+                        </div>
+                        <div style="text-align:right;">
+                            <p style="font-family:Orbitron,sans-serif;font-size:18px;font-weight:900;color:#f87171;">${totalMissed}</p>
+                            <p style="font-size:7px;color:#334155;text-transform:uppercase;font-weight:700;">pts missed</p>
+                        </div>
+                    </div>
+                </div>
+                ${gems.length === 0 ? `<div style="text-align:center;padding:40px;color:#334155;font-family:Orbitron,sans-serif;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;">No unsold players with points yet</div>` :
+                gems.map((g, i) => {
+                    const tc = TEAM_COLORS[g.team.toUpperCase()] || '#475569';
+                    return `
+                    <div style="background:rgba(10,15,25,0.98);border:1px solid rgba(72,219,251,${i<3?'0.25':'0.08'});border-left:3px solid ${i<3?'#48dbfb':'rgba(255,255,255,0.06)'};border-radius:14px;padding:12px 16px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;${i<3?'box-shadow:0 0 12px -4px rgba(72,219,251,0.2);':''}">
+                        <div>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <span style="font-size:8px;font-weight:900;color:#334155;">${i+1}</span>
+                                <p style="font-size:12px;font-weight:800;color:${i<3?'#f1f5f9':'#94a3b8'};">${g.name}</p>
+                            </div>
+                            <p style="font-size:8px;font-weight:700;margin-top:2px;">
+                                <span style="color:${tc}">${g.team}</span>
+                                <span style="color:#334155;margin:0 4px;">·</span>
+                                <span style="color:#475569;text-transform:uppercase;">${g.role}</span>
+                            </p>
+                        </div>
+                        <div style="text-align:right;">
+                            <p style="font-family:Orbitron,sans-serif;font-size:${i<3?'16':'13'}px;font-weight:900;color:${i<3?'#48dbfb':'#334155'};">${g.pts}</p>
+                            <p style="font-size:7px;color:#334155;text-transform:uppercase;">pts</p>
+                        </div>
+                    </div>`;
+                }).join('')}`;
         }
 
         updateApp();
