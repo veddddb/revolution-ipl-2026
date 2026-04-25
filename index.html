@@ -5,782 +5,235 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>REVOLUTION IPL 2026</title>
 
-    <!-- PWA -->
-    <link rel="manifest" href="/manifest.json?v=2">
-    <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="pragma" content="no-cache">
-    <meta http-equiv="expires" content="0">
-    <meta name="theme-color" content="#0a0f1a">
+    <!-- ── PWA ── -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#f1c40f">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Revo IPL">
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
     <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
-
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,700&display=swap" rel="stylesheet">
-
+    <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-    /* ════════════════════════════════════════
-       DESIGN TOKENS
-    ════════════════════════════════════════ */
-    :root {
-        --bg:        #06090f;
-        --bg2:       #0d1117;
-        --bg3:       #131a24;
-        --surface:   #161d2b;
-        --surface2:  #1c2536;
-        --border:    rgba(255,255,255,0.07);
-        --border2:   rgba(255,255,255,0.12);
-        --text:      #e8edf5;
-        --text2:     #8b95a8;
-        --text3:     #3d4a5c;
-        --accent:    #f1c40f;
-        --accent2:   #d4a90d;
-        --red:       #f87171;
-        --green:     #4ade80;
-        --font-body: "DM Sans", sans-serif;
-        --font-num:  "Orbitron", sans-serif;
-        --nav-h:     64px;
-        --radius:    16px;
-        --radius-sm: 10px;
-    }
+        :root { --accent: #f1c40f; --glass: rgba(10,15,25,0.98); --border: rgba(255,255,255,0.08); }
 
-    /* Light mode */
-    body.light {
-        --bg:       #f0f4fc;
-        --bg2:      #e4eaf6;
-        --bg3:      #d8e2f2;
-        --surface:  #ffffff;
-        --surface2: #f5f8ff;
-        --border:   rgba(0,0,0,0.07);
-        --border2:  rgba(0,0,0,0.13);
-        --text:     #0f172a;
-        --text2:    #475569;
-        --text3:    #94a3b8;
-        --accent:   #b8860b;
-    }
+        /* ── LIGHT MODE ── */
+        body.light {
+            --glass: rgba(240,244,255,0.92);
+            --border: rgba(0,0,0,0.1);
+            background: radial-gradient(circle at top, #e8eef8 0%, #c8d8f0 100%) fixed !important;
+            color: #0f172a;
+        }
+        body.light .gold-glow  { color: #b8860b; text-shadow: none; }
+        body.light .font-cyber { color: #1e293b; }
+        body.light .role-tag   { background: rgba(0,0,0,0.06); color: #475569; }
+        body.light .team-tag   { color: #64748b; }
+        body.light .tab-btn    { color: #475569; border-color: rgba(0,0,0,0.1); background: rgba(0,0,0,0.04); }
+        body.light .tab-btn.active { background: #b8860b; color: #fff; border-color: #b8860b; }
+        body.light .podium-pillar  { background: linear-gradient(180deg,rgba(0,0,0,0.06),rgba(0,0,0,0.02)); border-color: rgba(0,0,0,0.08); }
+        body.light .podium-rank-label { color: #334155; }
+        body.light .squad-container { border-top-color: rgba(0,0,0,0.06); }
+        body.light #player-search  { background: rgba(240,244,255,0.95) !important; color: #0f172a !important; border-color: rgba(0,0,0,0.12) !important; }
+        body.light #search-dropdown { background: rgba(240,244,255,0.99) !important; border-color: rgba(0,0,0,0.1) !important; }
+        body.light .search-item:hover { background: rgba(0,0,0,0.04) !important; }
+        body.light .skel { background: linear-gradient(90deg,rgba(0,0,0,0.04) 25%,rgba(0,0,0,0.1) 50%,rgba(0,0,0,0.04) 75%); }
+        body.light .error-banner { background: rgba(220,38,38,0.08); }
+        body.light .mvp-banner { background: linear-gradient(90deg,rgba(184,134,11,0.1),rgba(184,134,11,0.04)); border-color: rgba(184,134,11,0.3); }
+        body.light .player-row-ghost { opacity: 0.35; }
 
-    /* ════════════════════════════════════════
-       RESET + BASE
-    ════════════════════════════════════════ */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { height: 100%; }
-    body {
-        background: var(--bg);
-        color: var(--text);
-        font-family: var(--font-body);
-        font-size: 14px;
-        line-height: 1.5;
-        min-height: 100vh;
-        min-height: 100dvh;
-        overflow-x: hidden;
-        transition: background 0.3s, color 0.3s;
-        -webkit-font-smoothing: antialiased;
-    }
+        body { background: radial-gradient(circle at top, #0f172a 0%, #020617 100%) fixed; color: #f8fafc; font-family: 'Inter', sans-serif; min-height: 100vh; transition: background 0.4s ease, color 0.3s ease; }
+        .font-cyber { font-family: 'Orbitron', sans-serif; }
+        .gold-glow  { color: var(--accent); text-shadow: 0 0 15px rgba(241,196,15,0.5); }
 
-    /* ════════════════════════════════════════
-       SPLASH SCREEN
-    ════════════════════════════════════════ */
-    #splash {
-        position: fixed; inset: 0; z-index: 1000;
-        background: radial-gradient(ellipse at 50% 30%, #0f1a2e 0%, #06090f 100%);
-        display: flex; flex-direction: column;
-        align-items: center; justify-content: center;
-        text-align: center; padding: 2rem;
-        transition: opacity 0.7s ease, transform 0.7s ease;
-    }
-    #splash.hide { opacity: 0; transform: scale(1.03); pointer-events: none; }
-    .sp { opacity: 0; }
-    .sp1 { animation: fadeUp 0.5s ease 0.2s forwards; }
-    .sp2 { animation: fadeUp 0.6s ease 0.5s forwards; }
-    .sp3 { animation: fadeUp 0.5s ease 0.8s forwards; }
-    .sp4 { animation: fadeUp 0.5s ease 1.0s forwards; }
-    .sp5 { animation: fadeUp 0.5s ease 1.1s forwards; }
-    .sp6 { animation: fadeUp 0.6s ease 1.2s forwards; }
-    .sp7 { animation: fadeUp 0.5s ease 1.8s forwards, blink 1.4s 2.4s infinite; }
-    .splash-eyebrow {
-        font-family: var(--font-num);
-        font-size: 9px; font-weight: 700;
-        letter-spacing: 0.5em; color: var(--text3);
-        text-transform: uppercase; margin-bottom: 1.5rem;
-    }
-    .splash-title {
-        font-family: var(--font-num);
-        font-size: clamp(3rem, 14vw, 6rem);
-        font-weight: 900; font-style: italic;
-        color: var(--accent);
-        text-shadow: 0 0 60px rgba(241,196,15,0.25);
-        letter-spacing: -0.03em; line-height: 1;
-    }
-    .splash-sub {
-        font-family: var(--font-num);
-        font-size: clamp(0.6rem, 2.5vw, 0.8rem);
-        font-weight: 700; letter-spacing: 0.3em;
-        color: var(--text3); text-transform: uppercase;
-        margin-top: 0.6rem;
-    }
-    .splash-rule {
-        width: 48px; height: 1px;
-        background: rgba(241,196,15,0.3);
-        margin: 2rem auto;
-    }
-    .splash-credit-label {
-        font-size: 8px; font-weight: 600;
-        letter-spacing: 0.3em; color: var(--text3);
-        text-transform: uppercase; margin-bottom: 4px;
-    }
-    .splash-credit-name {
-        font-family: var(--font-num);
-        font-size: clamp(0.7rem, 3vw, 0.9rem);
-        font-weight: 900; color: var(--text2);
-        letter-spacing: 0.12em; text-transform: uppercase;
-    }
-    .splash-hint {
-        margin-top: 3rem;
-        font-family: var(--font-num);
-        font-size: 8px; font-weight: 700;
-        letter-spacing: 0.4em; color: var(--text3);
-        text-transform: uppercase; cursor: pointer;
-    }
+        .glass-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 24px; transition: 0.4s cubic-bezier(0.4,0,0.2,1); margin-bottom: 1rem; position: relative; overflow: hidden; cursor: pointer; }
+        .glass-card:hover { transform: translateY(-4px); border-color: var(--owner-color, var(--accent)); box-shadow: 0 0 30px -5px var(--owner-glow, rgba(241,196,15,0.2)); z-index: 20; }
 
-    /* ════════════════════════════════════════
-       APP SHELL
-    ════════════════════════════════════════ */
-    #app {
-        max-width: 560px;
-        margin: 0 auto;
-        padding: 0 0 calc(var(--nav-h) + 20px) 0;
-    }
+        .logo-bg { position: absolute; right: 8%; top: 50%; transform: translateY(-50%); width: 120px; height: 120px; opacity: 0.13; pointer-events: none; z-index: 0; filter: blur(0.5px); transition: opacity 0.4s ease, filter 0.4s ease, transform 0.4s ease; }
+        .glass-card:hover .logo-bg { opacity: 0.4; filter: blur(0px); transform: translateY(-50%) scale(1.08); }
 
-    /* ── TOP BAR ── */
-    #topbar {
-        position: sticky; top: 0; z-index: 90;
-        background: var(--bg);
-        border-bottom: 1px solid var(--border);
-        padding: 14px 20px 12px;
-        display: flex; align-items: center;
-        justify-content: space-between;
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-    }
-    #topbar-left { display: flex; flex-direction: column; }
-    .topbar-league {
-        font-size: 9px; font-weight: 700;
-        letter-spacing: 0.25em; color: var(--text3);
-        text-transform: uppercase;
-    }
-    .topbar-title {
-        font-family: var(--font-num);
-        font-size: 18px; font-weight: 900;
-        font-style: italic; color: var(--accent);
-        letter-spacing: -0.02em; line-height: 1;
-        text-shadow: 0 0 20px rgba(241,196,15,0.2);
-    }
-    #topbar-right { display: flex; align-items: center; gap: 10px; }
-    .match-pill {
-        font-family: var(--font-num);
-        font-size: 8px; font-weight: 700;
-        color: var(--accent); letter-spacing: 0.1em;
-        background: rgba(241,196,15,0.08);
-        border: 1px solid rgba(241,196,15,0.2);
-        border-radius: 20px; padding: 4px 10px;
-    }
-    .theme-btn {
-        width: 30px; height: 30px; border-radius: 50%;
-        background: var(--surface); border: 1px solid var(--border2);
-        color: var(--text2); font-size: 14px;
-        display: flex; align-items: center; justify-content: center;
-        cursor: pointer; transition: 0.2s;
-    }
-    .theme-btn:hover { background: var(--surface2); }
+        .podium-pillar { background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%); border: 1px solid rgba(255,255,255,0.05); position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-bottom: 10px; transform-origin: bottom; }
+        .podium-rank-label { font-family: 'Orbitron'; font-size: 8px; font-weight: 900; opacity: 0.5; color: white; letter-spacing: 1px; margin-top: 2px; }
+        .trophy-bg { position: absolute; top: 40%; left: 50%; transform: translate(-50%,-50%); width: 50px; height: 50px; opacity: 0.08; color: var(--accent); pointer-events: none; }
+        @keyframes riseUp { from { transform: scaleY(0); opacity: 0; } to { transform: scaleY(1); opacity: 1; } }
+        .pillar-rise { animation: riseUp 0.7s cubic-bezier(0.34,1.56,0.64,1) both; }
 
-    /* ── BOTTOM NAV ── */
-    #bottom-nav {
-        position: fixed; bottom: 0; left: 0; right: 0;
-        z-index: 100;
-        background: var(--bg2);
-        border-top: 1px solid var(--border);
-        display: flex; align-items: stretch;
-        height: var(--nav-h);
-        padding-bottom: env(safe-area-inset-bottom, 0px);
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
-    }
-    .nav-item {
-        flex: 1; display: flex; flex-direction: column;
-        align-items: center; justify-content: center;
-        gap: 3px; cursor: pointer;
-        color: var(--text3);
-        font-family: var(--font-num);
-        font-size: 7px; font-weight: 700;
-        letter-spacing: 0.05em; text-transform: uppercase;
-        transition: color 0.2s;
-        border: none; background: none;
-        position: relative; padding: 8px 0;
-    }
-    .nav-item.active { color: var(--accent); }
-    .nav-item.active::after {
-        content: '';
-        position: absolute; bottom: 0; left: 20%; right: 20%;
-        height: 2px;
-        background: var(--accent);
-        border-radius: 2px 2px 0 0;
-    }
-    .nav-icon { font-size: 18px; line-height: 1; }
-    .nav-more-btn {
-        flex: 1; display: flex; flex-direction: column;
-        align-items: center; justify-content: center;
-        gap: 3px; cursor: pointer;
-        color: var(--text3);
-        font-family: var(--font-num);
-        font-size: 7px; font-weight: 700;
-        text-transform: uppercase;
-        background: none; border: none;
-        transition: color 0.2s;
-    }
-    .nav-more-btn.active { color: var(--accent); }
+        .role-tag  { font-size: 7px; padding: 2px 5px; border-radius: 4px; background: rgba(255,255,255,0.05); color: #94a3b8; text-transform: uppercase; font-weight: 700; margin-left: 5px; }
+        .team-tag  { font-size: 7px; color: #475569; text-transform: uppercase; font-weight: 800; margin-left: 4px; }
+        .badge     { font-size: 8px; padding: 1px 5px; border-radius: 4px; font-weight: 900; border: 1px solid currentColor; margin-left: 6px; }
 
-    /* ── MORE SHEET ── */
-    #more-sheet-overlay {
-        display: none; position: fixed; inset: 0; z-index: 98;
-        background: rgba(0,0,0,0.5);
-        backdrop-filter: blur(4px);
-    }
-    #more-sheet-overlay.open { display: block; }
-    #more-sheet {
-        position: fixed; bottom: var(--nav-h); left: 0; right: 0; z-index: 99;
-        background: var(--bg2);
-        border-top: 1px solid var(--border2);
-        border-radius: 20px 20px 0 0;
-        padding: 16px 20px 20px;
-        transform: translateY(100%);
-        transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
-    }
-    #more-sheet.open { transform: translateY(0); }
-    .sheet-handle {
-        width: 36px; height: 3px; border-radius: 2px;
-        background: var(--border2); margin: 0 auto 16px;
-    }
-    .sheet-title {
-        font-size: 9px; font-weight: 700;
-        letter-spacing: 0.25em; color: var(--text3);
-        text-transform: uppercase; margin-bottom: 12px;
-    }
-    .sheet-items { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-    .sheet-item {
-        display: flex; flex-direction: column;
-        align-items: center; gap: 6px;
-        padding: 14px 8px;
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-sm);
-        cursor: pointer; transition: 0.2s;
-        font-family: var(--font-num);
-        font-size: 7px; font-weight: 700;
-        color: var(--text2); text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-    .sheet-item.active { border-color: var(--accent); color: var(--accent); background: rgba(241,196,15,0.05); }
-    .sheet-item:hover { background: var(--surface2); }
-    .sheet-item-icon { font-size: 20px; }
+        .mvp-banner { background: linear-gradient(90deg, rgba(241,196,15,0.15), rgba(241,196,15,0.05)); border: 1px solid rgba(241,196,15,0.3); border-radius: 20px; padding: 15px 20px; margin-bottom: 25px; box-shadow: 0 0 20px rgba(241,196,15,0.1); }
 
-    /* ── VIEWS ── */
-    .view { display: none; padding: 16px 16px 0; }
-    .view.active { display: block; }
-    .view-inner { max-width: 560px; margin: 0 auto; }
+        .tab-btn { padding: 9px 16px; border-radius: 12px; font-size: 9px; font-weight: 900; text-transform: uppercase; transition: 0.3s; border: 1px solid var(--border); background: rgba(255,255,255,0.02); color: #64748b; white-space:nowrap; }
+        .tab-btn.active { background: var(--accent); color: #000; border-color: var(--accent); box-shadow: 0 0 20px rgba(241,196,15,0.2); }
 
-    /* ── ERROR BANNER ── */
-    .error-banner {
-        background: rgba(248,113,113,0.08);
-        border: 1px solid rgba(248,113,113,0.25);
-        border-radius: var(--radius-sm);
-        padding: 12px 16px; margin-bottom: 16px;
-        display: flex; align-items: center; gap: 10px;
-    }
-    .error-dot {
-        width: 7px; height: 7px; border-radius: 50%;
-        background: var(--red); flex-shrink: 0;
-        animation: blink 2s infinite;
-    }
-    .error-text { font-size: 11px; color: var(--red); font-weight: 600; }
-    .error-retry {
-        margin-left: auto; font-size: 9px; font-weight: 700;
-        color: var(--red); text-transform: uppercase;
-        background: none; border: 1px solid rgba(248,113,113,0.3);
-        border-radius: 6px; padding: 4px 10px; cursor: pointer;
-        font-family: var(--font-num); letter-spacing: 0.05em;
-    }
+        .squad-container { display: none; padding: 0 24px 24px 24px; border-top: 1px solid rgba(255,255,255,0.05); }
+        .squad-container.open { display: block; animation: slideIn 0.3s ease-out; }
+        .player-row-ghost { opacity: 0.25; filter: grayscale(1); transition: 0.3s; }
+        .player-row-ghost:hover { opacity: 0.6; }
 
-    /* ── TODAY MATCH BAR ── */
-    #today-match-bar { margin-bottom: 12px; }
-    .today-card {
-        background: var(--surface);
-        border: 1px solid rgba(241,196,15,0.2);
-        border-radius: var(--radius);
-        padding: 14px 16px;
-        position: relative; overflow: hidden;
-    }
-    .today-card::before {
-        content: '';
-        position: absolute; top: 0; left: 0; right: 0; height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(241,196,15,0.5), transparent);
-        animation: neonPulse 2s ease-in-out infinite;
-    }
-    .today-inner { display: flex; align-items: center; gap: 8px; }
-    .today-meta { flex-shrink: 0; }
-    .today-label { font-size: 8px; font-weight: 700; letter-spacing: 0.2em; color: var(--text3); text-transform: uppercase; }
-    .today-date { font-family: var(--font-num); font-size: 12px; font-weight: 900; color: var(--accent); line-height: 1.2; }
-    .today-day { font-size: 8px; font-weight: 600; color: var(--text3); text-transform: uppercase; }
-    .today-team { font-family: var(--font-num); font-size: 18px; font-weight: 900; letter-spacing: 0.03em; }
-    .today-vs { font-family: var(--font-num); font-size: 9px; font-weight: 900; color: var(--text3); flex-shrink: 0; padding: 0 4px; }
-    .today-live { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
-    .live-dot-sm { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: livePulse 1.2s ease-in-out infinite; box-shadow: 0 0 5px var(--green); }
-    .live-label { font-family: var(--font-num); font-size: 7px; font-weight: 900; color: var(--green); letter-spacing: 0.15em; }
+        @keyframes shimmer  { 0%{background-position:-600px 0} 100%{background-position:600px 0} }
+        .skel { background: linear-gradient(90deg,rgba(255,255,255,0.04) 25%,rgba(255,255,255,0.1) 50%,rgba(255,255,255,0.04) 75%); background-size:600px 100%; animation:shimmer 1.4s infinite linear; border-radius:8px; }
+        .skel-card { background:rgba(10,15,25,0.98); border:1px solid rgba(255,255,255,0.06); border-radius:24px; padding:24px; margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center; }
 
-    /* ── SEARCH ── */
-    #search-wrap { position: relative; margin-bottom: 12px; }
-    #player-search {
-        width: 100%; background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-sm);
-        padding: 11px 16px 11px 38px;
-        color: var(--text); font-family: var(--font-body);
-        font-size: 13px; font-weight: 500; outline: none;
-        transition: border-color 0.2s;
-    }
-    #player-search:focus { border-color: var(--border2); }
-    #player-search::placeholder { color: var(--text3); }
-    .search-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); opacity: 0.3; pointer-events: none; }
-    #search-dropdown {
-        display: none; position: absolute;
-        top: calc(100% + 4px); left: 0; right: 0;
-        background: var(--bg2); border: 1px solid var(--border2);
-        border-radius: var(--radius-sm); overflow: hidden; z-index: 50;
-        max-height: 300px; overflow-y: auto;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-    }
-    .search-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; cursor: pointer; border-bottom: 1px solid var(--border); transition: 0.15s; }
-    .search-item:hover { background: var(--surface); }
-    .search-item:last-child { border-bottom: none; }
+        .error-banner { background:rgba(220,38,38,0.12); border:1px solid rgba(220,38,38,0.35); border-radius:16px; padding:14px 20px; margin-bottom:20px; display:flex; align-items:center; gap:12px; animation:slideIn 0.3s ease-out; }
+        .error-dot { width:8px; height:8px; border-radius:50%; background:#ef4444; flex-shrink:0; animation:blink 2s infinite; }
 
-    /* ── MVP BANNER ── */
-    .mvp-banner {
-        background: var(--surface);
-        border: 1px solid rgba(241,196,15,0.2);
-        border-left: 3px solid var(--accent);
-        border-radius: var(--radius);
-        padding: 14px 16px; margin-bottom: 12px;
-        display: flex; justify-content: space-between; align-items: center;
-    }
-    .mvp-eyebrow { font-size: 8px; font-weight: 700; letter-spacing: 0.2em; color: var(--accent); text-transform: uppercase; margin-bottom: 3px; }
-    .mvp-name { font-size: 16px; font-weight: 800; color: var(--text); letter-spacing: -0.01em; }
-    .mvp-owner { font-size: 10px; font-weight: 600; color: var(--text3); margin-top: 2px; }
-    .mvp-pts { font-family: var(--font-num); font-size: 28px; font-weight: 900; color: var(--accent); line-height: 1; }
-    .mvp-pts-label { font-size: 8px; color: var(--text3); text-transform: uppercase; font-weight: 600; letter-spacing: 0.1em; }
+        .share-btn { font-size:9px; font-family:'Orbitron',sans-serif; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; padding:4px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:#64748b; transition:0.2s; cursor:pointer; }
+        .share-btn:hover { color:var(--owner-color); border-color:var(--owner-color); }
 
-    /* ── TOP 3 STRIP ── */
-    #top3-strip { display: flex; gap: 8px; margin-bottom: 16px; }
-    .top3-card {
-        flex: 1; background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius); padding: 12px 10px;
-        text-align: center; position: relative; overflow: hidden;
-        cursor: default;
-    }
-    .top3-card.first {
-        border-color: rgba(241,196,15,0.3);
-        background: linear-gradient(160deg, var(--surface) 60%, rgba(241,196,15,0.04) 100%);
-    }
-    .top3-crown { font-size: 14px; margin-bottom: 4px; }
-    .top3-rank { font-family: var(--font-num); font-size: 8px; font-weight: 900; color: var(--text3); letter-spacing: 0.1em; margin-bottom: 4px; }
-    .top3-name { font-size: 11px; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .top3-score { font-family: var(--font-num); font-size: 20px; font-weight: 900; line-height: 1; margin-top: 4px; }
-    .top3-badge-bg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0.04; font-family: var(--font-num); font-size: 56px; font-weight: 900; pointer-events: none; }
+        #splash { position:fixed; inset:0; z-index:999; background:radial-gradient(circle at 50% 40%,#0f172a,#020617); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:2rem; transition:opacity 0.8s ease,transform 0.8s ease; }
+        #splash.hide { opacity:0; transform:scale(1.04); pointer-events:none; }
+        .sp { opacity:0; }
+        .sp1 { animation:fadeUp 0.6s ease 0.2s forwards; }
+        .sp2 { animation:fadeUp 0.7s ease 0.5s forwards; }
+        .sp3 { animation:fadeUp 0.7s ease 0.75s forwards; }
+        .sp4 { animation:fadeUp 0.6s ease 1.0s forwards; }
+        .sp5 { animation:fadeUp 0.6s ease 1.1s forwards; }
+        .sp6 { animation:fadeUp 0.7s ease 1.2s forwards; }
+        .sp7 { animation:fadeUp 0.6s ease 1.8s forwards, blink 1.4s ease 2.4s infinite; }
 
-    /* ── SECTION HEADERS ── */
-    .section-header {
-        display: flex; align-items: center; justify-content: space-between;
-        margin-bottom: 10px; margin-top: 20px;
-    }
-    .section-title {
-        font-size: 10px; font-weight: 700;
-        letter-spacing: 0.2em; color: var(--text3);
-        text-transform: uppercase;
-    }
-
-    /* ── LEADERBOARD ROWS ── */
-    #leaderboard { display: flex; flex-direction: column; gap: 6px; }
-    .lb-row {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        overflow: hidden;
-        transition: border-color 0.2s;
-        position: relative;
-    }
-    .lb-row:hover { border-color: var(--border2); }
-    .lb-row-header {
-        display: flex; align-items: center;
-        padding: 13px 16px; gap: 12px; cursor: pointer;
-        position: relative; z-index: 2;
-    }
-    .lb-rank {
-        font-family: var(--font-num); font-size: 11px; font-weight: 900;
-        color: var(--text3); width: 20px; flex-shrink: 0; text-align: center;
-    }
-    .lb-rank.gold { color: var(--accent); }
-    .lb-name-wrap { flex: 1; min-width: 0; }
-    .lb-name {
-        font-size: 14px; font-weight: 700; color: var(--text);
-        text-transform: uppercase; letter-spacing: 0.02em;
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .lb-meta { font-size: 9px; color: var(--text3); margin-top: 1px; font-weight: 500; }
-    .lb-right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0; }
-    .lb-score {
-        font-family: var(--font-num); font-size: 22px; font-weight: 900;
-        line-height: 1; color: var(--text);
-    }
-    .lb-overtake { font-size: 8px; color: var(--text3); font-weight: 600; white-space: nowrap; }
-    .lb-actions { display: flex; align-items: center; gap: 8px; }
-
-    /* progress bar */
-    .lb-progress { height: 2px; background: var(--bg); margin: 0 16px 0; border-radius: 1px; overflow: hidden; }
-    .lb-progress-fill { height: 100%; border-radius: 1px; transition: width 1.2s cubic-bezier(0.4,0,0.2,1); }
-
-    /* team badge watermark */
-    .lb-badge-bg { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); opacity: 0.1; pointer-events: none; z-index: 0; transition: opacity 0.3s; }
-    .lb-row:hover .lb-badge-bg { opacity: 0.25; }
-
-    /* rival badge */
-    .rival-badge {
-        position: absolute; top: 6px; right: 60px; z-index: 10;
-        font-size: 8px; font-weight: 700; font-family: var(--font-num);
-        color: var(--red); letter-spacing: 0.05em;
-        background: rgba(248,113,113,0.1);
-        border: 1px solid rgba(248,113,113,0.2);
-        border-radius: 6px; padding: 2px 7px;
-    }
-
-    /* squad expand */
-    .squad-container { display: none; border-top: 1px solid var(--border); padding: 14px 16px; }
-    .squad-container.open { display: block; animation: slideIn 0.25s ease-out; }
-    .player-row { display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--border); }
-    .player-row:last-child { border-bottom: none; }
-    .player-row-ghost { opacity: 0.25; filter: grayscale(1); }
-    .player-left { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
-    .player-idx { font-size: 9px; font-weight: 700; color: var(--text3); width: 14px; flex-shrink: 0; }
-    .player-name { font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .player-team { font-size: 8px; color: var(--text3); font-weight: 700; text-transform: uppercase; }
-    .player-tags { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
-    .role-tag { font-size: 7px; padding: 1px 5px; border-radius: 4px; background: var(--surface2); color: var(--text3); text-transform: uppercase; font-weight: 700; }
-    .team-tag { font-size: 7px; color: var(--text3); text-transform: uppercase; font-weight: 700; }
-    .cvc-badge { font-size: 8px; padding: 1px 5px; border-radius: 4px; font-weight: 900; border: 1px solid currentColor; }
-    .live-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: livePulse 1.2s ease-in-out infinite; box-shadow: 0 0 5px var(--green); flex-shrink: 0; }
-    .player-pts { font-family: var(--font-num); font-size: 11px; font-weight: 900; flex-shrink: 0; margin-left: 8px; }
-
-    /* share button */
-    .share-btn {
-        font-size: 8px; font-family: var(--font-num); font-weight: 700;
-        letter-spacing: 0.08em; text-transform: uppercase;
-        padding: 4px 9px; border-radius: 6px;
-        border: 1px solid var(--border2);
-        background: var(--surface2); color: var(--text3);
-        cursor: pointer; transition: 0.2s; flex-shrink: 0;
-    }
-    .share-btn:hover { color: var(--accent); border-color: rgba(241,196,15,0.4); }
-
-    /* ── STREAK / INFO CARDS ── */
-    .info-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        padding: 16px; margin-bottom: 8px;
-    }
-    .info-card-title {
-        font-size: 9px; font-weight: 700;
-        letter-spacing: 0.25em; color: var(--text3);
-        text-transform: uppercase; margin-bottom: 14px;
-    }
-    .streak-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-    .streak-bar-track { flex: 2; background: var(--bg); border-radius: 3px; height: 3px; overflow: hidden; }
-    .streak-bar-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease; }
-
-    /* ── STRATEGY CARDS ── */
-    .strategy-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius); padding: 16px;
-        margin-bottom: 8px; position: relative; overflow: hidden;
-    }
-    .strategy-card-accent { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
-
-    /* ── WEEKLY CARDS ── */
-    .weekly-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        padding: 16px; margin-bottom: 8px;
-        position: relative; overflow: hidden;
-    }
-
-    /* ── SCHEDULE ── */
-    .sched-month-header {
-        font-size: 9px; font-weight: 700;
-        letter-spacing: 0.25em; color: var(--text3);
-        text-transform: uppercase;
-        padding: 4px 2px 8px; margin-top: 16px;
-    }
-    .sched-match-row {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-sm);
-        padding: 11px 14px;
-        display: flex; align-items: center; gap: 8px;
-        position: relative; overflow: hidden;
-        margin-bottom: 5px;
-    }
-    .sched-match-row.today-match { animation: todayGlow 2s ease-in-out infinite; border-color: transparent; }
-    .sched-filter-bar {
-        display: flex; flex-wrap: wrap;
-        justify-content: center; gap: 6px;
-        margin-bottom: 14px;
-    }
-    .sched-pill {
-        font-family: var(--font-num); font-size: 8px; font-weight: 900;
-        padding: 5px 11px; border-radius: 20px;
-        cursor: pointer; transition: 0.2s;
-        white-space: nowrap; opacity: 0.55;
-        background: var(--surface); border: 1px solid var(--border);
-        color: var(--text2);
-    }
-    .sched-pill.active { opacity: 1; box-shadow: 0 0 8px -2px currentColor; }
-    .sched-pill:hover { opacity: 1; }
-    .sched-stats { display: flex; justify-content: center; gap: 16px; margin-bottom: 10px; }
-
-    /* ── STANDINGS ── */
-    .standings-row {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-sm);
-        padding: 10px 14px; margin-bottom: 5px;
-        display: grid;
-        grid-template-columns: 26px 1fr 32px 32px 32px 32px 48px 56px;
-        align-items: center; position: relative; overflow: hidden;
-    }
-    .standings-row.playoff { border-color: rgba(241,196,15,0.2); }
-    .standings-row.top1 { box-shadow: 0 0 14px -4px rgba(241,196,15,0.25); }
-
-    /* ── HOF / GEMS CARDS ── */
-    .hof-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        padding: 14px 16px; margin-bottom: 8px;
-        position: relative; overflow: hidden;
-    }
-    .gems-row {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-sm);
-        padding: 11px 14px; margin-bottom: 5px;
-        display: flex; align-items: center;
-        justify-content: space-between;
-    }
-    .gems-row.top-gem { border-color: rgba(72,219,251,0.25); }
-
-    /* ── SKELETONS ── */
-    @keyframes shimmer { 0%{background-position:-400px 0} 100%{background-position:400px 0} }
-    .skel {
-        background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%);
-        background-size: 400px 100%; animation: shimmer 1.3s infinite linear;
-        border-radius: 6px;
-    }
-
-    /* ── SCROLL TO TOP ── */
-    #scroll-top-btn {
-        display: none; position: fixed; bottom: calc(var(--nav-h) + 16px); right: 16px;
-        z-index: 80; width: 36px; height: 36px; border-radius: 50%;
-        background: var(--surface2); border: 1px solid var(--border2);
-        color: var(--accent); font-size: 14px; cursor: pointer;
-        transition: opacity 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        align-items: center; justify-content: center;
-    }
-
-    /* ── MATCHDAY BANNER ── */
-    #matchday-winner-banner { margin-bottom: 12px; }
-
-    /* ── ANIMATIONS ── */
-    @keyframes fadeUp  { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
-    @keyframes slideIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
-    @keyframes blink   { 0%,100%{opacity:0.4} 50%{opacity:1} }
-    @keyframes neonPulse { 0%,100%{opacity:0.6} 50%{opacity:1} }
-    @keyframes livePulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
-    @keyframes riseUp  { from{transform:scaleY(0);opacity:0} to{transform:scaleY(1);opacity:1} }
-    @keyframes todayGlow { 0%,100%{box-shadow:0 0 10px rgba(241,196,15,0.12)} 50%{box-shadow:0 0 22px rgba(241,196,15,0.28)} }
-    @keyframes countUp { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
-
-    /* ── UTILS ── */
-    .gold { color: var(--accent); }
-    .hidden { display: none !important; }
-    .font-num { font-family: var(--font-num); }
-
-    /* scrollbar */
-    ::-webkit-scrollbar { width: 4px; height: 4px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+        @keyframes fadeUp  { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+        #player-search::placeholder { color:#334155; }
+        #player-search:focus { border-color:rgba(255,255,255,0.2); }
+        .search-item:hover { background:rgba(255,255,255,0.05); }
+        #search-dropdown::-webkit-scrollbar { width:4px; }
+        #search-dropdown::-webkit-scrollbar-track { background:transparent; }
+        #search-dropdown::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:2px; }
+        @keyframes slideIn { from{opacity:0;transform:translateY(-5px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes blink      { 0%,100%{opacity:0.4} 50%{opacity:1} }
+        @keyframes neonPulse  { 0%,100%{opacity:0.7} 50%{opacity:1} }
+        .sched-pill:hover { opacity:1 !important; transform:scale(1.05); }
+        .sched-pill.active { opacity:1 !important; transform:scale(1.05); box-shadow:0 0 10px -2px currentColor; }
+        @keyframes livePulse  { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
+        .live-dot { display:inline-block; width:7px; height:7px; border-radius:50%; background:#4ade80; margin-left:6px; vertical-align:middle; flex-shrink:0; animation:livePulse 1.2s ease-in-out infinite; box-shadow:0 0 6px #4ade80; }
+        @keyframes countUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes todayGlow  { 0%,100%{box-shadow:0 0 12px 2px rgba(241,196,15,0.15),inset 0 0 0 1px rgba(241,196,15,0.2)} 50%{box-shadow:0 0 26px 8px rgba(241,196,15,0.32),inset 0 0 0 1px rgba(241,196,15,0.5)} }
     </style>
 </head>
-<body>
+<body class="p-4 md:p-10">
 
-<!-- ── SPLASH ── -->
-<div id="splash" onclick="dismissSplash()">
-    <p class="sp sp1 splash-eyebrow">IPL Fantasy League</p>
-    <h1 class="sp sp2 splash-title">Revo</h1>
-    <p class="sp sp3 splash-sub">IPL 2026 Championship</p>
-    <div class="sp sp4 splash-rule"></div>
-    <p class="sp sp5 splash-credit-label">Designed by</p>
-    <p class="sp sp6 splash-credit-name">Vedant Bhansali</p>
-    <p class="sp sp7 splash-hint">Tap anywhere to enter →</p>
-</div>
-
-<!-- ── APP ── -->
-<div id="app">
-
-    <!-- TOP BAR -->
-    <div id="topbar">
-        <div id="topbar-left">
-            <span class="topbar-league">IPL Fantasy 2026</span>
-            <span class="topbar-title">REVOLUTION</span>
-        </div>
-        <div id="topbar-right">
-            <div id="match-counter" class="match-pill">—/74</div>
-            <button class="theme-btn" id="theme-toggle" onclick="toggleTheme()">🌙</button>
-        </div>
+    <!-- SPLASH -->
+    <div id="splash" onclick="dismissSplash()">
+        <p class="sp sp1" style="font-size:9px;font-family:Orbitron,sans-serif;font-weight:700;letter-spacing:0.4em;color:#475569;text-transform:uppercase;margin-bottom:2rem;">IPL Fantasy League</p>
+        <h1 class="sp sp2" style="font-family:Orbitron,sans-serif;font-weight:900;font-style:italic;font-size:clamp(2.8rem,12vw,5rem);line-height:1;color:#f1c40f;text-shadow:0 0 40px rgba(241,196,15,0.35);text-transform:uppercase;letter-spacing:-0.02em;">Revo</h1>
+        <p class="sp sp3" style="font-family:Orbitron,sans-serif;font-size:clamp(0.65rem,3vw,0.85rem);font-weight:700;letter-spacing:0.25em;color:#64748b;text-transform:uppercase;margin-top:0.75rem;">IPL 2026 Championship</p>
+        <div class="sp sp4" style="width:60px;height:1px;background:rgba(241,196,15,0.3);margin:2.5rem auto;"></div>
+        <p class="sp sp5" style="font-size:8px;font-weight:700;letter-spacing:0.3em;text-transform:uppercase;color:#334155;margin-bottom:0.5rem;">Designed by</p>
+        <p class="sp sp6" style="font-family:Orbitron,sans-serif;font-size:clamp(0.75rem,3.5vw,1rem);font-weight:900;color:#94a3b8;letter-spacing:0.1em;text-transform:uppercase;">Vedant Bhansali</p>
+        <p class="sp sp7" style="margin-top:3.5rem;font-size:9px;font-family:Orbitron,sans-serif;font-weight:700;letter-spacing:0.4em;color:#475569;text-transform:uppercase;cursor:pointer;">Tap anywhere to enter →</p>
     </div>
 
-    <!-- ERROR BANNER -->
-    <div style="padding:0 16px;">
+    <div class="max-w-xl mx-auto pb-24">
+        <header class="mb-10 text-center">
+            <div class="flex justify-between items-center mb-8 px-2">
+                <div class="role-tag uppercase tracking-widest px-3 py-1">EST. 2026</div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <div id="match-counter" class="role-tag tracking-widest text-yellow-500 uppercase px-3 py-1">MATCHES: —/74</div>
+                    <button id="theme-toggle" onclick="toggleTheme()" title="Toggle theme"
+                        style="width:32px;height:32px;border-radius:50%;border:1px solid var(--glass-border);background:var(--glass-bg);backdrop-filter:var(--glass-blur);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:0.3s;font-size:15px;">🌙</button>
+                </div>
+            </div>
+            <h1 class="text-5xl font-black font-cyber gold-glow italic tracking-tighter mb-6 uppercase">REVOLUTION</h1>
+            <div style="width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;">
+                <div style="display:flex;justify-content:center;gap:6px;background:rgba(0,0,0,0.4);padding:5px;border-radius:18px;border:1px solid rgba(255,255,255,0.05);min-width:fit-content;margin:0 auto;">
+                    <button onclick="switchTab('main')"     id="btn-main"     class="tab-btn active">Live Ranks</button>
+                    <button onclick="switchTab('strategy')" id="btn-strat"    class="tab-btn">Luckiest</button>
+                    <button onclick="switchTab('weekly')"   id="btn-weekly"   class="tab-btn">Weekly</button>
+                    <button onclick="switchTab('schedule')"  id="btn-schedule"  class="tab-btn">Schedule</button>
+                    <button onclick="switchTab('standings')" id="btn-standings" class="tab-btn">Standings</button>
+                    <button onclick="switchTab('hof')"      id="btn-hof"      class="tab-btn">🏆 HOF</button>
+                    <button onclick="switchTab('gems')"     id="btn-gems"     class="tab-btn">💎 Unsold Gems</button>
+                </div>
+            </div>
+        </header>
+
         <div id="error-banner" class="error-banner hidden">
             <div class="error-dot"></div>
-            <span class="error-text" id="error-msg">Sync failed. Retrying…</span>
-            <button class="error-retry" onclick="updateApp()">Retry</button>
+            <div>
+                <p class="text-xs font-black uppercase tracking-widest text-red-400 mb-0.5">Sync Failed</p>
+                <p id="error-msg" class="text-[10px] text-red-300 opacity-70">Could not reach the data sheet. Retrying in 60s…</p>
+            </div>
+            <button onclick="updateApp()" class="ml-auto text-[9px] font-black uppercase tracking-widest text-red-400 border border-red-500/30 rounded-lg px-3 py-1.5 hover:bg-red-500/10 transition-colors">Retry</button>
         </div>
-    </div>
 
-    <!-- ── VIEW: LIVE RANKS ── -->
-    <div id="view-main" class="view active">
-        <div id="today-match-bar"></div>
-        <div id="search-wrap">
-            <input id="player-search" type="text" placeholder="Search player or team…"
-                oninput="onSearchInput(this.value)" onfocus="onSearchInput(this.value)"
-                autocomplete="off">
-            <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <div id="search-dropdown"></div>
+        <div id="view-main" class="space-y-6">
+            <!-- TODAY'S MATCH BAR -->
+            <div id="today-match-bar"></div>
+            <!-- PLAYER SEARCH -->
+            <div style="position:relative;">
+                <input id="player-search" type="text" placeholder="Search player…"
+                    oninput="onSearchInput(this.value)"
+                    onfocus="onSearchInput(this.value)"
+                    style="width:100%;background:rgba(10,15,25,0.98);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:12px 16px 12px 38px;color:#f8fafc;font-size:12px;font-family:Inter,sans-serif;font-weight:600;outline:none;box-sizing:border-box;"
+                    autocomplete="off">
+                <svg style="position:absolute;left:13px;top:50%;transform:translateY(-50%);opacity:0.3;pointer-events:none;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                <div id="search-dropdown" style="display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:rgba(8,12,20,0.99);border:1px solid rgba(255,255,255,0.1);border-radius:14px;overflow:hidden;z-index:100;max-height:320px;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.5);"></div>
+            </div>
+                        <div id="mvp-spotlight"></div>
+            <div id="podium-area" class="flex justify-center items-end gap-3 mb-16 h-48 text-center px-2"></div>
+            <div id="streak-tracker"></div>
+            <div id="leaderboard" class="space-y-2"></div>
         </div>
-        <div id="today-match-bar-2"></div>
-        <div id="mvp-spotlight"></div>
-        <div id="matchday-winner-banner"></div>
-        <div id="top3-strip"></div>
-        <div id="leaderboard"></div>
-    </div>
 
-    <!-- ── VIEW: STRATEGY ── -->
-    <div id="view-strategy" class="view">
-        <div id="strategy-list"></div>
-    </div>
-
-    <!-- ── VIEW: WEEKLY ── -->
-    <div id="view-weekly" class="view">
-        <div id="streak-tracker"></div>
-        <div id="weekly-list"></div>
-    </div>
-
-    <!-- ── VIEW: SCHEDULE ── -->
-    <div id="view-schedule" class="view">
-        <div class="sched-filter-bar">
-            <button class="sched-pill active" data-team="ALL" onclick="setSchedFilter('ALL')" style="color:var(--accent);border-color:rgba(241,196,15,0.3);">ALL</button>
-            <button class="sched-pill" data-team="MI"   onclick="setSchedFilter('MI')"   style="color:#89CFF0;border-color:rgba(0,75,160,0.4);">MI</button>
-            <button class="sched-pill" data-team="CSK"  onclick="setSchedFilter('CSK')"  style="color:#F4C430;border-color:rgba(244,196,48,0.4);">CSK</button>
-            <button class="sched-pill" data-team="RCB"  onclick="setSchedFilter('RCB')"  style="color:#F87171;border-color:rgba(200,16,46,0.4);">RCB</button>
-            <button class="sched-pill" data-team="KKR"  onclick="setSchedFilter('KKR')"  style="color:#c4b5fd;border-color:rgba(58,34,93,0.5);">KKR</button>
-            <button class="sched-pill" data-team="SRH"  onclick="setSchedFilter('SRH')"  style="color:#fb923c;border-color:rgba(242,101,34,0.4);">SRH</button>
-            <button class="sched-pill" data-team="DC"   onclick="setSchedFilter('DC')"   style="color:#60a5fa;border-color:rgba(0,82,154,0.4);">DC</button>
-            <button class="sched-pill" data-team="PBKS" onclick="setSchedFilter('PBKS')" style="color:#fca5a5;border-color:rgba(237,28,36,0.4);">PBKS</button>
-            <button class="sched-pill" data-team="RR"   onclick="setSchedFilter('RR')"   style="color:#f9a8d4;border-color:rgba(234,26,133,0.4);">RR</button>
-            <button class="sched-pill" data-team="GT"   onclick="setSchedFilter('GT')"   style="color:#93c5fd;border-color:rgba(29,78,137,0.4);">GT</button>
-            <button class="sched-pill" data-team="LSG"  onclick="setSchedFilter('LSG')"  style="color:#a4d65e;border-color:rgba(164,214,94,0.4);">LSG</button>
+        <div id="view-strategy" class="hidden space-y-4 pt-4">
+            <div id="strategy-list" class="space-y-4"></div>
         </div>
-        <div class="sched-stats" id="sched-stats"></div>
-        <div id="schedule-list"></div>
+
+        <div id="view-weekly" class="hidden pt-4">
+            <div id="weekly-list" class="space-y-4"></div>
+        </div>
+
+        <div id="view-schedule" class="hidden pt-4">
+            <!-- TEAM SCHEDULE FILTER -->
+            <div style="margin-bottom:14px;">
+                <!-- Centered pill filters -->
+                <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px;padding:2px 0 6px;">
+                    <button class="sched-pill active" data-team="ALL" onclick="setSchedFilter('ALL')"
+                        style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#f1c40f;cursor:pointer;transition:0.2s;letter-spacing:0.05em;white-space:nowrap;">ALL</button>
+                    <button class="sched-pill" data-team="MI"   onclick="setSchedFilter('MI')"   style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 12px;border-radius:20px;border:1px solid rgba(0,75,160,0.5);background:rgba(0,75,160,0.15);color:#89CFF0;cursor:pointer;transition:0.2s;white-space:nowrap;opacity:0.55;">MI</button>
+                    <button class="sched-pill" data-team="CSK"  onclick="setSchedFilter('CSK')"  style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 12px;border-radius:20px;border:1px solid rgba(244,196,48,0.5);background:rgba(244,196,48,0.12);color:#F4C430;cursor:pointer;transition:0.2s;white-space:nowrap;opacity:0.55;">CSK</button>
+                    <button class="sched-pill" data-team="RCB"  onclick="setSchedFilter('RCB')"  style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 12px;border-radius:20px;border:1px solid rgba(200,16,46,0.5);background:rgba(200,16,46,0.12);color:#F87171;cursor:pointer;transition:0.2s;white-space:nowrap;opacity:0.55;">RCB</button>
+                    <button class="sched-pill" data-team="KKR"  onclick="setSchedFilter('KKR')"  style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 12px;border-radius:20px;border:1px solid rgba(58,34,93,0.6);background:rgba(58,34,93,0.2);color:#c4b5fd;cursor:pointer;transition:0.2s;white-space:nowrap;opacity:0.55;">KKR</button>
+                    <button class="sched-pill" data-team="SRH"  onclick="setSchedFilter('SRH')"  style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 12px;border-radius:20px;border:1px solid rgba(242,101,34,0.5);background:rgba(242,101,34,0.12);color:#fb923c;cursor:pointer;transition:0.2s;white-space:nowrap;opacity:0.55;">SRH</button>
+                    <button class="sched-pill" data-team="DC"   onclick="setSchedFilter('DC')"   style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 12px;border-radius:20px;border:1px solid rgba(0,82,154,0.5);background:rgba(0,82,154,0.15);color:#60a5fa;cursor:pointer;transition:0.2s;white-space:nowrap;opacity:0.55;">DC</button>
+                    <button class="sched-pill" data-team="PBKS" onclick="setSchedFilter('PBKS')" style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 12px;border-radius:20px;border:1px solid rgba(237,28,36,0.5);background:rgba(237,28,36,0.12);color:#fca5a5;cursor:pointer;transition:0.2s;white-space:nowrap;opacity:0.55;">PBKS</button>
+                    <button class="sched-pill" data-team="RR"   onclick="setSchedFilter('RR')"   style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 12px;border-radius:20px;border:1px solid rgba(234,26,133,0.5);background:rgba(234,26,133,0.12);color:#f9a8d4;cursor:pointer;transition:0.2s;white-space:nowrap;opacity:0.55;">RR</button>
+                    <button class="sched-pill" data-team="GT"   onclick="setSchedFilter('GT')"   style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 12px;border-radius:20px;border:1px solid rgba(29,78,137,0.5);background:rgba(29,78,137,0.15);color:#93c5fd;cursor:pointer;transition:0.2s;white-space:nowrap;opacity:0.55;">GT</button>
+                    <button class="sched-pill" data-team="LSG"  onclick="setSchedFilter('LSG')"  style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;padding:5px 12px;border-radius:20px;border:1px solid rgba(164,214,94,0.5);background:rgba(164,214,94,0.12);color:#a4d65e;cursor:pointer;transition:0.2s;white-space:nowrap;opacity:0.55;">LSG</button>
+                </div>
+                <!-- Stats bar: matches played / remaining -->
+                <div id="sched-stats" style="display:flex;justify-content:center;gap:16px;margin-top:8px;"></div>
+            </div>
+            <div id="schedule-list"></div>
+        </div>
+
+        <div id="view-standings" class="hidden pt-4">
+            <div id="standings-list"></div>
+        </div>
+
+        <div id="view-hof" class="hidden pt-4">
+            <div id="hof-list"></div>
+        </div>
+
+        <div id="view-gems" class="hidden pt-4">
+            <div id="gems-list"></div>
+        </div>
+
+        <footer class="text-center py-20 opacity-20 font-cyber text-[8px] uppercase tracking-[0.6em]">
+            Precision Sync • Vedant Bhansali Edition
+        </footer>
     </div>
 
-    <!-- ── VIEW: STANDINGS ── -->
-    <div id="view-standings" class="view">
-        <div id="standings-list"></div>
-    </div>
-
-    <!-- ── VIEW: HOF ── -->
-    <div id="view-hof" class="view">
-        <div id="hof-list"></div>
-    </div>
-
-    <!-- ── VIEW: GEMS ── -->
-    <div id="view-gems" class="view">
-        <div id="gems-list"></div>
-    </div>
-
-    <div style="height:16px;"></div>
-</div>
-
-<!-- ── BOTTOM NAV ── -->
-<nav id="bottom-nav">
-    <button class="nav-item active" id="nav-main" onclick="switchTab('main')">
-        <span class="nav-icon">📊</span>
-        <span>Ranks</span>
-    </button>
-    <button class="nav-item" id="nav-schedule" onclick="switchTab('schedule')">
-        <span class="nav-icon">📅</span>
-        <span>Schedule</span>
-    </button>
-    <button class="nav-item" id="nav-standings" onclick="switchTab('standings')">
-        <span class="nav-icon">🏏</span>
-        <span>Table</span>
-    </button>
-    <button class="nav-item" id="nav-weekly" onclick="switchTab('weekly')">
-        <span class="nav-icon">🔥</span>
-        <span>Weekly</span>
-    </button>
-    <button class="nav-more-btn" id="nav-more" onclick="toggleMoreSheet()">
-        <span class="nav-icon">⋯</span>
-        <span style="font-family:var(--font-num);font-size:7px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">More</span>
-    </button>
-</nav>
-
-<!-- ── MORE SHEET ── -->
-<div id="more-sheet-overlay" onclick="closeMoreSheet()"></div>
-<div id="more-sheet">
-    <div class="sheet-handle"></div>
-    <p class="sheet-title">More Views</p>
-    <div class="sheet-items">
-        <button class="sheet-item" id="sheet-strategy" onclick="switchTab('strategy');closeMoreSheet()">
-            <span class="sheet-item-icon">🧠</span>
-            <span>If Only…</span>
-        </button>
-        <button class="sheet-item" id="sheet-hof" onclick="switchTab('hof');closeMoreSheet()">
-            <span class="sheet-item-icon">🏆</span>
-            <span>Hall of Fame</span>
-        </button>
-        <button class="sheet-item" id="sheet-gems" onclick="switchTab('gems');closeMoreSheet()">
-            <span class="sheet-item-icon">💎</span>
-            <span>Unsold Gems</span>
-        </button>
-    </div>
-</div>
-
-<!-- SCROLL TO TOP -->
-<button id="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+    <!-- SCROLL TO TOP -->
+    <button id="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})"
+        style="display:none;position:fixed;bottom:28px;right:16px;z-index:400;
+               width:40px;height:40px;border-radius:50%;
+               border:1px solid rgba(241,196,15,0.4);background:rgba(10,15,25,0.95);
+               backdrop-filter:blur(12px);color:#f1c40f;font-size:16px;cursor:pointer;
+               transition:opacity 0.3s;box-shadow:0 0 16px rgba(241,196,15,0.15);">↑</button>
 
     <script>
         const SHEET_ID             = '1xIRCNr0tteFfMk6l7inIkKeSJMb7WLBswsXepHRqjio';
@@ -972,7 +425,7 @@
 
                 const active  = owners.filter(o => o.id !== 'unsold').sort((a,b) => b.score - a.score);
                 const unsold  = owners.find(o => o.id === 'unsold');
-                // Unsold shown only in Gems tab — hidden from main leaderboard
+                const allOwners = unsold ? [...active, unsold] : active;
 
                 // Build cumulative scores (for streak + sparklines)
                 const cumulScores = buildCumulScores(active, pcRows, completedMatches);
@@ -984,7 +437,7 @@
                 renderMVP(matchPlayers.sort((a,b) => b.pts-a.pts)[0], lastMatchName);
                 renderPodium(active);
                 renderStreakTracker(active, cumulScores, completedMatches);
-                renderLeaderboard(active, squads, cumulScores); // active only — unsold hidden
+                renderLeaderboard(allOwners, squads, cumulScores);
                 renderStrategy(active, squads);
                 if (schedRows && schedRows.length) {
                     window._schedRows = schedRows;
@@ -2680,8 +2133,5 @@
             }, 5000);
         }
     </script>
-</body>
-</html>
-
 </body>
 </html>
