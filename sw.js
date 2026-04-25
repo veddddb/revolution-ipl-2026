@@ -2,7 +2,7 @@
 // Caches the app shell for offline use.
 // Google Sheets data always fetched live (no cache) so scores stay fresh.
 
-const CACHE_NAME   = 'revo-ipl-v1';
+const CACHE_NAME   = 'revo-ipl-v2';
 const CACHE_ASSETS = [
   '/',
   '/index.html',
