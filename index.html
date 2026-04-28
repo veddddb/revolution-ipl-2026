@@ -140,6 +140,7 @@
             <div style="width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;">
                 <div style="display:flex;justify-content:center;gap:6px;background:rgba(0,0,0,0.4);padding:5px;border-radius:18px;border:1px solid rgba(255,255,255,0.05);min-width:fit-content;margin:0 auto;">
                     <button onclick="switchTab('main')"     id="btn-main"     class="tab-btn active">Live Ranks</button>
+                    <button onclick="switchTab('livepoints')" id="btn-livepoints" class="tab-btn">Live Points</button>
                     <button onclick="switchTab('strategy')" id="btn-strat"    class="tab-btn">If Tu..</button>
                     <button onclick="switchTab('weekly')"   id="btn-weekly"   class="tab-btn">Weekly</button>
                     <button onclick="switchTab('schedule')"  id="btn-schedule"  class="tab-btn">Schedule</button>
@@ -180,6 +181,10 @@
 
         <div id="view-strategy" class="hidden space-y-4 pt-4">
             <div id="strategy-list" class="space-y-4"></div>
+        </div>
+
+        <div id="view-livepoints" class="hidden pt-4">
+            <div id="live-points-list"></div>
         </div>
 
         <div id="view-weekly" class="hidden pt-4">
@@ -295,12 +300,12 @@
         }
         setTimeout(dismissSplash, 5000);
 
-        const TAB_ORDER = ['main','strategy','weekly','schedule','standings','hof','gems'];
+        const TAB_ORDER = ['main','livepoints','strategy','weekly','schedule','standings','hof','gems'];
         let _currentTab = 'main';
 
         function switchTab(t, animate) {
-            const views = { main:'view-main', strategy:'view-strategy', weekly:'view-weekly', schedule:'view-schedule', standings:'view-standings', hof:'view-hof', gems:'view-gems' };
-            const btns  = { main:'btn-main', strategy:'btn-strat', weekly:'btn-weekly', schedule:'btn-schedule', standings:'btn-standings', hof:'btn-hof', gems:'btn-gems' };
+            const views = { main:'view-main', livepoints:'view-livepoints', strategy:'view-strategy', weekly:'view-weekly', schedule:'view-schedule', standings:'view-standings', hof:'view-hof', gems:'view-gems' };
+            const btns  = { main:'btn-main', livepoints:'btn-livepoints', strategy:'btn-strat', weekly:'btn-weekly', schedule:'btn-schedule', standings:'btn-standings', hof:'btn-hof', gems:'btn-gems' };
             Object.keys(views).forEach(k => {
                 const el = document.getElementById(views[k]);
                 if (k === t) {
@@ -357,6 +362,16 @@
             return j.table.rows.map(row => row.c.map(cell => cell ? (cell.v !== null ? cell.v : '') : ''));
         }
 
+        async function fetchFirstAvailableSheet(names) {
+            for (const n of names) {
+                try {
+                    const rows = await fetchSheet(n);
+                    return rows;
+                } catch (_) {}
+            }
+            return [];
+        }
+
         // Global state — used by shareCard
         let _state = { squads:{}, cumulScores:{}, completedMatches:[] };
 
@@ -365,12 +380,13 @@
             if (!document.getElementById('leaderboard').querySelector('.glass-card')) renderSkeleton();
 
             try {
-                const [lbRows, rosRows, pcRows, schedRows, standRows] = await Promise.all([
+                const [lbRows, rosRows, pcRows, schedRows, standRows, liveRows] = await Promise.all([
                     fetchSheet('Leaderboard'),
                     fetchSheet('Roster'),
                     fetchSheet('PointsCalc'),
                     fetchSheet('Schedule').catch(() => []),
                     fetchSheet('Standings').catch(() => []),
+                    fetchFirstAvailableSheet(['LiveScore','Livescore','livescore','LIVESCORE']).catch(() => []),
                 ]);
 
                 // Completed matches
@@ -452,6 +468,7 @@
                 renderLastMatchLeaderboard(active, pcRows, completedMatches);
                 renderHallOfFame(active, pcRows, completedMatches, squads);
                 renderGems(rosRows, pPoints, squads);
+                renderLivePoints(liveRows || []);
 
             } catch(e) {
                 console.error('Sync Error:', e);
@@ -1458,6 +1475,71 @@
                 }
                 _prevRanks[o.id] = curr;
             });
+        }
+
+        // ── LIVE POINTS TAB ──
+        function renderLivePoints(rows) {
+            const el = document.getElementById('live-points-list');
+            if (!el) return;
+
+            const data = (rows || [])
+                .filter(r => (r[1] || '').toString().trim())
+                .map(r => ({
+                    match: (r[0] || '').toString().trim(),
+                    player: (r[1] || '').toString().trim(),
+                    runs: parseFloat(r[2]) || 0,
+                    wickets: parseFloat(r[3]) || 0,
+                    owner: (r[4] || '').toString().trim(),
+                    team: (r[6] || '').toString().trim(),
+                    points: Math.round(parseFloat(r[7]) || 0),
+                }))
+                .filter(d => !['player', 'player name'].includes(d.player.toLowerCase()))
+                .sort((a, b) => b.points - a.points);
+
+            const currentMatchFromPlayerRows = data.find(d => d.match)?.match || '';
+            const currentMatchFromAnyCell = (rows || [])
+                .flat()
+                .map(v => (v || '').toString().trim())
+                .find(v => /vs|v\/s|match/i.test(v) && v.length > 3) || '';
+            const currentMatch = currentMatchFromPlayerRows || currentMatchFromAnyCell || 'Match in progress';
+
+            if (!data.length) {
+                el.innerHTML = `
+                    <div style="background:rgba(10,15,25,0.98);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:20px;margin-bottom:10px;">
+                        <p style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;letter-spacing:0.3em;color:#475569;text-transform:uppercase;">Live Points</p>
+                        <p style="font-size:11px;font-weight:800;color:#94a3b8;margin-top:8px;">No live match right now. Live points will appear here when a match starts.</p>
+                        <p style="font-size:9px;font-weight:700;color:#475569;margin-top:8px;">This tab auto-refreshes from the sheet trigger every 5 minutes.</p>
+                    </div>`;
+                return;
+            }
+
+            el.innerHTML = `
+                <div style="background:rgba(10,15,25,0.98);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:14px 20px;margin-bottom:12px;position:relative;overflow:hidden;">
+                    <div style="position:absolute;top:0;left:16px;right:16px;height:1px;background:linear-gradient(90deg,transparent,rgba(74,222,128,0.6),transparent);"></div>
+                    <p style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;letter-spacing:0.35em;color:#475569;text-transform:uppercase;margin-bottom:2px;">Current Match</p>
+                    <p style="font-family:Orbitron,sans-serif;font-size:13px;font-weight:900;color:#4ade80;">${currentMatch}</p>
+                    <p style="font-size:9px;font-weight:700;color:#475569;margin-top:6px;">Live points are updated by trigger every 5 minutes.</p>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1.4fr 0.6fr 0.6fr 1fr 0.7fr 0.7fr;gap:0;padding:6px 14px;margin-bottom:4px;">
+                    <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;">Player</span>
+                    <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;text-align:right;">Runs</span>
+                    <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;text-align:right;">Wkts</span>
+                    <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;text-align:right;">Owner</span>
+                    <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;text-align:right;">Team</span>
+                    <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#334155;text-transform:uppercase;text-align:right;">Pts</span>
+                </div>
+
+                ${data.map(d => `
+                    <div style="background:rgba(10,15,25,0.98);border:1px solid rgba(255,255,255,0.06);border-left:3px solid ${getColor(d.owner)};border-radius:12px;padding:10px 14px;margin-bottom:6px;display:grid;grid-template-columns:1.4fr 0.6fr 0.6fr 1fr 0.7fr 0.7fr;align-items:center;gap:0;">
+                        <span style="font-size:11px;font-weight:800;color:#f1f5f9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:8px;">${d.player}</span>
+                        <span style="font-family:Orbitron,sans-serif;font-size:10px;font-weight:900;color:#94a3b8;text-align:right;">${d.runs}</span>
+                        <span style="font-family:Orbitron,sans-serif;font-size:10px;font-weight:900;color:#94a3b8;text-align:right;">${d.wickets}</span>
+                        <span style="font-size:10px;font-weight:800;color:${getColor(d.owner)};text-align:right;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-left:8px;">${d.owner || '—'}</span>
+                        <span style="font-size:10px;font-weight:800;color:${TEAM_COLORS[(d.team || '').toUpperCase()] || '#475569'};text-align:right;">${d.team || '—'}</span>
+                        <span style="font-family:Orbitron,sans-serif;font-size:11px;font-weight:900;color:#4ade80;text-align:right;">${d.points}</span>
+                    </div>`).join('')}
+            `;
         }
 
         // ── WEEKLY REPORT ──
