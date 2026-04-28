@@ -60,13 +60,13 @@
         @keyframes riseUp { from { transform: scaleY(0); opacity: 0; } to { transform: scaleY(1); opacity: 1; } }
         .pillar-rise { animation: riseUp 0.7s cubic-bezier(0.34,1.56,0.64,1) both; }
 
-        .role-tag  { font-size: 7px; padding: 2px 5px; border-radius: 4px; background: rgba(255,255,255,0.05); color: #94a3b8; text-transform: uppercase; font-weight: 700; margin-left: 5px; }
-        .team-tag  { font-size: 7px; color: #475569; text-transform: uppercase; font-weight: 800; margin-left: 4px; }
-        .badge     { font-size: 8px; padding: 1px 5px; border-radius: 4px; font-weight: 900; border: 1px solid currentColor; margin-left: 6px; }
+        .role-tag  { font-size: 10px; padding: 4px 8px; border-radius: 6px; background: rgba(255,255,255,0.05); color: #94a3b8; text-transform: uppercase; font-weight: 700; margin-left: 5px; }
+        .team-tag  { font-size: 10px; color: #475569; text-transform: uppercase; font-weight: 800; margin-left: 4px; }
+        .badge     { font-size: 10px; padding: 2px 6px; border-radius: 6px; font-weight: 900; border: 1px solid currentColor; margin-left: 6px; }
 
         .mvp-banner { background: linear-gradient(90deg, rgba(241,196,15,0.15), rgba(241,196,15,0.05)); border: 1px solid rgba(241,196,15,0.3); border-radius: 20px; padding: 15px 20px; margin-bottom: 25px; box-shadow: 0 0 20px rgba(241,196,15,0.1); }
 
-        .tab-btn { padding: 9px 16px; border-radius: 12px; font-size: 9px; font-weight: 900; text-transform: uppercase; transition: 0.3s; border: 1px solid var(--border); background: rgba(255,255,255,0.02); color: #64748b; white-space:nowrap; }
+        .tab-btn { padding: 10px 16px; border-radius: 12px; font-size: 11px; font-weight: 900; text-transform: uppercase; transition: 0.3s; border: 1px solid var(--border); background: rgba(255,255,255,0.02); color: #64748b; white-space:nowrap; }
         .tab-btn.active { background: var(--accent); color: #000; border-color: var(--accent); box-shadow: 0 0 20px rgba(241,196,15,0.2); }
 
         .squad-container { display: none; padding: 0 24px 24px 24px; border-top: 1px solid rgba(255,255,255,0.05); }
@@ -111,6 +111,13 @@
         .live-dot { display:inline-block; width:7px; height:7px; border-radius:50%; background:#4ade80; margin-left:6px; vertical-align:middle; flex-shrink:0; animation:livePulse 1.2s ease-in-out infinite; box-shadow:0 0 6px #4ade80; }
         @keyframes countUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
         @keyframes todayGlow  { 0%,100%{box-shadow:0 0 12px 2px rgba(241,196,15,0.15),inset 0 0 0 1px rgba(241,196,15,0.2)} 50%{box-shadow:0 0 26px 8px rgba(241,196,15,0.32),inset 0 0 0 1px rgba(241,196,15,0.5)} }
+        .insight-strip { background: linear-gradient(90deg, rgba(241,196,15,0.12), rgba(241,196,15,0.03)); border: 1px solid rgba(241,196,15,0.25); border-radius: 14px; padding: 10px 12px; font-size: 12px; font-weight: 700; color: #f8fafc; }
+        body.light .insight-strip { color: #0f172a; }
+        .secondary-tabs { margin-top: 8px; display: none; }
+        .secondary-tabs.open { display: block; animation: slideIn 0.2s ease-out; }
+        .sticky-search { position: sticky; top: 8px; z-index: 60; }
+        .splash-skip { margin-top: 1rem; font-size: 11px; color: #94a3b8; border: 1px solid rgba(148,163,184,0.35); border-radius: 999px; padding: 6px 12px; font-family: Orbitron,sans-serif; letter-spacing: 0.08em; }
+
     </style>
 </head>
 <body class="p-4 md:p-10">
@@ -123,7 +130,8 @@
         <div class="sp sp4" style="width:60px;height:1px;background:rgba(241,196,15,0.3);margin:2.5rem auto;"></div>
         <p class="sp sp5" style="font-size:8px;font-weight:700;letter-spacing:0.3em;text-transform:uppercase;color:#334155;margin-bottom:0.5rem;">Designed by</p>
         <p class="sp sp6" style="font-family:Orbitron,sans-serif;font-size:clamp(0.75rem,3.5vw,1rem);font-weight:900;color:#94a3b8;letter-spacing:0.1em;text-transform:uppercase;">Vedant Bhansali</p>
-        <p class="sp sp7" style="margin-top:3.5rem;font-size:9px;font-family:Orbitron,sans-serif;font-weight:700;letter-spacing:0.4em;color:#475569;text-transform:uppercase;cursor:pointer;">Tap anywhere to enter →</p>
+        <p class="sp sp7" style="margin-top:3.5rem;font-size:11px;font-family:Orbitron,sans-serif;font-weight:700;letter-spacing:0.28em;color:#475569;text-transform:uppercase;cursor:pointer;">Tap anywhere to enter →</p>
+        <button class="splash-skip" onclick="event.stopPropagation();dismissSplash()">Skip Intro</button>
     </div>
 
     <div class="max-w-xl mx-auto pb-24">
@@ -131,7 +139,7 @@
             <div class="flex justify-between items-center mb-8 px-2">
                 <div class="role-tag uppercase tracking-widest px-3 py-1">EST. 2026</div>
                 <div style="display:flex;align-items:center;gap:8px;">
-                    <div id="match-counter" class="role-tag tracking-widest text-yellow-500 uppercase px-3 py-1">MATCHES: —/74</div>
+                    <div id="match-counter" class="role-tag tracking-widest text-yellow-500 uppercase px-3 py-1">MATCHES: —/74</div><div id="last-updated" class="role-tag tracking-widest uppercase px-3 py-1">UPDATED: —</div>
                     <button id="theme-toggle" onclick="toggleTheme()" title="Toggle theme"
                         style="width:32px;height:32px;border-radius:50%;border:1px solid var(--glass-border);background:var(--glass-bg);backdrop-filter:var(--glass-blur);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:0.3s;font-size:15px;">🌙</button>
                 </div>
@@ -139,14 +147,19 @@
             <h1 class="text-5xl font-black font-cyber gold-glow italic tracking-tighter mb-6 uppercase">REVOLUTION</h1>
             <div style="width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;">
                 <div style="display:flex;justify-content:center;gap:6px;background:rgba(0,0,0,0.4);padding:5px;border-radius:18px;border:1px solid rgba(255,255,255,0.05);min-width:fit-content;margin:0 auto;">
-                    <button onclick="switchTab('main')"     id="btn-main"     class="tab-btn active">Rankings</button>
-                    <button onclick="switchTab('livepoints')" id="btn-livepoints" class="tab-btn">Live Points</button>
-                    <button onclick="switchTab('strategy')" id="btn-strat"    class="tab-btn">If Tu..</button>
-                    <button onclick="switchTab('weekly')"   id="btn-weekly"   class="tab-btn">Weekly</button>
-                    <button onclick="switchTab('schedule')"  id="btn-schedule"  class="tab-btn">Schedule</button>
-                    <button onclick="switchTab('standings')" id="btn-standings" class="tab-btn">Standings</button>
-                    <button onclick="switchTab('hof')"      id="btn-hof"      class="tab-btn">🏆 HOF</button>
-                    <button onclick="switchTab('gems')"     id="btn-gems"     class="tab-btn">💎 Unsold Gems</button>
+                    <button onclick="switchTab('main')" id="btn-main" class="tab-btn active">Rankings</button>
+                    <button onclick="switchTab('livepoints')" id="btn-livepoints" class="tab-btn">Live</button>
+                    <button onclick="switchTab('weekly')" id="btn-weekly" class="tab-btn">Weekly</button>
+                    <button onclick="toggleMoreTabs()" id="btn-more" class="tab-btn">More</button>
+                </div>
+                <div id="secondary-tabs" class="secondary-tabs">
+                    <div style="display:flex;justify-content:center;gap:6px;background:rgba(0,0,0,0.25);padding:5px;border-radius:14px;border:1px solid rgba(255,255,255,0.05);min-width:fit-content;margin:8px auto 0 auto;">
+                        <button onclick="switchTab('strategy')" id="btn-strat" class="tab-btn">Strategy</button>
+                        <button onclick="switchTab('schedule')" id="btn-schedule" class="tab-btn">Schedule</button>
+                        <button onclick="switchTab('standings')" id="btn-standings" class="tab-btn">Standings</button>
+                        <button onclick="switchTab('hof')" id="btn-hof" class="tab-btn">HOF</button>
+                        <button onclick="switchTab('gems')" id="btn-gems" class="tab-btn">Gems</button>
+                    </div>
                 </div>
             </div>
         </header>
@@ -155,16 +168,17 @@
             <div class="error-dot"></div>
             <div>
                 <p class="text-xs font-black uppercase tracking-widest text-red-400 mb-0.5">Sync Failed</p>
-                <p id="error-msg" class="text-[10px] text-red-300 opacity-70">Could not reach the data sheet. Retrying in 60s…</p>
+                <p id="error-msg" class="text-[12px] text-red-300 opacity-80">Could not reach the data sheet. Retrying in 60s…</p><p id="error-meta" class="text-[11px] text-red-300/70 mt-1">Last successful update: —</p>
             </div>
             <button onclick="updateApp()" class="ml-auto text-[9px] font-black uppercase tracking-widest text-red-400 border border-red-500/30 rounded-lg px-3 py-1.5 hover:bg-red-500/10 transition-colors">Retry</button>
         </div>
 
         <div id="view-main" class="space-y-6">
+            <div id="insight-strip" class="insight-strip">Loading smart insight…</div>
             <!-- TODAY'S MATCH BAR -->
             <div id="today-match-bar"></div>
             <!-- PLAYER SEARCH -->
-            <div style="position:relative;">
+            <div class="sticky-search" style="position:relative;">
                 <input id="player-search" type="text" placeholder="Search player…"
                     oninput="onSearchInput(this.value)"
                     onfocus="onSearchInput(this.value)"
@@ -295,13 +309,22 @@
         // ── SPLASH ──
         function dismissSplash() {
             const s = document.getElementById('splash');
+            if (!s) return;
             s.classList.add('hide');
             setTimeout(() => s.remove(), 900);
         }
-        setTimeout(dismissSplash, 5000);
+        if (!localStorage.getItem('revo-splash-seen')) {
+            setTimeout(() => { dismissSplash(); localStorage.setItem('revo-splash-seen','1'); }, 1800);
+        } else {
+            dismissSplash();
+        }
 
-        const TAB_ORDER = ['main','livepoints','strategy','weekly','schedule','standings','hof','gems'];
+        const TAB_ORDER = ['main','livepoints','weekly','strategy','schedule','standings','hof','gems'];
         let _currentTab = 'main';
+
+        function toggleMoreTabs() {
+            document.getElementById('secondary-tabs').classList.toggle('open');
+        }
 
         function switchTab(t, animate) {
             const views = { main:'view-main', livepoints:'view-livepoints', strategy:'view-strategy', weekly:'view-weekly', schedule:'view-schedule', standings:'view-standings', hof:'view-hof', gems:'view-gems' };
@@ -321,6 +344,9 @@
                 document.getElementById(btns[k]).classList.toggle('active', k === t);
             });
             _currentTab = t;
+            if (['strategy','schedule','standings','hof','gems'].includes(t)) {
+                document.getElementById('secondary-tabs').classList.add('open');
+            }
             // Scroll tab button into view
             const btn = document.getElementById(btns[t]);
             if (btn) btn.scrollIntoView({ inline:'center', behavior:'smooth', block:'nearest' });
@@ -330,6 +356,8 @@
 
         function showError(msg) {
             document.getElementById('error-msg').textContent = msg || 'Could not reach the data sheet. Retrying in 60s…';
+            const meta = document.getElementById('error-meta');
+            if (meta) meta.textContent = `Last successful update: ${window._lastSuccessAt || '—'}`;
             document.getElementById('error-banner').classList.remove('hidden');
         }
         function hideError() { document.getElementById('error-banner').classList.add('hidden'); }
@@ -394,6 +422,12 @@
                     pcRows.filter(r => r[0] && parseFloat(r[6]) > 0).map(r => r[0].toString().trim())
                 )];
                 document.getElementById('match-counter').innerText = `MATCHES: ${completedMatches.length}/${TOTAL_SEASON_MATCHES}`;
+                const now = new Date();
+                window._lastSuccessAt = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                const updatedEl = document.getElementById('last-updated');
+                if (updatedEl) updatedEl.innerText = `UPDATED: ${window._lastSuccessAt}`;
+                const errorMeta = document.getElementById('error-meta');
+                if (errorMeta) errorMeta.textContent = `Last successful update: ${window._lastSuccessAt}`;
 
                 // Player cumulative points
                 const pPoints = {};
@@ -460,6 +494,7 @@
                     renderSchedule(schedRows);
                 }
                 renderTodayBar(schedRows || []);
+                renderInsight(active, completedMatches);
                 renderWeekly(active, pcRows, completedMatches, squads);
                 renderRankArrows(active);
                 if (!window._confettiFired) { window._confettiFired = true; setTimeout(fireConfetti, 800); }
@@ -609,6 +644,19 @@
         }
 
         // ── TODAY'S MATCH BAR ──
+        function renderInsight(active, completedMatches) {
+            const el = document.getElementById('insight-strip');
+            if (!el) return;
+            if (!active || active.length < 2) {
+                el.textContent = `Season is live. ${completedMatches.length}/${TOTAL_SEASON_MATCHES} matches completed.`;
+                return;
+            }
+            const leader = active[0];
+            const chaser = active[1];
+            const gap = Math.max(0, Math.round((leader.score||0) - (chaser.score||0)));
+            el.innerHTML = `👑 <b>${leader.first}</b> leads by <b>${gap} pts</b> over ${chaser.first} • ${completedMatches.length}/${TOTAL_SEASON_MATCHES} matches completed.`;
+        }
+
         function renderTodayBar(schedRows) {
             const el = document.getElementById('today-match-bar');
             if (!el) return;
