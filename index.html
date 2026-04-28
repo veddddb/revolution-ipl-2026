@@ -46,7 +46,7 @@
 
         body { background: radial-gradient(circle at top, #0f172a 0%, #020617 100%) fixed; color: #f8fafc; font-family: 'Inter', sans-serif; min-height: 100vh; transition: background 0.4s ease, color 0.3s ease; }
         .font-cyber { font-family: 'Orbitron', sans-serif; }
-        .gold-glow  { color: var(--accent); text-shadow: 0 0 15px rgba(241,196,15,0.5); }
+        .gold-glow  { color: var(--accent); text-shadow: 0 0 24px rgba(241,196,15,0.6), 0 0 60px rgba(241,196,15,0.15); }
 
         .glass-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 24px; transition: 0.4s cubic-bezier(0.4,0,0.2,1); margin-bottom: 1rem; position: relative; overflow: hidden; cursor: pointer; }
         .glass-card:hover { transform: translateY(-4px); border-color: var(--owner-color, var(--accent)); box-shadow: 0 0 30px -5px var(--owner-glow, rgba(241,196,15,0.2)); z-index: 20; }
@@ -81,7 +81,7 @@
         .error-banner { background:rgba(220,38,38,0.12); border:1px solid rgba(220,38,38,0.35); border-radius:16px; padding:14px 20px; margin-bottom:20px; display:flex; align-items:center; gap:12px; animation:slideIn 0.3s ease-out; }
         .error-dot { width:8px; height:8px; border-radius:50%; background:#ef4444; flex-shrink:0; animation:blink 2s infinite; }
 
-        .share-btn { font-size:9px; font-family:'Orbitron',sans-serif; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; padding:4px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:#64748b; transition:0.2s; cursor:pointer; }
+        .share-btn { font-size:9px; font-family:'Orbitron',sans-serif; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; padding:4px 10px; border-radius:8px; border:1px solid var(--owner-color, rgba(255,255,255,0.18)); background:rgba(255,255,255,0.04); color:#64748b; transition:0.2s; cursor:pointer; }
         .share-btn:hover { color:var(--owner-color); border-color:var(--owner-color); }
 
         #splash { position:fixed; inset:0; z-index:999; background:radial-gradient(circle at 50% 40%,#0f172a,#020617); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:2rem; transition:opacity 0.8s ease,transform 0.8s ease; }
@@ -111,6 +111,12 @@
         .live-dot { display:inline-block; width:7px; height:7px; border-radius:50%; background:#4ade80; margin-left:6px; vertical-align:middle; flex-shrink:0; animation:livePulse 1.2s ease-in-out infinite; box-shadow:0 0 6px #4ade80; }
         @keyframes countUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
         @keyframes todayGlow  { 0%,100%{box-shadow:0 0 12px 2px rgba(241,196,15,0.15),inset 0 0 0 1px rgba(241,196,15,0.2)} 50%{box-shadow:0 0 26px 8px rgba(241,196,15,0.32),inset 0 0 0 1px rgba(241,196,15,0.5)} }
+        .tab-row-secondary .tab-btn { opacity: 0.8; font-size: 8px; }
+        .tab-row-secondary .tab-btn.active { opacity: 1; }
+        .collapse-btn { width:100%; text-align:left; background:rgba(10,15,25,0.98); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:10px 14px; font-family:Orbitron,sans-serif; font-size:9px; font-weight:900; letter-spacing:0.16em; color:#94a3b8; text-transform:uppercase; }
+        .collapse-panel { display:none; }
+        .collapse-panel.open { display:block; }
+
     </style>
 </head>
 <body class="p-4 md:p-10">
@@ -137,16 +143,18 @@
                 </div>
             </div>
             <h1 class="text-5xl font-black font-cyber gold-glow italic tracking-tighter mb-6 uppercase">REVOLUTION</h1>
-            <div style="width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;">
-                <div style="display:flex;justify-content:center;gap:6px;background:rgba(0,0,0,0.4);padding:5px;border-radius:18px;border:1px solid rgba(255,255,255,0.05);min-width:fit-content;margin:0 auto;">
-                    <button onclick="switchTab('main')"     id="btn-main"     class="tab-btn active">Rankings</button>
-                    <button onclick="switchTab('livepoints')" id="btn-livepoints" class="tab-btn">Live Points</button>
-                    <button onclick="switchTab('strategy')" id="btn-strat" class="tab-btn">Strategy</button>
-                    <button onclick="switchTab('weekly')"   id="btn-weekly"   class="tab-btn">Weekly</button>
-                    <button onclick="switchTab('schedule')"  id="btn-schedule"  class="tab-btn">Schedule</button>
+            <div style="width:100%;">
+                <div style="display:flex;justify-content:center;gap:6px;background:rgba(0,0,0,0.4);padding:5px;border-radius:18px;border:1px solid rgba(255,255,255,0.05);margin:0 auto 6px auto;">
+                    <button onclick="switchTab('livepoints')" id="btn-livepoints" class="tab-btn">🔴 Live</button>
+                    <button onclick="switchTab('main')" id="btn-main" class="tab-btn active">Live Ranks</button>
+                    <button onclick="switchTab('schedule')" id="btn-schedule" class="tab-btn">Schedule</button>
                     <button onclick="switchTab('standings')" id="btn-standings" class="tab-btn">Standings</button>
-                    <button onclick="switchTab('hof')"      id="btn-hof"      class="tab-btn">🏆 HOF</button>
-                    <button onclick="switchTab('gems')"     id="btn-gems"     class="tab-btn">💎 Unsold Gems</button>
+                </div>
+                <div class="tab-row-secondary" style="display:flex;justify-content:center;gap:6px;background:rgba(0,0,0,0.25);padding:5px;border-radius:16px;border:1px solid rgba(255,255,255,0.04);margin:0 auto;">
+                    <button onclick="switchTab('weekly')" id="btn-weekly" class="tab-btn">Weekly</button>
+                    <button onclick="switchTab('strategy')" id="btn-strat" class="tab-btn">Luckiest</button>
+                    <button onclick="switchTab('hof')" id="btn-hof" class="tab-btn">🏆 HOF</button>
+                    <button onclick="switchTab('gems')" id="btn-gems" class="tab-btn">💎 Gems</button>
                 </div>
             </div>
         </header>
@@ -174,8 +182,11 @@
                 <div id="search-dropdown" style="display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:rgba(8,12,20,0.99);border:1px solid rgba(255,255,255,0.1);border-radius:14px;overflow:hidden;z-index:100;max-height:320px;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.5);"></div>
             </div>
                         <div id="mvp-spotlight"></div>
-            <div id="podium-area" class="flex justify-center items-end gap-3 mb-16 h-48 text-center px-2"></div>
-            <div id="streak-tracker"></div>
+            <div id="podium-area" class="mb-3"></div>
+            <div id="last-match-module">
+                <button class="collapse-btn" onclick="toggleLastMatchPanel()" id="last-match-toggle">Last Match Leaderboard ▾</button>
+                <div id="last-match-panel" class="collapse-panel"></div>
+            </div>
             <div id="leaderboard" class="space-y-2"></div>
         </div>
 
@@ -189,6 +200,7 @@
 
         <div id="view-weekly" class="hidden pt-4">
             <div id="weekly-list" class="space-y-4"></div>
+            <div id="streak-tracker" class="mt-4"></div>
         </div>
 
         <div id="view-schedule" class="hidden pt-4">
@@ -227,7 +239,7 @@
             <div id="gems-list"></div>
         </div>
 
-        <footer class="text-center py-20 opacity-20 font-cyber text-[8px] uppercase tracking-[0.6em]">
+        <footer class="text-center py-8 opacity-20 font-cyber text-[8px] uppercase tracking-[0.6em]">
             Precision Sync • Vedant Bhansali Edition
         </footer>
     </div>
@@ -300,7 +312,7 @@
         }
         setTimeout(dismissSplash, 5000);
 
-        const TAB_ORDER = ['main','livepoints','strategy','weekly','schedule','standings','hof','gems'];
+        const TAB_ORDER = ['livepoints','main','schedule','standings','weekly','strategy','hof','gems'];
         let _currentTab = 'main';
 
         function switchTab(t, animate) {
@@ -467,7 +479,6 @@
                 renderRankArrows(active);
                 if (!window._confettiFired) { window._confettiFired = true; setTimeout(fireConfetti, 800); }
                 renderStandings(standRows || []);
-                renderMatchDayBanner(active, pcRows, completedMatches);
                 renderLastMatchLeaderboard(active, pcRows, completedMatches);
                 renderHallOfFame(active, pcRows, completedMatches, squads);
                 renderGems(rosRows, pPoints, squads);
@@ -511,19 +522,32 @@
 
         function renderMVP(mvp, matchName) {
             const el = document.getElementById('mvp-spotlight');
-            if (!mvp || !mvp.owner) { el.innerHTML=''; return; }
-            const color = getColor(mvp.owner);
+            if (!el) return;
+            const active = _state.active || [];
+            const pcRows = _state.pcRows || [];
+            const completed = _state.completedMatches || [];
+            const lastMatch = completed[completed.length - 1] || matchName || 'Last Match';
+
+            const matchTotals = {};
+            const nameToId = {};
+            active.forEach(o => { nameToId[fixID(o.full)] = o.id; nameToId[fixID(o.first)] = o.id; nameToId[o.id] = o.id; matchTotals[o.id] = 0; });
+            pcRows.filter(r => r[0] && r[0].toString().trim() === lastMatch).forEach(r => {
+                const raw = fixID(r[2]);
+                const id = nameToId[raw] || active.find(o => raw.includes(o.id) || o.id.includes(raw))?.id;
+                if (id) matchTotals[id] = (matchTotals[id] || 0) + (parseFloat(r[6]) || 0);
+            });
+            const winnerPair = Object.entries(matchTotals).sort((a,b)=>b[1]-a[1])[0];
+            const winner = winnerPair ? active.find(o=>o.id===winnerPair[0]) : null;
+            const winnerPts = winnerPair ? Math.round(winnerPair[1]) : 0;
+            const winnerColor = winner ? getColor(winner.id) : '#f1c40f';
+
+            if (!mvp || !winner) { el.innerHTML = ''; return; }
+            const heroColor = getColor(mvp.owner);
             el.innerHTML = `
-                <div class="mvp-banner flex justify-between items-center">
-                    <div>
-                        <p class="text-[8px] font-black text-yellow-500 uppercase tracking-widest mb-1">MATCH HERO • ${matchName}</p>
-                        <h2 class="text-xl font-black uppercase italic tracking-tighter">${mvp.name}</h2>
-                        <p class="text-[10px] font-bold opacity-60 uppercase">OWNED BY <span style="color:${color}">${mvp.owner}</span></p>
-                    </div>
-                    <div class="text-right">
-                        <p class="font-cyber text-2xl gold-glow font-black italic tracking-tighter">${mvp.pts}</p>
-                        <p class="text-[8px] font-bold opacity-40 uppercase">POINTS</p>
-                    </div>
+                <div class="mvp-banner" style="padding:12px 16px;">
+                    <p class="text-[8px] font-black text-yellow-500 uppercase tracking-widest mb-1">Last Match · ${lastMatch}</p>
+                    <p class="text-[11px] font-bold uppercase" style="color:${winnerColor}">Winner: ${winner.first} (${winnerPts} pts)</p>
+                    <p class="text-[10px] font-bold uppercase mt-1" style="color:${heroColor}">Hero: ${mvp.name} (${Math.round(mvp.pts)} pts)</p>
                 </div>`;
         }
 
@@ -531,27 +555,11 @@
             const pod = document.getElementById('podium-area');
             if (top.length < 3) { pod.innerHTML=''; return; }
             pod.innerHTML = `
-                <div class="w-1/3 flex flex-col items-center">
-                    <span class="text-[9px] font-cyber mb-2 opacity-60 uppercase">${top[1].first}</span>
-                    <div class="podium-pillar pillar-rise w-full h-24 rounded-t-2xl" style="animation-delay:0.15s">
-                        <span class="font-cyber text-lg mt-4">${top[1].score}</span>
-                        <div class="podium-rank-label">2ND</div>
-                    </div>
-                </div>
-                <div class="w-1/3 flex flex-col items-center">
-                    <span class="text-[10px] font-cyber mb-2 gold-glow italic uppercase tracking-widest">${top[0].first}</span>
-                    <div class="podium-pillar pillar-rise w-full h-40 rounded-t-2xl shadow-[0_-10px_30px_rgba(241,196,15,0.1)]" style="animation-delay:0s">
-                        <div class="trophy-bg"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18,2H6V4H2V9C2,12 4.24,14.64 7.28,14.94C8.25,17.29 10.3,19 12.82,19.26V22H10V24H14V22H11.18V19.26C13.7,19 15.75,17.29 16.72,14.94C19.76,14.64 22,12 22,9V4H18V2M4,9V6H6V12.75C4.83,12.28 4,11.23 4,9M18,12.75V6H20V9C20,11.23 19.17,12.28 18,12.75Z"/></svg></div>
-                        <span class="font-cyber text-2xl font-black relative z-10 mt-12">${top[0].score}</span>
-                        <div class="podium-rank-label">1ST</div>
-                    </div>
-                </div>
-                <div class="w-1/3 flex flex-col items-center">
-                    <span class="text-[9px] font-cyber mb-2 opacity-60 uppercase">${top[2].first}</span>
-                    <div class="podium-pillar pillar-rise w-full h-16 rounded-t-2xl" style="animation-delay:0.3s">
-                        <span class="font-cyber text-base text-gray-400 mt-2">${top[2].score}</span>
-                        <div class="podium-rank-label">3RD</div>
-                    </div>
+                <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;">
+                    ${top.slice(0,3).map((o,idx)=>`<div style="background:rgba(10,15,25,0.98);border:1px solid ${getColor(o.id)}44;border-radius:12px;padding:8px 10px;height:60px;display:flex;flex-direction:column;justify-content:center;">
+                        <span style="font-size:8px;color:#475569;font-weight:900;letter-spacing:0.12em;">#${idx+1} ${o.first.toUpperCase()}</span>
+                        <span style="font-family:Orbitron,sans-serif;font-size:15px;color:${getColor(o.id)};font-weight:900;">${o.score}</span>
+                    </div>`).join('')}
                 </div>`;
         }
 
@@ -647,6 +655,9 @@
             const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
             const dayFull  = dayNames[now.getDay()];
             const dateStr  = todayMatches[0].date;
+            const nowIST = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+            const liveStart = new Date(nowIST); liveStart.setHours(15,30,0,0);
+            const isLiveWindow = nowIST >= liveStart;
 
             el.innerHTML = todayMatches.map(tm => {
                 const c1 = TEAM_COLORS[tm.t1] || '#f1c40f';
@@ -692,8 +703,8 @@
 
                         <!-- Live indicator -->
                         <div style="flex-shrink:0;display:flex;align-items:center;gap:5px;">
-                            <span style="width:7px;height:7px;border-radius:50%;background:#4ade80;display:inline-block;animation:livePulse 1.2s ease-in-out infinite;box-shadow:0 0 6px #4ade80;"></span>
-                            <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:#4ade80;letter-spacing:0.15em;">LIVE</span>
+                            <span style="width:7px;height:7px;border-radius:50%;background:${isLiveWindow?'#4ade80':'#f1c40f'};display:inline-block;${isLiveWindow?'animation:livePulse 1.2s ease-in-out infinite;':''}box-shadow:0 0 6px ${isLiveWindow?'#4ade80':'#f1c40f'};"></span>
+                            <span style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;color:${isLiveWindow?'#4ade80':'#f1c40f'};letter-spacing:0.15em;">${isLiveWindow?'LIVE':'TODAY'}</span>
                         </div>
 
                     </div>
@@ -772,10 +783,10 @@
                 return `
                 <div id="${cID}" class="glass-card ${o.id==='unsold'?'opacity-40 mt-12':''}" style="--owner-color:${color};--owner-glow:${color}33">
                     ${logoBg}
-                    ${isRival ? `<div style="position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:30;font-size:9px;font-weight:900;color:#f87171;font-family:Orbitron,sans-serif;letter-spacing:0.1em;background:rgba(248,113,113,0.12);border:1px solid rgba(248,113,113,0.3);border-radius:8px;padding:2px 8px;">⚔️ RIVAL · ${owners[i-1].score - o.score} PTS BEHIND</div>` : ''}
-                    <div class="p-6 flex justify-between items-center relative z-10" onclick="toggleSquad('${cID}')">
+                    
+                    <div class="p-4 flex justify-between items-center relative z-10" onclick="toggleSquad('${cID}')">
                         <div class="flex items-center gap-5">
-                            <span class="font-cyber text-lg ${i<3&&o.id!=='unsold'?'gold-glow':'text-gray-700'}">${o.id==='unsold'?'•':i+1}</span>
+                            <span class="font-cyber text-xs ${i<3&&o.id!=='unsold'?'gold-glow':'text-gray-700'}" style="color:#334155">${o.id==='unsold'?'•':i+1}</span>
                             <div>
                                 <span class="font-black text-sm uppercase tracking-widest italic">${o.full}</span>
                                 ${gap > 0 ? `<p style="font-size:7px;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:0.1em;margin-top:1px;">−${gap} from #1</p>` : ''}
@@ -783,14 +794,14 @@
                         </div>
                         <div class="flex items-center gap-3">
                             <div style="text-align:right;">
-                                <span class="font-cyber text-2xl font-black italic tracking-tighter score-animated" data-score="${o.score}">${o.score}</span>
+                                <span class="font-cyber text-3xl font-black italic tracking-tighter score-animated" data-score="${o.score}">${o.score}</span>
                                 ${toOvertake > 0 ? `<p style="font-size:7px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.05em;margin-top:1px;">+${toOvertake} to overtake</p>` : ''}
-                            </div>
-                            ${o.id!=='unsold'?`<button class="share-btn" onclick="event.stopPropagation();shareCard('${cID}','${o.full}',${o.score},${i+1})">Share</button>`:''}
+                            ${isRival ? `<span style="font-size:8px;font-weight:900;color:#f87171;border:1px solid rgba(248,113,113,0.35);border-radius:999px;padding:2px 6px;margin-top:4px;display:inline-block;">⚔️ ${owners[i-1].score - o.score} behind</span>`:''}</div>
+                            ${o.id!=='unsold'?`<button class="share-btn" style="--owner-color:${color}" onclick="event.stopPropagation();shareCard('${cID}','${o.full}',${o.score},${i+1})">Share</button>`:''}
                         </div>
                     </div>
                     ${o.id !== 'unsold' && i > 0 ? `
-                    <div style="height:2px;background:rgba(255,255,255,0.04);margin:0 24px 0 24px;border-radius:2px;overflow:hidden;">
+                    <div style="height:3px;background:rgba(255,255,255,0.08);margin:0 16px 0 16px;border-radius:2px;overflow:hidden;">
                         <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,${color}66,${color});border-radius:2px;transition:width 1.2s ease;"></div>
                     </div>` : ''}
                     <div id="sq-${cID}" class="squad-container">
@@ -823,6 +834,14 @@
         function toggleSquad(id) {
             const s = document.getElementById('sq-'+id);
             if (s) s.classList.toggle('open');
+        }
+
+        function toggleLastMatchPanel() {
+            const p = document.getElementById('last-match-panel');
+            const t = document.getElementById('last-match-toggle');
+            if (!p || !t) return;
+            const open = p.classList.toggle('open');
+            t.textContent = open ? 'Last Match Leaderboard ▴' : 'Last Match Leaderboard ▾';
         }
 
         function renderStrategy(owners, squads) {
@@ -1884,59 +1903,7 @@
         }, { passive: true });
 
         // ── MATCH DAY WINNER BANNER ──
-        function renderMatchDayBanner(active, pcRows, completedMatches) {
-            if (!completedMatches.length) return;
-            const lastMatch = completedMatches[completedMatches.length - 1];
-
-            // Sum each owner's points in the last match
-            const matchTotals = {};
-            const nameToId = {};
-            active.forEach(o => {
-                nameToId[fixID(o.full)] = o.id;
-                nameToId[fixID(o.first)] = o.id;
-                nameToId[o.id] = o.id;
-                matchTotals[o.id] = 0;
-            });
-            pcRows.filter(r => r[0] && r[0].toString().trim() === lastMatch).forEach(r => {
-                const raw = fixID(r[2]);
-                const id  = nameToId[raw] || active.find(o => raw.includes(o.id) || o.id.includes(raw))?.id;
-                if (id) matchTotals[id] = (matchTotals[id] || 0) + (parseFloat(r[6]) || 0);
-            });
-
-            const sorted = Object.entries(matchTotals).sort((a,b) => b[1]-a[1]);
-            if (!sorted.length || sorted[0][1] === 0) return;
-
-            const winnerId = sorted[0][0];
-            const winner   = active.find(o => o.id === winnerId);
-            const pts      = Math.round(sorted[0][1]);
-            if (!winner) return;
-
-            const color = getColor(winnerId);
-            const mvpEl = document.getElementById('mvp-spotlight');
-            if (!mvpEl) return;
-
-            // Insert match day banner right after MVP spotlight
-            let banner = document.getElementById('matchday-winner-banner');
-            if (!banner) {
-                banner = document.createElement('div');
-                banner.id = 'matchday-winner-banner';
-                mvpEl.parentNode.insertBefore(banner, mvpEl.nextSibling);
-            }
-            banner.innerHTML = `
-                <div style="background:rgba(10,15,25,0.98);border:1px solid ${color}44;border-left:3px solid ${color};border-radius:18px;padding:12px 18px;margin-bottom:0;position:relative;overflow:hidden;">
-                    <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,${color}88,transparent);"></div>
-                    <div style="display:flex;justify-content:space-between;align-items:center;">
-                        <div>
-                            <p style="font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;letter-spacing:0.3em;color:#475569;text-transform:uppercase;margin-bottom:3px;">🏅 Match Day Winner · ${lastMatch}</p>
-                            <p style="font-family:Orbitron,sans-serif;font-size:14px;font-weight:900;color:${color};text-transform:uppercase;">${winner.full}</p>
-                        </div>
-                        <div style="text-align:right;">
-                            <p style="font-family:Orbitron,sans-serif;font-size:22px;font-weight:900;color:${color};text-shadow:0 0 10px ${color}66;line-height:1;">${pts}</p>
-                            <p style="font-size:7px;color:#334155;text-transform:uppercase;font-weight:700;letter-spacing:0.1em;">match pts</p>
-                        </div>
-                    </div>
-                </div>`;
-        }
+        function renderMatchDayBanner(active, pcRows, completedMatches) { return; }
 
         // ── LAST MATCH LEADERBOARD (inside streak tracker) ──
         function renderLastMatchLeaderboard(active, pcRows, completedMatches) {
@@ -1958,17 +1925,11 @@
             const sorted = active.map(o => ({ ...o, matchPts: Math.round(totals[o.id]||0) })).sort((a,b)=>b.matchPts-a.matchPts);
             const maxPts = sorted[0]?.matchPts || 1;
 
-            const streakEl = document.getElementById('streak-tracker');
-            if (!streakEl) return;
-            let miniLb = document.getElementById('mini-match-lb');
-            if (!miniLb) {
-                miniLb = document.createElement('div');
-                miniLb.id = 'mini-match-lb';
-                streakEl.appendChild(miniLb);
-            }
-            miniLb.innerHTML = `
-                <div style="background:rgba(10,15,25,0.98);border:1px solid rgba(255,255,255,0.07);border-radius:20px;padding:18px 20px;margin-top:1rem;">
-                    <p style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;letter-spacing:0.3em;color:#475569;text-transform:uppercase;margin-bottom:14px;">Last Match · ${lastMatch}</p>
+            const panel = document.getElementById('last-match-panel');
+            if (!panel) return;
+            panel.innerHTML = `
+                <div style="background:rgba(10,15,25,0.98);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:12px 14px;margin-top:8px;">
+                    <p style="font-family:Orbitron,sans-serif;font-size:8px;font-weight:900;letter-spacing:0.2em;color:#475569;text-transform:uppercase;margin-bottom:10px;">Last Match · ${lastMatch}</p>
                     <div style="display:flex;flex-direction:column;gap:8px;">
                         ${sorted.map((o,i) => {
                             const c = getColor(o.id);
