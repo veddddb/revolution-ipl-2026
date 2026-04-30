@@ -101,7 +101,7 @@
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            width: calc(100% - 32px);
+            width: calc(100% - 24px);
             max-width: 420px;
             background: var(--glass);
             backdrop-filter: blur(24px);
@@ -120,8 +120,8 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
-            padding: 10px 18px;
+            gap: 2px;
+            padding: 8px 10px;
             border-radius: 24px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             color: var(--text4);
@@ -134,7 +134,7 @@
         }
 
         .nav-item span:first-child { font-size: 18px; }
-        .nav-item span:last-child { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; font-family: var(--font-cyber); }
+        .nav-item span:last-child { font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; font-family: var(--font-cyber); }
 
         /* Typography & Effects */
         .font-cyber { font-family: var(--font-cyber); }
@@ -203,21 +203,6 @@
     <div class="mesh-bg"></div>
     <div id="search-overlay" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[2000] transition-opacity duration-300"></div>
 
-    <!-- AI MODAL -->
-    <div id="ai-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[3000] flex items-center justify-center p-4 transition-opacity duration-300">
-        <div class="glass-panel w-full max-w-sm p-6 relative border-purple-500/30 shadow-[0_0_40px_rgba(168,85,247,0.15)]">
-            <button onclick="closeAIModal()" class="absolute top-4 right-4 text-[var(--text4)] hover:text-white text-lg leading-none active-scale">&times;</button>
-            <div class="flex items-center gap-2 mb-4">
-                <span class="text-xl animate-pulse">✨</span>
-                <h3 class="font-cyber font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 tracking-tight">Gemini Scout</h3>
-            </div>
-            <p id="ai-modal-subtitle" class="text-[9px] font-bold text-[var(--text3)] uppercase tracking-widest mb-4 border-b border-[var(--glass-border)] pb-2"></p>
-            <div id="ai-modal-content" class="text-xs leading-relaxed text-[var(--text1)] min-h-[80px] flex items-center justify-center font-medium">
-                <!-- Content injected here -->
-            </div>
-        </div>
-    </div>
-
     <!-- SPLASH SCREEN -->
     <div id="splash" onclick="dismissSplash()">
         <p class="text-[10px] font-cyber tracking-[0.5em] text-[var(--text4)] uppercase mb-8">IPL Fantasy League</p>
@@ -228,37 +213,37 @@
 
     <div class="max-w-xl mx-auto">
         <!-- HEADER -->
-        <header class="mb-6 stagger-item" style="animation-delay: 0.1s">
-            <div class="flex justify-between items-center mb-5">
-                <div>
-                    <p class="text-[9px] font-bold tracking-[0.4em] text-[var(--text4)] uppercase">Season 2026</p>
-                    <h1 class="text-4xl font-black font-cyber italic gold-glow leading-tight tracking-tighter">REVOLUTION</h1>
+        <header id="main-header" class="stagger-item relative transition-all duration-300" style="animation-delay: 0.1s">
+            <div class="flex justify-between items-start mb-5 gap-2">
+                <div class="flex-1">
+                    <p class="text-[9px] font-bold tracking-[0.4em] text-[var(--text4)] uppercase mb-1">Season 2026</p>
+                    <h1 class="text-3xl sm:text-4xl font-black font-cyber italic gold-glow leading-tight tracking-tighter">REVOLUTION</h1>
                 </div>
-                <div class="flex flex-col items-end gap-2">
-                    <div id="match-counter" class="text-[9px] font-black text-yellow-500 font-cyber opacity-80 tracking-widest">MATCHES: —/74</div>
+                <div class="flex flex-col items-end gap-2 flex-shrink-0">
+                    <div id="match-counter" class="text-[9px] font-black text-yellow-500 font-cyber opacity-80 tracking-widest text-right mt-1">MATCHES: —/74</div>
                     <button onclick="toggleTheme()" id="theme-toggle" class="w-8 h-8 rounded-full glass-panel flex items-center justify-center text-xs active-scale">🌙</button>
                 </div>
             </div>
 
             <!-- SEARCH BAR -->
-            <div class="relative mb-5 z-[2001]" id="search-container">
+            <div class="relative mb-5" id="search-container">
                 <input id="player-search" type="text" placeholder="Search player or owner..." 
                     oninput="onSearchInput(this.value)" onfocus="showSearchOverlay(); onSearchInput(this.value)"
-                    class="w-full glass-panel py-3.5 pl-11 pr-4 text-xs font-semibold outline-none focus:border-yellow-500/40 transition-all placeholder:text-[var(--text4)] bg-transparent text-[var(--text1)]">
+                    class="w-full glass-panel py-3.5 pl-11 pr-4 text-xs font-semibold outline-none focus:border-yellow-500/40 transition-all placeholder:text-[var(--text4)] bg-transparent text-[var(--text1)] shadow-sm">
                 <svg class="absolute left-4 top-1/2 -translate-y-1/2 opacity-30 text-[var(--text1)]" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-                <div id="search-dropdown" class="hidden absolute top-full left-0 right-0 mt-2 glass-panel z-[2100] max-h-64 overflow-y-auto shadow-2xl"></div>
-            </div>
-
-            <!-- DISCOVERY SCROLL -->
-            <div class="flex gap-2.5 overflow-x-auto no-scrollbar pb-1">
-                <button onclick="switchTab('hof')" id="btn-hof" class="px-5 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">🏆 Hall of Fame</button>
-                <button onclick="switchTab('gems')" id="btn-gems" class="px-5 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">💎 Unsold Gems</button>
-                <button onclick="switchTab('weekly')" id="btn-weekly" class="px-5 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">📊 Weekly Recap</button>
-                <button onclick="switchTab('strategy')" id="btn-strat" class="px-5 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">🎯 Luckiest</button>
+                <div id="search-dropdown" class="hidden absolute top-full left-0 right-0 mt-2 glass-panel max-h-64 overflow-y-auto shadow-2xl"></div>
             </div>
         </header>
 
-        <div id="error-banner" class="error-banner hidden">
+        <!-- DISCOVERY SCROLL -->
+        <div id="discovery-tabs" class="flex gap-2.5 overflow-x-auto no-scrollbar pb-1 mb-6 stagger-item relative" style="animation-delay: 0.15s">
+            <button onclick="switchTab('hof')" id="btn-hof" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">🏆 Hall of Fame</button>
+            <button onclick="switchTab('gems')" id="btn-gems" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">💎 Unsold Gems</button>
+            <button onclick="switchTab('weekly')" id="btn-weekly" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">📊 Weekly Recap</button>
+            <button onclick="switchTab('strategy')" id="btn-strat" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">🎯 Luckiest</button>
+        </div>
+
+        <div id="error-banner" class="error-banner hidden relative z-10">
             <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
             <div class="flex-1">
                 <p class="text-[10px] font-black uppercase tracking-widest text-red-400 mb-0.5">Sync Failed</p>
@@ -268,7 +253,7 @@
         </div>
 
         <!-- MAIN VIEWS -->
-        <div id="view-main" class="space-y-4 pb-8">
+        <div id="view-main" class="space-y-4 pb-8 relative z-10">
             <div id="today-match-bar"></div>
             <div id="top3-strip" class="flex items-end gap-2 px-1 min-h-[140px]"></div>
             <div id="mvp-spotlight"></div>
@@ -276,39 +261,39 @@
             <div id="leaderboard" class="space-y-3"></div>
         </div>
 
-        <div id="view-livepoints" class="hidden space-y-4 pb-8">
+        <div id="view-livepoints" class="hidden space-y-4 pb-8 relative z-10">
             <div id="live-points-list"></div>
         </div>
 
-        <div id="view-schedule" class="hidden space-y-4 pb-8">
+        <div id="view-schedule" class="hidden space-y-4 pb-8 relative z-10">
             <div id="schedule-filters" class="flex flex-wrap gap-2 justify-center mb-2 px-1"></div>
             <div id="sched-stats" class="flex justify-center gap-4 mt-2 mb-4"></div>
             <div id="schedule-list" class="space-y-3"></div>
         </div>
 
-        <div id="view-standings" class="hidden space-y-4 pb-8"><div id="standings-list"></div></div>
-        <div id="view-hof" class="hidden space-y-4 pb-8"><div id="hof-list"></div></div>
-        <div id="view-gems" class="hidden space-y-4 pb-8"><div id="gems-list"></div></div>
-        <div id="view-weekly" class="hidden space-y-4 pb-8">
+        <div id="view-standings" class="hidden space-y-4 pb-8 relative z-10"><div id="standings-list"></div></div>
+        <div id="view-hof" class="hidden space-y-4 pb-8 relative z-10"><div id="hof-list"></div></div>
+        <div id="view-gems" class="hidden space-y-4 pb-8 relative z-10"><div id="gems-list"></div></div>
+        <div id="view-weekly" class="hidden space-y-4 pb-8 relative z-10">
             <div id="streak-tracker"></div>
             <div id="weekly-list" class="space-y-3 mt-4"></div>
         </div>
-        <div id="view-strategy" class="hidden space-y-4 pb-8"><div id="strategy-list" class="space-y-3"></div></div>
+        <div id="view-strategy" class="hidden space-y-4 pb-8 relative z-10"><div id="strategy-list" class="space-y-3"></div></div>
     </div>
 
     <!-- NAVIGATION DOCK -->
     <nav class="nav-dock">
-        <button onclick="switchTab('main')" id="nav-main" class="nav-item active active-scale">
+        <button onclick="switchTab('main')" id="nav-main" class="nav-item active active-scale flex-1">
             <span>📊</span><span>Ranks</span>
         </button>
-        <button onclick="switchTab('livepoints')" id="nav-livepoints" class="nav-item active-scale relative">
+        <button onclick="switchTab('livepoints')" id="nav-livepoints" class="nav-item active-scale relative flex-1">
             <span>🔴</span><span>Live</span>
             <span id="live-tab-dot" class="hidden absolute top-2 right-3 w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981] animate-pulse"></span>
         </button>
-        <button onclick="switchTab('schedule')" id="nav-schedule" class="nav-item active-scale">
+        <button onclick="switchTab('schedule')" id="nav-schedule" class="nav-item active-scale flex-1">
             <span>🗓️</span><span>Events</span>
         </button>
-        <button onclick="switchTab('standings')" id="nav-standings" class="nav-item active-scale">
+        <button onclick="switchTab('standings')" id="nav-standings" class="nav-item active-scale flex-1">
             <span>🏟️</span><span>Table</span>
         </button>
     </nav>
@@ -321,9 +306,6 @@
         const SHEET_ID = '1xIRCNr0tteFfMk6l7inIkKeSJMb7WLBswsXepHRqjio';
         const TOTAL_SEASON_MATCHES = 74;
         const SITE_URL = 'revolution-ipl-2026.vercel.app';
-        
-        // Gemini API Configuration
-        const apiKey = "";
 
         const ownerColors = {
             vedant:'#3498db',deep:'#e74c3c',shlok:'#2ecc71',rahul:'#9b59b6',
@@ -363,7 +345,7 @@
             if (navBtn) navBtn.classList.add('active');
 
             // Top Header Pills
-            document.querySelectorAll('header .glass-panel').forEach(el => {
+            document.querySelectorAll('#discovery-tabs .glass-panel').forEach(el => {
                 if(el.id && el.id.startsWith('btn-')) el.style.borderColor = 'var(--glass-border)';
             });
             const pillBtn = document.getElementById('btn-' + (t==='strategy'?'strat':t));
@@ -571,7 +553,7 @@
                         <div class="flex justify-between items-center mb-3">
                             <div class="flex items-center gap-3.5">
                                 <div class="relative">
-                                    <div class="w-10 h-10 rounded-full flex items-center justify-center font-cyber font-black text-xs border" 
+                                    <div class="w-10 h-10 rounded-full flex items-center justify-center font-cyber font-black text-xs border flex-shrink-0" 
                                          style="border-color: ${color}55; background: ${color}15; color: ${color}">
                                         ${isUnsold ? 'UN' : initials.toUpperCase()}
                                     </div>
@@ -585,7 +567,7 @@
                                     <p class="text-[9px] font-bold text-[var(--text4)] uppercase mt-0.5">${squad.length} Players</p>
                                 </div>
                             </div>
-                            <div class="flex flex-col items-end gap-1">
+                            <div class="flex flex-col items-end gap-1 flex-shrink-0">
                                 <p class="font-cyber text-xl font-black italic leading-none score-animated" data-score="${o.score}" style="color: ${color}">${o.score}</p>
                                 ${!isUnsold ? `<button class="share-btn" onclick="event.stopPropagation();shareCard('${cID}','${o.full}',${o.score},${i+1})">Share</button>` : '<p class="text-[8px] text-[var(--text4)]">PTS</p>'}
                             </div>
@@ -597,7 +579,6 @@
                     </div>
                     <div id="sq-${cID}" class="squad-container relative z-10">
                         <div class="pt-2">
-                            ${!isUnsold ? `<button onclick="generateAIAnalysis('${o.id}', '${o.full}', ${o.score}, ${i+1})" class="w-full mb-4 py-2.5 rounded-xl border border-purple-500/30 bg-gradient-to-r from-purple-500/10 to-pink-500/5 text-purple-300 font-cyber font-bold text-[9px] uppercase tracking-widest active-scale flex justify-center items-center gap-2 transition-all hover:from-purple-500/20 hover:to-pink-500/20 shadow-[0_0_15px_rgba(168,85,247,0.1)]">✨ AI Squad Roast & Analysis</button>` : ''}
                             ${playerRows}
                         </div>
                     </div>
@@ -1054,17 +1035,33 @@
                 const dt = new Date(+gm[1], +gm[2], +gm[3]); 
                 return { ts:dt, display: `${String(dt.getDate()).padStart(2,'0')} ${dt.toLocaleString('en',{month:'short'})}` }; 
             }
-            // Fallback for standard string dates like "28 Mar 2026" or "2026-03-28"
+            
+            // Fallback for standard string dates like "28 Mar 2026" or "30 Apr"
             const dt = new Date(s);
             if (!isNaN(dt.getTime())) {
                 return { ts: dt, display: `${String(dt.getDate()).padStart(2,'0')} ${dt.toLocaleString('en',{month:'short'})}` };
             }
+            
+            // Failsafe for strict DD/MM or DD-MM formats coming from raw sheet strings
+            const parts = s.split(/[-/]/);
+            if (parts.length >= 2) {
+                const d = parseInt(parts[0], 10);
+                const m = parseInt(parts[1], 10) - 1; // Month is 0-indexed in JS
+                const y = parts[2] ? parseInt(parts[2], 10) : new Date().getFullYear();
+                if (!isNaN(d) && !isNaN(m)) {
+                    const dt2 = new Date(y, m, d);
+                    if (!isNaN(dt2.getTime())) return { ts: dt2, display: `${String(dt2.getDate()).padStart(2,'0')} ${dt2.toLocaleString('en',{month:'short'})}` };
+                }
+            }
+
             return { ts:null, display: s.substring(0,6) };
         }
         
         function isToday(ts) {
-            if(!ts) return false; const now = new Date();
-            return ts.getDate()===now.getDate() && ts.getMonth()===now.getMonth() && ts.getFullYear()===now.getFullYear();
+            if(!ts) return false; 
+            const now = new Date();
+            // Exclusively check Date and Month to entirely avoid year parsing discrepancies
+            return ts.getDate() === now.getDate() && ts.getMonth() === now.getMonth();
         }
         
         function todaysTeams() {
@@ -1094,7 +1091,6 @@
                     <div class="flex items-center gap-2">
                         <span class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse shadow-[0_0_8px_#eab308]"></span>
                         <p class="font-cyber text-[9px] font-black uppercase tracking-widest text-yellow-500">Today</p>
-                        <button onclick="generateAIMatchPreview('${tm.t1}', '${tm.t2}')" class="ml-2 px-2 py-0.5 rounded-md border border-purple-500/40 bg-purple-500/10 text-[8px] font-cyber text-purple-300 flex items-center gap-1 active-scale hover:bg-purple-500/20 transition-all">✨ Predict</button>
                     </div>
                     <div class="flex gap-3 items-center">
                         <span class="font-cyber font-black text-sm" style="color:${TEAM_COLORS[tm.t1]||'#fff'}; text-shadow:0 0 10px ${TEAM_COLORS[tm.t1]}88">${tm.t1}</span>
@@ -1192,97 +1188,15 @@
         // --- EXTRAS ---
         function showSearchOverlay() {
             document.getElementById('search-overlay').classList.remove('hidden');
-            document.getElementById('search-container').style.position = 'relative';
-            document.getElementById('search-container').style.zIndex = '2001';
+            const header = document.getElementById('main-header');
+            if (header) header.style.zIndex = '2001';
         }
 
         function hideSearchOverlay() {
             document.getElementById('search-overlay').classList.add('hidden');
-            document.getElementById('search-dropdown').style.display='none';
-            document.getElementById('search-container').style.position = 'relative';
-        }
-
-        // --- GEMINI AI INTEGRATION ---
-        async function fetchWithRetry(url, options, retries = 5) {
-            const delays = [1000, 2000, 4000, 8000, 16000];
-            for (let i = 0; i < retries; i++) {
-                try {
-                    const response = await fetch(url, options);
-                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                    return await response.json();
-                } catch (err) {
-                    if (i === retries - 1) throw err;
-                    await new Promise(res => setTimeout(res, delays[i]));
-                }
-            }
-        }
-
-        function showAIModal(subtitle) {
-            const modal = document.getElementById('ai-modal');
-            document.getElementById('ai-modal-subtitle').textContent = subtitle;
-            document.getElementById('ai-modal-content').innerHTML = `
-                <div class="flex flex-col items-center gap-3">
-                    <div class="w-5 h-5 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
-                    <p class="text-[10px] text-purple-400 font-cyber uppercase tracking-widest animate-pulse">Consulting the Oracles...</p>
-                </div>`;
-            modal.classList.remove('hidden');
-        }
-
-        function closeAIModal() {
-            document.getElementById('ai-modal').classList.add('hidden');
-        }
-
-        async function generateAIAnalysis(ownerId, ownerFull, score, rank) {
-            showAIModal(`Analyzing ${ownerFull}'s Squad`);
-            try {
-                const squad = (_state.squads[fixID(ownerId)] || []).sort((a,b)=>b.act-a.act);
-                const playerList = squad.map(p => `${p.name} (${p.team}, ${p.role}, ${p.act} pts)`).join(', ');
-                
-                const prompt = `You are a witty, expert IPL Fantasy Cricket pundit. Review the fantasy squad of "${ownerFull}", currently ranked #${rank} out of 15 with ${score} total points.
-                Their squad: ${playerList}.
-                Write a short, engaging, and sarcastic 3-sentence analysis of their team. Highlight their best performing player, roast them slightly if they have duds (players with 0 points) or poor team balance, and give a quick one-sentence tip. Do NOT use markdown (* or #), use only plain text. Break sentences with <br><br> tags for readability.`;
-
-                const payload = {
-                    contents: [{ parts: [{ text: prompt }] }],
-                    systemInstruction: { parts: [{ text: "You are a sarcastic but insightful IPL fantasy cricket commentator. Be entertaining." }] }
-                };
-
-                const data = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "AI couldn't analyze the squad right now. Try again later!";
-                document.getElementById('ai-modal-content').innerHTML = `<p class="italic text-[var(--text2)]">${text}</p>`;
-            } catch(e) {
-                console.error("AI Error:", e);
-                document.getElementById('ai-modal-content').innerHTML = `<p class="text-red-400 text-center">Oops! The AI is currently watching the match and couldn't be reached. Ensure API access is available.</p>`;
-            }
-        }
-
-        async function generateAIMatchPreview(t1, t2) {
-            showAIModal(`Match Preview: ${t1} vs ${t2}`);
-            try {
-                const prompt = `Write a very short, exciting 2-sentence hype prediction for today's IPL cricket match between ${t1} and ${t2}. Mention a key general battle to watch out for. Do NOT use markdown (* or #), use only plain text.`;
-
-                const payload = {
-                    contents: [{ parts: [{ text: prompt }] }],
-                    systemInstruction: { parts: [{ text: "You are a highly energetic cricket commentator." }] }
-                };
-
-                const data = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Hype machine is currently offline.";
-                document.getElementById('ai-modal-content').innerHTML = `<p class="italic text-[var(--text2)] font-semibold text-center">${text}</p>`;
-            } catch(e) {
-                console.error("AI Error:", e);
-                document.getElementById('ai-modal-content').innerHTML = `<p class="text-red-400 text-center">Prediction failed to load. Check API connectivity.</p>`;
-            }
+            document.getElementById('search-dropdown').style.display = 'none';
+            const header = document.getElementById('main-header');
+            if (header) header.style.zIndex = '';
         }
 
         function onSearchInput(q) {
