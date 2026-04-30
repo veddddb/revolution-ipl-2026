@@ -323,6 +323,26 @@
         };
         const TEAM_COLORS = { RCB:'#C8102E', MI:'#004BA0', CSK:'#F4C430', KKR:'#3A225D', SRH:'#F26522', RR:'#EA1A85', PBKS:'#ED1C24', GT:'#1D4E89', LSG:'#A4D65E', DC:'#00529A', TBD:'#64748b' };
 
+        // Translates full names from Schedule to matching acronyms in Roster
+        function getShortTeam(name) {
+            if (!name) return '';
+            const n = name.toString().toUpperCase().trim();
+            if (n.includes('MUMBAI')) return 'MI';
+            if (n.includes('CHENNAI')) return 'CSK';
+            if (n.includes('ROYAL CHALLENGERS')) return 'RCB';
+            if (n.includes('KOLKATA')) return 'KKR';
+            if (n.includes('SUNRISERS')) return 'SRH';
+            if (n.includes('DELHI')) return 'DC';
+            if (n.includes('PUNJAB')) return 'PBKS';
+            if (n.includes('RAJASTHAN')) return 'RR';
+            if (n.includes('GUJARAT')) return 'GT';
+            if (n.includes('LUCKNOW')) return 'LSG';
+            if (TEAM_COLORS[n]) return n;
+            
+            const acr = n.split(/[\s_]+/).map(w=>w[0]).join('');
+            return acr === 'PK' ? 'PBKS' : acr;
+        }
+
         const fixID = s => s ? s.toString().toLowerCase().trim() : '';
         function getColor(raw) {
             const n = fixID(raw);
@@ -531,7 +551,8 @@
 
                 const playerRows = squad.length === 0 ? `<p class="text-center text-[10px] text-[var(--text4)] py-4 font-bold uppercase">No players</p>`
                     : squad.sort((a,b)=>b.act-a.act).map((p,idx) => {
-                        const isPlaying = _todayTeams.has((p.team||'').toString().trim().toUpperCase());
+                        const pt = (p.team||'').toString().trim().toUpperCase();
+                        const isPlaying = _todayTeams.has(pt) || Array.from(_todayTeams).some(t => t.includes(pt) || pt.includes(t));
                         return `
                         <div class="flex justify-between items-center py-1.5 border-b border-[var(--glass-border)] last:border-0 ${p.act===0?'player-row-ghost':''}">
                             <div class="flex items-center flex-wrap gap-1">
@@ -1030,28 +1051,32 @@
             if (!raw) return { ts:null, display:'TBD' };
             const s = raw.toString().trim();
             // Try to match Google Sheet exact format: Date(YYYY,MM,DD)
-            const gm = s.match(/Date\((\d+),(\d+),(\d+)\)/);
+            const gm = s.match(/Date\((\d+),(\d+),(\d+)\)/i);
             if(gm) { 
                 const dt = new Date(+gm[1], +gm[2], +gm[3]); 
                 return { ts:dt, display: `${String(dt.getDate()).padStart(2,'0')} ${dt.toLocaleString('en',{month:'short'})}` }; 
             }
             
-            // Fallback for standard string dates like "28 Mar 2026" or "30 Apr"
-            const dt = new Date(s);
-            if (!isNaN(dt.getTime())) {
-                return { ts: dt, display: `${String(dt.getDate()).padStart(2,'0')} ${dt.toLocaleString('en',{month:'short'})}` };
-            }
-            
             // Failsafe for strict DD/MM or DD-MM formats coming from raw sheet strings
-            const parts = s.split(/[-/]/);
+            const parts = s.split(/[-/ \.]/);
             if (parts.length >= 2) {
                 const d = parseInt(parts[0], 10);
-                const m = parseInt(parts[1], 10) - 1; // Month is 0-indexed in JS
+                let m = parseInt(parts[1], 10) - 1; // Month is 0-indexed in JS
+                if (isNaN(m)) {
+                    const mNames = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+                    m = mNames.findIndex(mn => parts[1].toLowerCase().includes(mn));
+                }
                 const y = parts[2] ? parseInt(parts[2], 10) : new Date().getFullYear();
-                if (!isNaN(d) && !isNaN(m)) {
+                if (!isNaN(d) && !isNaN(m) && m >= 0) {
                     const dt2 = new Date(y, m, d);
                     if (!isNaN(dt2.getTime())) return { ts: dt2, display: `${String(dt2.getDate()).padStart(2,'0')} ${dt2.toLocaleString('en',{month:'short'})}` };
                 }
+            }
+
+            // Fallback for standard string dates like "28 Mar 2026"
+            const dt = new Date(s);
+            if (!isNaN(dt.getTime())) {
+                return { ts: dt, display: `${String(dt.getDate()).padStart(2,'0')} ${dt.toLocaleString('en',{month:'short'})}` };
             }
 
             return { ts:null, display: s.substring(0,6) };
@@ -1065,13 +1090,36 @@
         }
         
         function todaysTeams() {
-            const rows = _state.schedRows || []; const playing = new Set();
+            const rows = _state.schedRows || []; 
+            const playing = new Set();
             const source = rows.length ? rows : SCHEDULE;
+            
+            const now = new Date();
+            const dStr = String(now.getDate());
+            const dPad = dStr.padStart(2, '0');
+            const mNames = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+            const mStr = mNames[now.getMonth()];
+            const mNum = String(now.getMonth() + 1).padStart(2, '0');
+
             source.forEach(r => {
-                const d = parseDate(r.date || r[1]);
-                if(d.ts && isToday(d.ts)) {
-                    playing.add((r.t1 || r[3] || '').toString().trim().toUpperCase());
-                    playing.add((r.t2 || r[4] || '').toString().trim().toUpperCase());
+                const rawDate = (r.date || r[1] || '').toString().toLowerCase();
+                const t1 = getShortTeam(r.t1 || r[3]);
+                const t2 = getShortTeam(r.t2 || r[4]);
+                
+                const d = parseDate(rawDate);
+                let isMatchToday = false;
+
+                if (d.ts && isToday(d.ts)) {
+                    isMatchToday = true;
+                } else if ((rawDate.includes(dStr) || rawDate.includes(dPad)) && 
+                           (rawDate.includes(mStr) || rawDate.includes(mNum))) {
+                    // Aggressive text matching fallback for absolute certainty
+                    isMatchToday = true;
+                }
+
+                if (isMatchToday) {
+                    if (t1) playing.add(t1);
+                    if (t2) playing.add(t2);
                 }
             });
             return playing;
@@ -1082,7 +1130,7 @@
             let todayMatches = [];
             (schedRows.length ? schedRows : SCHEDULE).forEach(r => {
                 const d = parseDate(r.date || r[1]);
-                if (d.ts && isToday(d.ts)) todayMatches.push({ t1: (r.t1 || r[3]).toUpperCase(), t2: (r.t2 || r[4]).toUpperCase() });
+                if (d.ts && isToday(d.ts)) todayMatches.push({ t1: getShortTeam(r.t1 || r[3]), t2: getShortTeam(r.t2 || r[4]) });
             });
             if(!todayMatches.length) { el.innerHTML=''; return; }
 
@@ -1127,18 +1175,20 @@
                 const isDone = !!m[6];
                 const d = parseDate(m[1]);
                 const isTodayMatch = isToday(d.ts);
+                const t1 = getShortTeam(m[3]);
+                const t2 = getShortTeam(m[4]);
                 return `
                 <div class="glass-panel p-4 flex items-center justify-between sched-row stagger-item active-scale ${isTodayMatch ? 'today-glow' : ''}" 
-                     data-t1="${(m[3]||'').toString().trim().toUpperCase()}" data-t2="${(m[4]||'').toString().trim().toUpperCase()}" data-done="${isDone}" style="animation-delay: ${(i%10)*0.05}s">
+                     data-t1="${t1}" data-t2="${t2}" data-done="${isDone}" style="animation-delay: ${(i%10)*0.05}s">
                     <div class="text-center min-w-[40px] pr-3 border-r border-[var(--glass-border)]">
                         <p class="font-cyber text-[9px] font-black text-[var(--text4)]">M${m[0]}</p>
                         <p class="text-[10px] font-bold text-[var(--text2)] mt-0.5 whitespace-nowrap">${d.display}</p>
                     </div>
                     <div class="flex-1 px-4 flex flex-col items-center">
                         <div class="flex items-center gap-3 w-full justify-center">
-                            <span class="font-cyber font-black text-xs flex-1 text-right" style="color:${TEAM_COLORS[m[3]]||'#fff'}">${m[3]}</span>
+                            <span class="font-cyber font-black text-xs flex-1 text-right" style="color:${TEAM_COLORS[t1]||'#fff'}">${t1}</span>
                             <span class="text-[8px] font-black text-[var(--text4)]">VS</span>
-                            <span class="font-cyber font-black text-xs flex-1 text-left" style="color:${TEAM_COLORS[m[4]]||'#fff'}">${m[4]}</span>
+                            <span class="font-cyber font-black text-xs flex-1 text-left" style="color:${TEAM_COLORS[t2]||'#fff'}">${t2}</span>
                         </div>
                     </div>
                     <div class="min-w-[50px] text-center flex flex-col justify-center">
@@ -1168,18 +1218,20 @@
                             <tr><th class="p-3 text-center">#</th><th class="p-3">Team</th><th class="p-3 text-center">P</th><th class="p-3 text-center">W</th><th class="p-3 text-right">Pts</th><th class="p-3 text-right">NRR</th></tr>
                         </thead>
                         <tbody>
-                            ${data.map(t => `
+                            ${data.map(t => {
+                                const stName = getShortTeam(t[2]);
+                                return `
                                 <tr class="border-t border-[var(--glass-border)] ${t[0]<=4?'bg-emerald-500/5':''}">
                                     <td class="p-3 text-center font-cyber font-bold ${t[0]<=4?'text-emerald-500':'text-[var(--text4)]'}">${t[0]}</td>
                                     <td class="p-3 font-bold text-[var(--text1)] flex items-center gap-2">
-                                        <span class="w-2 h-2 rounded-full" style="background:${TEAM_COLORS[t[2]]||'#fff'}"></span>${t[2]}
+                                        <span class="w-2 h-2 rounded-full flex-shrink-0" style="background:${TEAM_COLORS[stName]||'#fff'}"></span><span class="truncate">${t[2]}</span>
                                     </td>
                                     <td class="p-3 text-center text-[var(--text3)]">${t[3]}</td>
                                     <td class="p-3 text-center font-bold text-emerald-400">${t[4]}</td>
                                     <td class="p-3 text-right font-cyber font-black text-[var(--text1)]">${t[7]}</td>
                                     <td class="p-3 text-right font-bold ${parseFloat(t[8])>=0?'text-emerald-400':'text-red-400'}">${t[8] || '0.000'}</td>
-                                </tr>
-                            `).join('')}
+                                </tr>`;
+                            }).join('')}
                         </tbody>
                     </table>
                 </div>`;
