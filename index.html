@@ -242,6 +242,7 @@
             <button onclick="switchTab('gems')" id="btn-gems" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">💎 Unsold Gems</button>
             <button onclick="switchTab('weekly')" id="btn-weekly" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">📊 Weekly Recap</button>
             <button onclick="switchTab('strategy')" id="btn-strat" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">🎯 Luckiest</button>
+            <button onclick="switchTab('h2h')" id="btn-h2h" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">⚔️ Head-to-Head</button>
         </div>
 
         <div id="error-banner" class="error-banner hidden relative z-10">
@@ -280,6 +281,18 @@
             <div id="weekly-list" class="space-y-3 mt-4"></div>
         </div>
         <div id="view-strategy" class="hidden space-y-4 pb-8 relative z-10"><div id="strategy-list" class="space-y-3"></div></div>
+        
+        <div id="view-h2h" class="hidden space-y-4 pb-8 relative z-10">
+            <div class="glass-panel p-4 mb-3">
+                <p class="font-cyber text-[8px] font-black tracking-widest text-[var(--text4)] uppercase mb-3 text-center">Tactical Matchup</p>
+                <div class="flex items-center gap-2">
+                    <select id="h2h-p1" onchange="updateH2H()" class="flex-1 bg-[var(--bg-void)] border border-[var(--glass-border)] rounded-lg p-2 text-[10px] sm:text-xs font-bold text-[var(--text1)] outline-none appearance-none text-center"></select>
+                    <span class="font-cyber text-[10px] font-black text-[var(--text4)]">VS</span>
+                    <select id="h2h-p2" onchange="updateH2H()" class="flex-1 bg-[var(--bg-void)] border border-[var(--glass-border)] rounded-lg p-2 text-[10px] sm:text-xs font-bold text-[var(--text1)] outline-none appearance-none text-center"></select>
+                </div>
+            </div>
+            <div id="h2h-content"></div>
+        </div>
     </div>
 
     <!-- NAVIGATION DOCK -->
@@ -362,7 +375,7 @@
         function switchTab(t) {
             // Main Dock
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            const navBtn = document.getElementById('nav-' + (['hof','gems','weekly','strategy'].includes(t) ? 'main' : t));
+            const navBtn = document.getElementById('nav-' + (['hof','gems','weekly','strategy','h2h'].includes(t) ? 'main' : t));
             if (navBtn) navBtn.classList.add('active');
 
             // Top Header Pills
@@ -372,7 +385,7 @@
             const pillBtn = document.getElementById('btn-' + (t==='strategy'?'strat':t));
             if(pillBtn) pillBtn.style.borderColor = 'var(--accent)';
 
-            const views = {main:'view-main', livepoints:'view-livepoints', schedule:'view-schedule', standings:'view-standings', hof:'view-hof', gems:'view-gems', weekly:'view-weekly', strategy:'view-strategy'};
+            const views = {main:'view-main', livepoints:'view-livepoints', schedule:'view-schedule', standings:'view-standings', hof:'view-hof', gems:'view-gems', weekly:'view-weekly', strategy:'view-strategy', h2h:'view-h2h'};
             
             Object.keys(views).forEach(k => {
                 const el = document.getElementById(views[k]);
@@ -469,6 +482,7 @@
                 renderLastMatchCollapsible(active, pcRows, completedMatches);
                 renderStreakTracker(active, cumulScores, completedMatches);
                 renderStrategy(active, squads);
+                renderH2HDropdowns(active);
                 
                 if(schedRows&&schedRows.length){ window._schedRows=schedRows; renderSchedule(schedRows); renderScheduleFilters(); }
                 renderTodayBar(schedRows||[]);
@@ -764,196 +778,94 @@
                 }).join('')}`;
         }
 
-        function renderStrategy(owners, squads) {
-            const el = document.getElementById('strategy-list');
-            if(!el) return;
-            const data = owners.map(o => {
-                const s = squads[o.id]||[], sorted = [...s].sort((a,b)=>b.raw-a.raw);
-                const pot = Math.round((sorted[0]?.raw||0)*2 + (sorted[1]?.raw||0)*1.5 + sorted.slice(2).reduce((sum,p)=>sum+p.raw,0));
-                return {...o, pot, diff:pot-o.score, ideal:[sorted[0]?.name||'—', sorted[1]?.name||'—']};
-            }).sort((a,b)=>b.pot-a.pot);
-
-            el.innerHTML = `
-                <div class="glass-panel p-4 mb-3">
-                    <p class="font-cyber text-[8px] font-black tracking-widest text-[var(--text4)] uppercase mb-1">Luckiest vs Unluckiest</p>
-                    <p class="text-[11px] font-bold text-[var(--text2)]">Potential Rank based on Ideal C/VC</p>
-                </div>
-                ${data.map((d,i) => {
-                    const color=getColor(d.id), curRank=owners.findIndex(o=>o.id===d.id)+1;
-                    const icon = curRank>i+1?'🟢 ↑':curRank<i+1?'🔴 ↓':'⚪';
-                    return `
-                    <div class="glass-panel p-4 mb-2 stagger-item" style="border-left: 3px solid ${color}">
-                        <div class="flex justify-between items-center mb-3">
-                            <div>
-                                <span class="font-cyber text-[9px] text-[var(--text4)]">${icon} POTENTIAL #${i+1}</span>
-                                <h3 class="font-black uppercase text-sm mt-0.5 text-[var(--text1)]">${d.full}</h3>
-                            </div>
-                            <div class="text-right">
-                                <span class="font-cyber text-lg font-black text-[var(--text1)]">${d.pot}</span>
-                                <p class="text-[7px] font-bold text-[var(--text4)] uppercase">Max Potential</p>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-3 border-t border-[var(--glass-border)] pt-3 text-[9px] font-bold">
-                            <div><p class="text-[var(--text4)] uppercase mb-0.5">Ideal C/VC</p><p class="text-yellow-500 uppercase">${d.ideal[0]} / ${d.ideal[1]}</p></div>
-                            <div class="text-right"><p class="text-[var(--text4)] uppercase mb-0.5">Points Missed</p><p class="text-red-400">-${d.diff} PTS</p></div>
-                        </div>
-                    </div>`;
-                }).join('')}`;
-        }
-
-        function renderHallOfFame(active, pcRows, completedMatches) {
-            const el = document.getElementById('hof-list');
-            if (!el) return;
-            const nameToId = {}; active.forEach(o => { nameToId[fixID(o.full)]=o.id; nameToId[fixID(o.first)]=o.id; nameToId[o.id]=o.id; });
-            const bestMatch = {}, matchRanks = {};
-            let bestPlayer = { name:'—', pts:0, owner:'—', match:'—' };
-
-            completedMatches.forEach(matchName => {
-                const matchTotals = {}; active.forEach(o => matchTotals[o.id]=0);
-                pcRows.filter(r => r[0]&&r[0].toString().trim()===matchName).forEach(r => {
-                    const raw=fixID(r[2]), id=nameToId[raw]||active.find(o=>raw.includes(o.id))?.id;
-                    if (!id) return;
-                    const pts=parseFloat(r[6])||0;
-                    matchTotals[id]=(matchTotals[id]||0)+pts;
-                    if (pts>bestPlayer.pts) bestPlayer={name:r[1],pts:Math.round(pts),owner:r[2],match:matchName};
-                });
-                active.forEach(o => { const pts=Math.round(matchTotals[o.id]||0); if(!bestMatch[o.id]||pts>bestMatch[o.id].pts) bestMatch[o.id]={pts,matchName}; });
-                matchRanks[matchName]=Object.entries(matchTotals).sort((a,b)=>b[1]-a[1]).map(([id])=>id);
-            });
-
-            const allBest=Object.entries(bestMatch).sort((a,b)=>b[1].pts-a[1].pts);
-            const topOwner=allBest[0]?active.find(o=>o.id===allBest[0][0]):null;
-            const dayWins={}; active.forEach(o=>dayWins[o.id]=0);
-            completedMatches.forEach(m=>{const r=matchRanks[m];if(r&&r[0]) dayWins[r[0]]++;});
-            const topDayWinner=Object.entries(dayWins).sort((a,b)=>b[1]-a[1])[0];
-            const dayWinOwner=topDayWinner?active.find(o=>o.id===topDayWinner[0]):null;
-
-            const cards=[
-                topOwner?{icon:'🔥',label:'Highest Match Score',name:topOwner.full,value:allBest[0][1].pts+' pts',sub:allBest[0][1].matchName,color:getColor(topOwner.id)}:null,
-                bestPlayer.pts>0?{icon:'⭐',label:'Best Player Score',name:bestPlayer.name,value:bestPlayer.pts+' pts',sub:`${bestPlayer.match} · Owned by ${bestPlayer.owner}`,color:getColor(bestPlayer.owner)}:null,
-                dayWinOwner?{icon:'🏅',label:'Most Match Wins',name:dayWinOwner.full,value:topDayWinner[1]+' days',sub:`out of ${completedMatches.length} match days`,color:getColor(dayWinOwner.id)}:null,
-                active[0]?{icon:'👑',label:'Current Leader',name:active[0].full,value:active[0].score+' pts',sub:'total this season',color:getColor(active[0].id)}:null,
-            ].filter(Boolean);
-
-            el.innerHTML = `
-                <div class="glass-panel p-4 mb-3">
-                    <p class="font-cyber text-[8px] font-black tracking-widest text-[var(--text4)] uppercase mb-1">Season Records</p>
-                    <p class="text-[11px] font-bold text-[var(--text2)]">Hall of Fame</p>
-                </div>
-                ${cards.map(c=>`
-                    <div class="glass-panel p-4 mb-2 stagger-item" style="border-left: 3px solid ${c.color}">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <p class="font-cyber text-[8px] font-black uppercase text-[var(--text4)] tracking-widest mb-1">${c.icon} ${c.label}</p>
-                                <p class="text-sm font-black uppercase" style="color:${c.color}">${c.name}</p>
-                                <p class="text-[8px] font-bold text-[var(--text4)] mt-1">${c.sub}</p>
-                            </div>
-                            <div class="text-right">
-                                <p class="font-cyber text-lg font-black" style="color:${c.color}">${c.value.split(' ')[0]}</p>
-                                <p class="text-[7px] font-black text-[var(--text4)] uppercase">PTS</p>
-                            </div>
-                        </div>
-                    </div>
-                `).join('')}`;
-        }
-
-        function renderGems(rosRows, pPoints) {
-            const el = document.getElementById('gems-list');
-            if (!el) return;
-            const gems = [];
-            rosRows.forEach(row => {
-                const name=(row[0]||'').toString().trim(), owner=fixID(row[1]||'');
-                const team=(row[4]||'').toString().trim(), role=(row[6]||'').toString().trim();
-                if (!name || (owner!=='unsold'&&owner!==''&&!owner.includes('unsold'))) return;
-                const stats=pPoints[fixID(name)]||{act:0};
-                if (stats.act>0) gems.push({name,team,role,pts:Math.round(stats.act)});
-            });
-            gems.sort((a,b)=>b.pts-a.pts);
-            const totalMissed=gems.reduce((s,g)=>s+g.pts,0);
-
-            el.innerHTML = `
-                <div class="glass-panel p-4 mb-3 flex justify-between items-center">
-                    <div>
-                        <p class="font-cyber text-[8px] font-black tracking-widest text-[var(--text4)] uppercase mb-1">💎 Unsold</p>
-                        <p class="text-[11px] font-bold text-[#48dbfb]">Hidden Gems</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="font-cyber text-lg font-black text-red-400">${totalMissed}</p>
-                        <p class="text-[7px] font-black text-[var(--text4)] uppercase">Pts Missed</p>
-                    </div>
-                </div>
-                ${gems.length===0 ? `<div class="p-8 text-center text-[10px] text-[var(--text4)] font-cyber uppercase">No gems found</div>`
-                : gems.map((g,i)=>{
-                    const tc=TEAM_COLORS[g.team.toUpperCase()]||'#475569';
-                    return `
-                    <div class="glass-panel p-3 mb-2 flex justify-between items-center stagger-item" style="${i<3?'border-left: 3px solid #48dbfb':''}">
-                        <div class="flex items-center gap-3">
-                            <span class="text-[9px] font-black w-4 text-center ${i<3?'text-[#48dbfb]':'text-[var(--text4)]'}">${i+1}</span>
-                            <div>
-                                <p class="text-[11px] font-bold text-[var(--text1)]">${g.name}</p>
-                                <p class="text-[8px] font-bold text-[var(--text4)] mt-0.5"><span style="color:${tc}">${g.team}</span> · ${g.role}</p>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <p class="font-cyber text-sm font-black ${i<3?'text-[#48dbfb]':'text-[var(--text3)]'}">${g.pts}</p>
-                        </div>
-                    </div>`;
-                }).join('')}`;
-        }
-
-        function renderStreakTracker(owners, cumulScores, completedMatches) {
-            const el = document.getElementById('streak-tracker');
-            if (!el || completedMatches.length === 0) return;
-            const leadCount = {}; owners.forEach(o => leadCount[o.id] = 0);
+        // --- H2H COMPARISON RENDERER ---
+        
+        function renderH2HDropdowns(active) {
+            const p1 = document.getElementById('h2h-p1');
+            const p2 = document.getElementById('h2h-p2');
+            if(!p1 || !p2 || active.length < 2) return;
             
-            for (let m = 0; m < completedMatches.length; m++) {
-                let best=-1, bestId=null;
-                owners.forEach(o => { const s=(cumulScores[o.id]||[])[m]||0; if(s>best){best=s;bestId=o.id;} });
-                if (bestId) leadCount[bestId]++;
+            if(p1.options.length === 0) {
+                const opts = active.map((o, i) => `<option value="${o.id}">#${i+1} ${o.first}</option>`).join('');
+                p1.innerHTML = opts;
+                p2.innerHTML = opts;
+                p1.selectedIndex = 0;
+                p2.selectedIndex = 1;
             }
+            updateH2H();
+        }
 
-            const leader = [...owners].sort((a,b) => b.score-a.score)[0];
-            let streak = 0;
-            if (leader) {
-                for (let m = completedMatches.length-1; m >= 0; m--) {
-                    let best=-1, bestId=null;
-                    owners.forEach(o => { const s=(cumulScores[o.id]||[])[m]||0; if(s>best){best=s;bestId=o.id;} });
-                    if (bestId === leader.id) streak++; else break;
-                }
-            }
+        function updateH2H() {
+            const id1 = document.getElementById('h2h-p1').value;
+            const id2 = document.getElementById('h2h-p2').value;
+            const el = document.getElementById('h2h-content');
             
-            const sorted = [...owners].sort((a,b) => (leadCount[b.id]||0)-(leadCount[a.id]||0));
-            const lc = leader ? getColor(leader.id) : '#f1c40f';
+            const o1 = _state.active.find(o => o.id === id1);
+            const o2 = _state.active.find(o => o.id === id2);
+            if(!o1 || !o2) return;
+
+            const s1 = (_state.squads[id1] || []).sort((a,b)=>b.act-a.act);
+            const s2 = (_state.squads[id2] || []).sort((a,b)=>b.act-a.act);
+            
+            const c1 = getColor(id1);
+            const c2 = getColor(id2);
+
+            const diff = o1.score - o2.score;
+            let leadText = diff === 0 ? "TIED" : (diff > 0 ? `${o1.first} +${diff}` : `${o2.first} +${Math.abs(diff)}`);
+            let leadColor = diff === 0 ? 'var(--text4)' : (diff > 0 ? c1 : c2);
 
             el.innerHTML = `
-                <div class="glass-panel p-5">
-                    <p class="font-cyber text-[8px] font-black tracking-widest text-[var(--text4)] uppercase mb-4">Streak Tracker</p>
-                    ${leader && streak > 0 ? `
-                    <div class="flex justify-between items-center mb-4 pb-4 border-b border-[var(--glass-border)]">
-                        <div>
-                            <p class="text-[9px] font-bold text-[var(--text4)] uppercase tracking-widest mb-1">Leader Streak</p>
-                            <p class="font-cyber text-sm font-black uppercase" style="color:${lc}">${leader.first}</p>
+                <div class="glass-panel p-4 flex justify-between items-center stagger-item">
+                    <div class="text-center w-[30%]">
+                        <p class="font-cyber text-2xl font-black" style="color:${c1}">${o1.score}</p>
+                        <p class="text-[8px] font-bold text-[var(--text4)] uppercase mt-1">Rank #${_state.active.findIndex(o=>o.id===id1)+1}</p>
+                    </div>
+                    <div class="text-center flex-1">
+                        <p class="text-[7px] font-black text-yellow-500 uppercase tracking-widest mb-1 opacity-80">Gap</p>
+                        <p class="font-cyber text-[11px] font-black uppercase" style="color:${leadColor}">${leadText}</p>
+                    </div>
+                    <div class="text-center w-[30%]">
+                        <p class="font-cyber text-2xl font-black" style="color:${c2}">${o2.score}</p>
+                        <p class="text-[8px] font-bold text-[var(--text4)] uppercase mt-1">Rank #${_state.active.findIndex(o=>o.id===id2)+1}</p>
+                    </div>
+                </div>
+                
+                <div class="mt-4 flex gap-2 stagger-item" style="animation-delay: 0.1s">
+                    <div class="flex-1 glass-panel p-2">
+                        <div class="text-center mb-2 pb-2 border-b border-[var(--glass-border)]">
+                            <span class="text-[9px] font-black uppercase truncate block px-1" style="color:${c1}">${o1.first}'s Squad</span>
                         </div>
-                        <div class="text-right">
-                            <p class="font-cyber text-2xl font-black leading-none" style="color:${lc}">${streak}</p>
-                            <p class="text-[7px] font-bold text-[var(--text4)] uppercase mt-1">Match Days</p>
-                        </div>
-                    </div>` : ''}
-                    <div class="space-y-2.5">
-                        ${sorted.slice(0,5).map((o,i) => {
-                            const c=getColor(o.id), cnt=leadCount[o.id]||0, pct=Math.round((cnt/completedMatches.length)*100);
-                            return `
-                            <div class="flex items-center gap-2">
-                                <span class="text-[8px] font-black w-3 text-center text-[var(--text4)]">${i+1}</span>
-                                <span class="text-[9px] font-bold uppercase w-14 truncate text-[var(--text2)]">${o.first}</span>
-                                <div class="flex-1 h-1 bg-[var(--glass-border)] rounded-full overflow-hidden">
-                                    <div class="h-full rounded-full" style="width:${pct}%; background:${c}"></div>
+                        <div class="space-y-1.5">
+                            ${s1.length === 0 ? `<p class="text-center text-[9px] text-[var(--text4)] py-4">Empty</p>` : ''}
+                            ${s1.map(p => `
+                                <div class="flex justify-between items-center p-1.5 rounded bg-white/5">
+                                    <div class="truncate mr-2 flex-1">
+                                        <p class="text-[9px] font-bold text-[var(--text1)] truncate">${p.name} ${p.cvc ? `<span style="color:${c1}">[${p.cvc}]</span>`:''}</p>
+                                    </div>
+                                    <span class="font-cyber text-[10px] font-black" style="color:${p.act>0?c1:'var(--text4)'}">${p.act}</span>
                                 </div>
-                                <span class="font-cyber text-[9px] font-black w-6 text-right" style="color:${c}">${cnt}d</span>
-                            </div>`;
-                        }).join('')}
+                            `).join('')}
+                        </div>
                     </div>
-                </div>`;
+                    
+                    <div class="flex-1 glass-panel p-2">
+                        <div class="text-center mb-2 pb-2 border-b border-[var(--glass-border)]">
+                            <span class="text-[9px] font-black uppercase truncate block px-1" style="color:${c2}">${o2.first}'s Squad</span>
+                        </div>
+                        <div class="space-y-1.5">
+                            ${s2.length === 0 ? `<p class="text-center text-[9px] text-[var(--text4)] py-4">Empty</p>` : ''}
+                            ${s2.map(p => `
+                                <div class="flex justify-between items-center p-1.5 rounded bg-white/5">
+                                    <div class="truncate mr-2 flex-1">
+                                        <p class="text-[9px] font-bold text-[var(--text1)] truncate">${p.name} ${p.cvc ? `<span style="color:${c2}">[${p.cvc}]</span>`:''}</p>
+                                    </div>
+                                    <span class="font-cyber text-[10px] font-black" style="color:${p.act>0?c2:'var(--text4)'}">${p.act}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         // --- LIVE, SCHEDULE & LIVEPOINTS VIEWS ---
