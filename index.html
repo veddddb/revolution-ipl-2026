@@ -138,6 +138,7 @@
 
         /* Typography & Effects */
         .font-cyber { font-family: var(--font-cyber); }
+        .font-main { font-family: var(--font-main); }
         .gold-glow {
             background: linear-gradient(90deg, #f1c40f, #fff7ad, #f1c40f);
             background-size: 200% auto;
@@ -206,7 +207,7 @@
     <!-- SPLASH SCREEN -->
     <div id="splash" onclick="dismissSplash()">
         <p class="text-[10px] font-cyber tracking-[0.5em] text-[var(--text4)] uppercase mb-8">IPL Fantasy League</p>
-        <h1 class="text-7xl font-main font-black italic gold-glow tracking-tighter">REVO</h1>
+        <h1 class="text-7xl font-main font-black italic gold-glow tracking-tighter" style="font-family: var(--font-main);">REVO</h1>
         <div class="w-16 h-[1px] bg-yellow-500/30 my-8"></div>
         <p class="text-[9px] font-cyber tracking-[0.3em] text-[var(--text3)] animate-pulse uppercase cursor-pointer">Loading Data...</p>
         <p class="text-[8px] font-bold text-[var(--text4)] uppercase tracking-widest absolute bottom-8">Designed by Vedant Bhansali</p>
@@ -1345,7 +1346,7 @@
                 <div class="glass-panel overflow-hidden stagger-item" style="animation-delay: 0.1s">
                     <table class="w-full text-left text-[10px]">
                         <thead class="bg-white/5 font-cyber text-[var(--text4)] uppercase">
-                            <tr><th class="p-3 text-center">#</th><th class="p-3">Team</th><th class="p-3 text-center">P</th><th class="p-3 text-center">W</th><th class="p-3 text-right">Pts</th><th class="p-3 text-right">NRR</th></tr>
+                            <tr><th class="p-3 text-center">#</th><th class="p-3">Team</th><th class="p-3 text-center">P</th><th class="p-3 text-center">W</th><th class="p-3 text-center">L</th><th class="p-3 text-right">Pts</th><th class="p-3 text-right">NRR</th></tr>
                         </thead>
                         <tbody>
                             ${data.map(t => {
@@ -1358,6 +1359,7 @@
                                     </td>
                                     <td class="p-3 text-center text-[var(--text3)]">${t[3]}</td>
                                     <td class="p-3 text-center font-bold text-emerald-400">${t[4]}</td>
+                                    <td class="p-3 text-center font-bold text-red-400">${t[5] || '0'}</td>
                                     <td class="p-3 text-right font-cyber font-black text-[var(--text1)]">${t[7]}</td>
                                     <td class="p-3 text-right font-bold ${parseFloat(t[8])>=0?'text-emerald-400':'text-red-400'}">${t[8] || '0.000'}</td>
                                 </tr>`;
