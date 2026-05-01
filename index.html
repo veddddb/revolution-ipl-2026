@@ -182,14 +182,32 @@
         @keyframes livePulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
         .live-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #4ade80; margin-left: 6px; flex-shrink: 0; animation: livePulse 1.2s ease-in-out infinite; box-shadow: 0 0 7px #4ade80; }
 
-        /* Splash */
+        /* Splash Screen Redesign */
         #splash {
             position: fixed; inset: 0; z-index: 9999;
-            background: var(--bg-void);
+            background: #020617; /* Solid dark void */
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: opacity 0.8s ease, transform 0.8s ease;
         }
         #splash.hide { opacity: 0; transform: scale(1.05); pointer-events: none; }
+        
+        .loader-ring {
+            width: 70px; height: 70px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            border-top-color: #f1c40f;
+            border-right-color: #f1c40f;
+            animation: spinRing 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+            position: relative;
+        }
+        .loader-ring::after {
+            content: ''; position: absolute; inset: 4px; border-radius: 50%;
+            border: 3px solid transparent;
+            border-left-color: #eab308;
+            border-bottom-color: #eab308;
+            animation: spinRing 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite reverse;
+        }
+        @keyframes spinRing { to { transform: rotate(360deg); } }
 
         /* Utilities */
         .error-banner { background:rgba(220,38,38,0.1); border:1px solid rgba(220,38,38,0.3); border-radius:16px; padding:12px 16px; margin-bottom:14px; display:flex; align-items:center; gap:12px; }
@@ -206,11 +224,14 @@
 
     <!-- SPLASH SCREEN -->
     <div id="splash" onclick="dismissSplash()">
-        <p class="text-[10px] font-cyber tracking-[0.5em] text-[var(--text4)] uppercase mb-8">IPL Fantasy League</p>
-        <h1 class="text-7xl font-main font-black italic gold-glow tracking-tighter" style="font-family: var(--font-main);">REVO</h1>
-        <div class="w-16 h-[1px] bg-yellow-500/30 my-8"></div>
-        <p class="text-[9px] font-cyber tracking-[0.3em] text-[var(--text3)] animate-pulse uppercase cursor-pointer">Loading Data...</p>
-        <p class="text-[8px] font-bold text-[var(--text4)] uppercase tracking-widest absolute bottom-8">Designed by Vedant Bhansali</p>
+        <div class="loader-ring mb-10"></div>
+        <h1 class="text-3xl font-extrabold tracking-[0.3em] uppercase text-white mb-2" style="font-family: 'Plus Jakarta Sans', sans-serif;">REVOLUTION</h1>
+        <p class="text-[10px] font-bold tracking-[0.5em] text-yellow-500 uppercase mb-12">IPL 2026</p>
+        <div class="flex items-center gap-2 px-4 py-2 rounded-full border border-white/5 bg-white/5 backdrop-blur-md">
+            <span class="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse shadow-[0_0_8px_#eab308]"></span>
+            <p class="text-[8px] font-bold tracking-widest text-[var(--text2)] uppercase">Syncing Live Data</p>
+        </div>
+        <p class="text-[8px] font-bold text-slate-600 uppercase tracking-widest absolute bottom-8">Designed by Vedant Bhansali</p>
     </div>
 
     <div class="max-w-xl mx-auto">
@@ -318,6 +339,7 @@
         class="hidden fixed bottom-24 right-4 z-[500] w-10 h-10 rounded-full glass-panel flex items-center justify-center text-yellow-500 font-bold shadow-lg active-scale border-yellow-500/30">↑</button>
 
     <script>
+        window._appStartTime = Date.now(); // Track exact load start time
         const SHEET_ID = '1xIRCNr0tteFfMk6l7inIkKeSJMb7WLBswsXepHRqjio';
         const TOTAL_SEASON_MATCHES = 74;
         const SITE_URL = 'revolution-ipl-2026.vercel.app';
@@ -518,13 +540,18 @@
                 renderLivePoints(liveRows||[]);
 
                 if(!window._confettiFired && active.length > 0) { window._confettiFired=true; setTimeout(fireConfetti,800); }
-                dismissSplash(); // Auto dismiss splash when data loads
+                
+                // Enforce minimum splash screen time (2.5 seconds)
+                const elapsed = Date.now() - window._appStartTime;
+                setTimeout(dismissSplash, Math.max(0, 2500 - elapsed));
 
             } catch(e) {
                 console.error('Sync Error:', e);
                 // Now displays the exact specific error to help you debug the sheet
                 showError(e.message || 'Could not sync with live sheet. Auto-retrying...');
-                dismissSplash(); // Dismiss even if it fails, so they can see the error
+                
+                const elapsed = Date.now() - window._appStartTime;
+                setTimeout(dismissSplash, Math.max(0, 2500 - elapsed));
             }
         }
 
@@ -1487,7 +1514,7 @@
         // Init App Data
         updateApp();
         setInterval(updateApp, 60000);
-        setTimeout(dismissSplash, 4000); // Failsafe dismiss if fetch hangs
+        setTimeout(dismissSplash, 6000); // Failsafe extended to 6s
         
         // Scroll listener for Top Button
         window.addEventListener('scroll',()=>{
