@@ -133,8 +133,8 @@
             box-shadow: 0 4px 16px rgba(241, 196, 15, 0.3);
         }
 
-        .nav-item span:first-child { font-size: 18px; }
-        .nav-item span:last-child { font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; font-family: var(--font-cyber); }
+        .nav-icon { font-size: 18px; }
+        .nav-label { font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; font-family: var(--font-cyber); }
 
         /* Typography & Effects */
         .font-cyber { font-family: var(--font-cyber); }
@@ -206,9 +206,10 @@
     <!-- SPLASH SCREEN -->
     <div id="splash" onclick="dismissSplash()">
         <p class="text-[10px] font-cyber tracking-[0.5em] text-[var(--text4)] uppercase mb-8">IPL Fantasy League</p>
-        <h1 class="text-7xl font-cyber font-black italic gold-glow tracking-tighter">REVO</h1>
+        <h1 class="text-7xl font-main font-black italic gold-glow tracking-tighter">REVO</h1>
         <div class="w-16 h-[1px] bg-yellow-500/30 my-8"></div>
         <p class="text-[9px] font-cyber tracking-[0.3em] text-[var(--text3)] animate-pulse uppercase cursor-pointer">Loading Data...</p>
+        <p class="text-[8px] font-bold text-[var(--text4)] uppercase tracking-widest absolute bottom-8">Designed by Vedant Bhansali</p>
     </div>
 
     <div class="max-w-xl mx-auto">
@@ -284,17 +285,17 @@
     <!-- NAVIGATION DOCK -->
     <nav class="nav-dock">
         <button onclick="switchTab('main')" id="nav-main" class="nav-item active active-scale flex-1">
-            <span>📊</span><span>Ranks</span>
+            <span class="nav-icon">📊</span><span class="nav-label">Ranks</span>
         </button>
         <button onclick="switchTab('livepoints')" id="nav-livepoints" class="nav-item active-scale relative flex-1">
-            <span>🔴</span><span>Live</span>
-            <span id="live-tab-dot" class="hidden absolute top-2 right-3 w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981] animate-pulse"></span>
+            <span class="nav-icon">🔴</span><span class="nav-label">Live</span>
+            <span id="live-tab-dot" class="hidden absolute top-2 right-4 w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981] animate-pulse"></span>
         </button>
         <button onclick="switchTab('schedule')" id="nav-schedule" class="nav-item active-scale flex-1">
-            <span>🗓️</span><span>Events</span>
+            <span class="nav-icon">🗓️</span><span class="nav-label">Events</span>
         </button>
         <button onclick="switchTab('standings')" id="nav-standings" class="nav-item active-scale flex-1">
-            <span>🏟️</span><span>Table</span>
+            <span class="nav-icon">🏟️</span><span class="nav-label">Table</span>
         </button>
     </nav>
 
