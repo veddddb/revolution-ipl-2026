@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -216,11 +217,40 @@
         .share-btn { font-size: 8px; font-family: var(--font-cyber); font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: var(--text1); transition: 0.2s; cursor: pointer; }
         body.light .share-btn { border-color: rgba(0,0,0,0.1); background: rgba(0,0,0,0.05); }
         .today-glow { border-color: rgba(241, 196, 15, 0.5) !important; background: rgba(241, 196, 15, 0.08) !important; box-shadow: 0 0 20px rgba(241, 196, 15, 0.15); }
+
+        /* Bottom Sheet Modal */
+        #player-modal { transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); }
     </style>
 </head>
 <body class="p-4 pb-32">
     <div class="mesh-bg"></div>
     <div id="search-overlay" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[2000] transition-opacity duration-300"></div>
+
+    <!-- PLAYER SCOUT MODAL (Bottom Sheet) -->
+    <div id="player-modal-overlay" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[4000] transition-opacity duration-300 opacity-0" onclick="closePlayerModal()"></div>
+    <div id="player-modal" class="fixed bottom-0 left-0 right-0 max-w-xl mx-auto bg-[var(--bg-void)] border-t border-[var(--glass-border)] rounded-t-3xl z-[4001] translate-y-full max-h-[85vh] flex flex-col shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+        <div class="w-12 h-1.5 bg-slate-700 rounded-full mx-auto my-3 opacity-50 cursor-pointer" onclick="closePlayerModal()"></div>
+        <div id="player-modal-content" class="p-5 overflow-y-auto pb-12">
+            <!-- Populated via JS -->
+        </div>
+    </div>
+
+    <!-- INSTALL APP BANNER (PWA) -->
+    <div id="install-banner" class="hidden fixed bottom-28 left-4 right-4 sm:left-auto sm:right-4 sm:w-[340px] glass-panel p-4 z-[3000] border-yellow-500/30 bg-yellow-500/5 shadow-2xl flex items-center justify-between transition-all duration-500 translate-y-10 opacity-0">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-yellow-600 to-yellow-400 flex items-center justify-center shadow-[0_4px_12px_rgba(234,179,8,0.4)] flex-shrink-0">
+                <span class="font-main font-black text-white text-[11px] italic">REVO</span>
+            </div>
+            <div>
+                <p class="text-[11px] font-bold text-[var(--text1)]">Install REVO App</p>
+                <p class="text-[8px] text-[var(--text3)] mt-0.5 leading-tight pr-2">Add to home screen for native full-screen experience</p>
+            </div>
+        </div>
+        <div class="flex gap-1.5 flex-shrink-0">
+            <button onclick="dismissInstall()" class="w-7 h-7 flex items-center justify-center rounded-lg text-[var(--text4)] hover:bg-white/10 active-scale">✕</button>
+            <button id="btn-install" class="px-3 h-7 rounded-lg bg-yellow-500 text-slate-900 font-cyber font-black text-[9px] uppercase tracking-widest active-scale">Get</button>
+        </div>
+    </div>
 
     <!-- SPLASH SCREEN -->
     <div id="splash" onclick="dismissSplash()">
@@ -622,7 +652,9 @@
                         const pt = (p.team||'').toString().trim().toUpperCase();
                         const isPlaying = _todayTeams.has(pt) || Array.from(_todayTeams).some(t => t.includes(pt) || pt.includes(t));
                         return `
-                        <div class="flex justify-between items-center py-1.5 border-b border-[var(--glass-border)] last:border-0 ${p.act===0?'player-row-ghost':''}">
+                        <div class="flex justify-between items-center py-1.5 border-b border-[var(--glass-border)] last:border-0 ${p.act===0?'player-row-ghost':''} cursor-pointer active-scale hover:bg-white/5 px-1 rounded transition-colors" 
+                             data-name="${p.name}" data-team="${p.team}" data-role="${p.role}" data-owner="${o.full}"
+                             onclick="event.stopPropagation(); openPlayerModal(this.dataset.name, this.dataset.team, this.dataset.role, this.dataset.owner)">
                             <div class="flex items-center flex-wrap gap-1">
                                 <span class="text-[8px] font-bold text-[var(--text4)] w-3">${idx+1}</span>
                                 <span class="text-[11px] font-bold text-[var(--text1)]">${p.name} <span class="text-[8px] text-[var(--text4)]">(${p.team})</span></span>
@@ -682,6 +714,85 @@
         }
 
         function toggleSquad(id){ const s=document.getElementById('sq-'+id); if(s) s.classList.toggle('open'); }
+
+        // --- PLAYER SCOUT MODAL LOGIC ---
+        function openPlayerModal(name, team, role, owner) {
+            const overlay = document.getElementById('player-modal-overlay');
+            const modal = document.getElementById('player-modal');
+            const content = document.getElementById('player-modal-content');
+            
+            const color = getColor(owner);
+            const teamColor = TEAM_COLORS[team.toUpperCase()] || 'var(--text4)';
+
+            // Fetch Match History for this player from pcRows
+            const history = [];
+            let totalPts = 0;
+            _state.pcRows.forEach(r => {
+                if(r[1] && r[1].toString().trim() === name) {
+                    const pts = parseFloat(r[6]) || 0;
+                    if(pts > 0) { // Only log matches where they scored
+                        history.push({ match: r[0], pts: Math.round(pts) });
+                        totalPts += pts;
+                    }
+                }
+            });
+
+            // Populate Content
+            content.innerHTML = `
+                <div class="flex justify-between items-start mb-6 border-b border-[var(--glass-border)] pb-4">
+                    <div>
+                        <p class="font-cyber text-[8px] font-black uppercase tracking-widest text-[var(--text4)] mb-1">Player Scout</p>
+                        <h2 class="text-xl font-black text-[var(--text1)]">${name}</h2>
+                        <div class="flex items-center gap-2 mt-1.5 text-[10px] font-bold">
+                            <span style="color:${teamColor}" class="uppercase">${team}</span>
+                            <span class="text-[var(--text4)]">•</span>
+                            <span class="text-[var(--text3)] uppercase">${role}</span>
+                        </div>
+                        <p class="text-[9px] font-bold text-[var(--text4)] mt-2">Owned by <span style="color:${color}" class="uppercase">${owner}</span></p>
+                    </div>
+                    <div class="text-right flex flex-col items-end">
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg border" style="background:${color}15; border-color:${color}40">
+                            <p class="font-cyber text-xl font-black" style="color:${color}">${Math.round(totalPts)}</p>
+                        </div>
+                        <p class="text-[8px] font-black uppercase text-[var(--text4)] mt-1.5 tracking-widest">Total Pts</p>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="font-cyber text-[10px] font-black uppercase tracking-widest text-[var(--text2)] mb-3">Match History</h3>
+                    ${history.length === 0 ? `<p class="text-center text-[10px] text-[var(--text4)] py-6 italic">No points scored yet.</p>` : 
+                        `<div class="space-y-2">
+                            ${history.map(h => `
+                                <div class="flex justify-between items-center p-3 rounded-xl border border-white/5 bg-white/5">
+                                    <p class="text-xs font-bold text-[var(--text1)]">Match ${h.match}</p>
+                                    <p class="font-cyber text-sm font-black" style="color:${color}">+${h.pts}</p>
+                                </div>
+                            `).join('')}
+                        </div>`
+                    }
+                </div>
+            `;
+
+            // Animate In
+            overlay.classList.remove('hidden');
+            // Trigger reflow
+            void overlay.offsetWidth;
+            overlay.classList.remove('opacity-0');
+            modal.classList.remove('translate-y-full');
+        }
+
+        function closePlayerModal() {
+            const overlay = document.getElementById('player-modal-overlay');
+            const modal = document.getElementById('player-modal');
+            
+            overlay.classList.add('opacity-0');
+            modal.classList.add('translate-y-full');
+            
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+            }, 400); // Wait for transition
+        }
+
 
         function renderMVPMerged(mvp, matchName, active, pcRows, completedMatches) {
             const el = document.getElementById('mvp-spotlight');
@@ -1059,6 +1170,31 @@
             let leadText = diff === 0 ? "TIED" : (diff > 0 ? `${o1.first} +${diff}` : `${o2.first} +${Math.abs(diff)}`);
             let leadColor = diff === 0 ? 'var(--text4)' : (diff > 0 ? c1 : c2);
 
+            // --- Rivalry Tracker Logic ---
+            let w1 = 0, w2 = 0, ties = 0;
+            _state.completedMatches.forEach(matchName => {
+                const mRows = _state.pcRows.filter(r => r[0] && r[0].toString().trim() === matchName);
+                let score1 = 0, score2 = 0;
+                mRows.forEach(r => {
+                    if (!r[2]) return;
+                    const ownerRaw = fixID(r[2]);
+                    const isO1 = ownerRaw === o1.id || ownerRaw.includes(o1.id.split(' ')[0]) || o1.id.includes(ownerRaw.split(' ')[0]);
+                    const isO2 = ownerRaw === o2.id || ownerRaw.includes(o2.id.split(' ')[0]) || o2.id.includes(ownerRaw.split(' ')[0]);
+                    if (isO1) score1 += (parseFloat(r[6]) || 0);
+                    if (isO2) score2 += (parseFloat(r[6]) || 0);
+                });
+                // Only count matches where at least one of them scored
+                if(score1 > 0 || score2 > 0) {
+                    if (score1 > score2) w1++;
+                    else if (score2 > score1) w2++;
+                    else ties++;
+                }
+            });
+            const totalMatches = w1 + w2 + ties;
+            const w1Pct = totalMatches > 0 ? (w1/totalMatches)*100 : 0;
+            const w2Pct = totalMatches > 0 ? (w2/totalMatches)*100 : 0;
+            const tPct = totalMatches > 0 ? (ties/totalMatches)*100 : 100;
+
             el.innerHTML = `
                 <div class="glass-panel p-4 flex justify-between items-center stagger-item">
                     <div class="text-center w-[30%]">
@@ -1074,6 +1210,20 @@
                         <p class="text-[8px] font-bold text-[var(--text4)] uppercase mt-1">Rank #${_state.active.findIndex(o=>o.id===id2)+1}</p>
                     </div>
                 </div>
+
+                <div class="mt-4 bg-white/5 rounded-2xl p-4 border border-[var(--glass-border)] stagger-item shadow-inner" style="animation-delay: 0.05s">
+                    <p class="text-[8px] font-black uppercase text-center text-[var(--text4)] mb-2 tracking-widest">Head-to-Head Record</p>
+                    <div class="flex justify-between text-[10px] font-black font-cyber mb-1.5 uppercase">
+                        <span style="color:${c1}">${w1} WINS</span>
+                        <span class="text-[var(--text4)] text-[8px] tracking-widest">${ties} TIES</span>
+                        <span style="color:${c2}">${w2} WINS</span>
+                    </div>
+                    <div class="w-full h-1.5 rounded-full flex overflow-hidden opacity-80">
+                        <div style="width:${w1Pct}%; background:${c1}"></div>
+                        <div style="width:${tPct}%; background:var(--glass-border)"></div>
+                        <div style="width:${w2Pct}%; background:${c2}"></div>
+                    </div>
+                </div>
                 
                 <div class="mt-4 flex gap-2 stagger-item" style="animation-delay: 0.1s">
                     <div class="flex-1 glass-panel p-2">
@@ -1083,7 +1233,9 @@
                         <div class="space-y-1.5">
                             ${s1.length === 0 ? `<p class="text-center text-[9px] text-[var(--text4)] py-4">Empty</p>` : ''}
                             ${s1.map(p => `
-                                <div class="flex justify-between items-center p-1.5 rounded bg-white/5">
+                                <div class="flex justify-between items-center p-1.5 rounded hover:bg-white/5 cursor-pointer transition-colors active-scale"
+                                     data-name="${p.name}" data-team="${p.team}" data-role="${p.role}" data-owner="${o1.full}"
+                                     onclick="openPlayerModal(this.dataset.name, this.dataset.team, this.dataset.role, this.dataset.owner)">
                                     <div class="truncate mr-2 flex-1">
                                         <p class="text-[9px] font-bold text-[var(--text1)] truncate">${p.name} ${p.cvc ? `<span style="color:${c1}">[${p.cvc}]</span>`:''}</p>
                                     </div>
@@ -1100,7 +1252,9 @@
                         <div class="space-y-1.5">
                             ${s2.length === 0 ? `<p class="text-center text-[9px] text-[var(--text4)] py-4">Empty</p>` : ''}
                             ${s2.map(p => `
-                                <div class="flex justify-between items-center p-1.5 rounded bg-white/5">
+                                <div class="flex justify-between items-center p-1.5 rounded hover:bg-white/5 cursor-pointer transition-colors active-scale"
+                                     data-name="${p.name}" data-team="${p.team}" data-role="${p.role}" data-owner="${o2.full}"
+                                     onclick="openPlayerModal(this.dataset.name, this.dataset.team, this.dataset.role, this.dataset.owner)">
                                     <div class="truncate mr-2 flex-1">
                                         <p class="text-[9px] font-bold text-[var(--text1)] truncate">${p.name} ${p.cvc ? `<span style="color:${c2}">[${p.cvc}]</span>`:''}</p>
                                     </div>
@@ -1126,7 +1280,7 @@
             if (dot) dot.style.display = data.length > 0 ? 'block' : 'none';
 
             if (!data.length) {
-                el.innerHTML = `<div class="glass-panel p-8 text-center stagger-item"><span class="text-3xl mb-2 block">🏏</span><p class="font-cyber text-[10px] font-black uppercase tracking-widest text-[var(--text4)]">No Active Match, please come back in the evening at 7.30 PM (weekdays) and 3.30 PM (weeekends)</p></div>`;
+                el.innerHTML = `<div class="glass-panel p-8 text-center stagger-item"><span class="text-3xl mb-2 block">🏏</span><p class="font-cyber text-[10px] font-black uppercase tracking-widest text-[var(--text4)]">No Active Match</p></div>`;
                 return;
             }
 
@@ -1181,7 +1335,9 @@
                                 ${mRows.map(d => {
                                     const oc = getColor(d.owner), tc = TEAM_COLORS[d.team?.toUpperCase()]||'var(--text4)';
                                     return `
-                                    <tr class="border-t border-[var(--glass-border)]">
+                                    <tr class="border-t border-[var(--glass-border)] cursor-pointer hover:bg-white/5 transition-colors"
+                                        data-name="${d.player}" data-team="${d.team}" data-role="—" data-owner="${d.owner}"
+                                        onclick="openPlayerModal(this.dataset.name, this.dataset.team, this.dataset.role, this.dataset.owner)">
                                         <td class="p-2 pl-4">
                                             <p class="font-bold text-[var(--text1)]">${d.player}</p>
                                             <p class="text-[7px] font-black uppercase" style="color:${tc}">${d.team}</p>
@@ -1416,14 +1572,15 @@
             if(!query || !_state.rosRows) { dd.style.display='none'; return; }
             
             const results = _state.rosRows.filter(r=>r[0]&&!r[1].includes('owner')).map(r=>({
-                name:r[0], owner:r[1], team:r[4], pts: _state.pPoints[fixID(r[0])]?.act||0
+                name:r[0], owner:r[1], team:r[4], role:r[6], pts: _state.pPoints[fixID(r[0])]?.act||0
             })).filter(p=>p.name.toLowerCase().includes(query) || p.owner.toLowerCase().includes(query))
                .sort((a,b)=>b.pts-a.pts).slice(0,8);
 
             dd.style.display='block';
             dd.innerHTML = results.map(p=>`
                 <div class="p-3 border-b border-[var(--glass-border)] cursor-pointer hover:bg-white/5 active-scale flex justify-between items-center" 
-                     onclick="document.getElementById('player-search').value=''; hideSearchOverlay(); switchTab('main'); const c=document.getElementById('c-${fixID(p.owner).replace(/\s+/g,'-')}'); if(c){c.scrollIntoView({behavior:'smooth'}); c.classList.add('border-yellow-500'); setTimeout(()=>c.classList.remove('border-yellow-500'), 1500);}">
+                     data-name="${p.name}" data-team="${p.team}" data-role="${p.role}" data-owner="${p.owner}"
+                     onclick="document.getElementById('player-search').value=''; hideSearchOverlay(); openPlayerModal(this.dataset.name, this.dataset.team, this.dataset.role, this.dataset.owner);">
                     <div>
                         <p class="text-xs font-bold text-[var(--text1)]">${p.name}</p>
                         <p class="text-[8px] font-bold text-[var(--text4)] uppercase mt-0.5">${p.team} · ${p.owner}</p>
@@ -1511,6 +1668,49 @@
             }
         }
 
+        // PWA Service Worker & Install Logic
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW Reg Failed:', err));
+            });
+        }
+
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            // Delay banner slightly so it doesn't overlap splash
+            setTimeout(() => {
+                const banner = document.getElementById('install-banner');
+                if (banner) {
+                    banner.classList.remove('hidden');
+                    // Trigger reflow to start animation
+                    void banner.offsetWidth;
+                    banner.classList.remove('translate-y-10', 'opacity-0');
+                }
+            }, 5000);
+        });
+
+        document.getElementById('btn-install')?.addEventListener('click', async () => {
+            const banner = document.getElementById('install-banner');
+            if (banner) banner.classList.add('opacity-0', 'translate-y-10');
+            setTimeout(() => banner.classList.add('hidden'), 500);
+            
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                await deferredPrompt.userChoice;
+                deferredPrompt = null;
+            }
+        });
+
+        function dismissInstall() {
+            const banner = document.getElementById('install-banner');
+            if (banner) {
+                banner.classList.add('opacity-0', 'translate-y-10');
+                setTimeout(() => banner.classList.add('hidden'), 500);
+            }
+        }
+
         // Init App Data
         updateApp();
         setInterval(updateApp, 60000);
@@ -1525,3 +1725,6 @@
     </script>
 </body>
 </html>
+
+
+```
