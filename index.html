@@ -419,10 +419,34 @@
         async function fetchSheet(name) {
             const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=0&sheet=${encodeURIComponent(name)}`;
             const r=await fetch(url);
-            if(!r.ok) throw new Error(`Fetch failed: ${name}`);
+            if(!r.ok) throw new Error(`HTTP Error: ${r.status} on sheet ${name}`);
             const t=await r.text();
-            const j=JSON.parse(t.substr(47).slice(0,-2));
-            return j.table.rows.map(row=>row.c.map(cell=>cell?(cell.v!==null?cell.v:''):''));
+            
+            try {
+                // Bulletproof JSON extraction: Grabs everything between the first '{' and last '}'
+                const startIdx = t.indexOf('{');
+                const endIdx = t.lastIndexOf('}');
+                
+                if (startIdx === -1 || endIdx === -1) {
+                    if (t.toLowerCase().includes('<html')) {
+                        throw new Error(`Access Denied! Ensure the Google Sheet is set to "Anyone with the link can view".`);
+                    }
+                    throw new Error(`Invalid data format received from sheet: ${name}`);
+                }
+                
+                const jsonStr = t.substring(startIdx, endIdx + 1);
+                const j = JSON.parse(jsonStr);
+                
+                if (j.status === 'error') {
+                    throw new Error(`Google Sheets Error on "${name}": ${j.errors?.[0]?.message || 'Check tab name'}`);
+                }
+                if (!j.table || !j.table.rows) return [];
+                
+                return j.table.rows.map(row => row.c.map(cell => cell ? (cell.v !== null ? cell.v : '') : ''));
+            } catch(e) {
+                console.error(`Parse Error on sheet "${name}":`, e);
+                throw e; // Rethrow so the UI catches it and displays the specific error
+            }
         }
 
         function showError(msg) { document.getElementById('error-msg').textContent=msg; document.getElementById('error-banner').classList.remove('hidden'); }
@@ -488,8 +512,8 @@
                 renderTodayBar(schedRows||[]);
                 renderWeekly(active, pcRows, completedMatches, squads);
                 renderStandings(standRows||[]);
-                renderHallOfFame(active, pcRows, completedMatches, squads);
-                renderGems(rosRows, pPoints, squads);
+                renderHallOfFame(active, pcRows, completedMatches);
+                renderGems(rosRows, pPoints);
                 renderLivePoints(liveRows||[]);
 
                 if(!window._confettiFired && active.length > 0) { window._confettiFired=true; setTimeout(fireConfetti,800); }
@@ -497,7 +521,8 @@
 
             } catch(e) {
                 console.error('Sync Error:', e);
-                showError('Could not sync with live sheet. Auto-retrying...');
+                // Now displays the exact specific error to help you debug the sheet
+                showError(e.message || 'Could not sync with live sheet. Auto-retrying...');
                 dismissSplash(); // Dismiss even if it fails, so they can see the error
             }
         }
@@ -717,6 +742,61 @@
                 </div>`;
         }
 
+        function renderStreakTracker(owners, cumulScores, completedMatches) {
+            const el = document.getElementById('streak-tracker');
+            if (!el || completedMatches.length === 0) return;
+            const leadCount = {}; owners.forEach(o => leadCount[o.id] = 0);
+            
+            for (let m = 0; m < completedMatches.length; m++) {
+                let best=-1, bestId=null;
+                owners.forEach(o => { const s=(cumulScores[o.id]||[])[m]||0; if(s>best){best=s;bestId=o.id;} });
+                if (bestId) leadCount[bestId]++;
+            }
+
+            const leader = [...owners].sort((a,b) => b.score-a.score)[0];
+            let streak = 0;
+            if (leader) {
+                for (let m = completedMatches.length-1; m >= 0; m--) {
+                    let best=-1, bestId=null;
+                    owners.forEach(o => { const s=(cumulScores[o.id]||[])[m]||0; if(s>best){best=s;bestId=o.id;} });
+                    if (bestId === leader.id) streak++; else break;
+                }
+            }
+            
+            const sorted = [...owners].sort((a,b) => (leadCount[b.id]||0)-(leadCount[a.id]||0));
+            const lc = leader ? getColor(leader.id) : '#f1c40f';
+
+            el.innerHTML = `
+                <div class="glass-panel p-5">
+                    <p class="font-cyber text-[8px] font-black tracking-widest text-[var(--text4)] uppercase mb-4">Streak Tracker</p>
+                    ${leader && streak > 0 ? `
+                    <div class="flex justify-between items-center mb-4 pb-4 border-b border-[var(--glass-border)]">
+                        <div>
+                            <p class="text-[9px] font-bold text-[var(--text4)] uppercase tracking-widest mb-1">Leader Streak</p>
+                            <p class="font-cyber text-sm font-black uppercase" style="color:${lc}">${leader.first}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-cyber text-2xl font-black leading-none" style="color:${lc}">${streak}</p>
+                            <p class="text-[7px] font-bold text-[var(--text4)] uppercase mt-1">Match Days</p>
+                        </div>
+                    </div>` : ''}
+                    <div class="space-y-2.5">
+                        ${sorted.slice(0,5).map((o,i) => {
+                            const c=getColor(o.id), cnt=leadCount[o.id]||0, pct=Math.round((cnt/completedMatches.length)*100);
+                            return `
+                            <div class="flex items-center gap-2">
+                                <span class="text-[8px] font-black w-3 text-center text-[var(--text4)]">${i+1}</span>
+                                <span class="text-[9px] font-bold uppercase w-14 truncate text-[var(--text2)]">${o.first}</span>
+                                <div class="flex-1 h-1 bg-[var(--glass-border)] rounded-full overflow-hidden">
+                                    <div class="h-full rounded-full" style="width:${pct}%; background:${c}"></div>
+                                </div>
+                                <span class="font-cyber text-[9px] font-black w-6 text-right" style="color:${c}">${cnt}d</span>
+                            </div>`;
+                        }).join('')}
+                    </div>
+                </div>`;
+        }
+
         // --- SECONDARY DISCOVERY RENDERERS ---
 
         function renderWeekly(active, pcRows, completedMatches, squads) {
@@ -774,6 +854,143 @@
                             <div class="flex items-center gap-1.5"><span class="text-[8px] text-[var(--text4)] font-bold uppercase">⭐ Week Best:</span><span class="text-[9px] font-bold" style="color:${color}">${d.bestPlayer}</span></div>
                             <span class="font-cyber text-[9px] font-black text-[var(--text2)]">${d.bestPts} pts</span>
                         </div>` : ''}
+                    </div>`;
+                }).join('')}`;
+        }
+
+        function renderStrategy(owners, squads) {
+            const el = document.getElementById('strategy-list');
+            if(!el) return;
+            const data = owners.map(o => {
+                const s = squads[o.id]||[], sorted = [...s].sort((a,b)=>b.raw-a.raw);
+                const pot = Math.round((sorted[0]?.raw||0)*2 + (sorted[1]?.raw||0)*1.5 + sorted.slice(2).reduce((sum,p)=>sum+p.raw,0));
+                return {...o, pot, diff:pot-o.score, ideal:[sorted[0]?.name||'—', sorted[1]?.name||'—']};
+            }).sort((a,b)=>b.pot-a.pot);
+
+            el.innerHTML = `
+                <div class="glass-panel p-4 mb-3">
+                    <p class="font-cyber text-[8px] font-black tracking-widest text-[var(--text4)] uppercase mb-1">Luckiest vs Unluckiest</p>
+                    <p class="text-[11px] font-bold text-[var(--text2)]">Potential Rank based on Ideal C/VC</p>
+                </div>
+                ${data.map((d,i) => {
+                    const color=getColor(d.id), curRank=owners.findIndex(o=>o.id===d.id)+1;
+                    const icon = curRank>i+1?'🟢 ↑':curRank<i+1?'🔴 ↓':'⚪';
+                    return `
+                    <div class="glass-panel p-4 mb-2 stagger-item" style="border-left: 3px solid ${color}">
+                        <div class="flex justify-between items-center mb-3">
+                            <div>
+                                <span class="font-cyber text-[9px] text-[var(--text4)]">${icon} POTENTIAL #${i+1}</span>
+                                <h3 class="font-black uppercase text-sm mt-0.5 text-[var(--text1)]">${d.full}</h3>
+                            </div>
+                            <div class="text-right">
+                                <span class="font-cyber text-lg font-black text-[var(--text1)]">${d.pot}</span>
+                                <p class="text-[7px] font-bold text-[var(--text4)] uppercase">Max Potential</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 border-t border-[var(--glass-border)] pt-3 text-[9px] font-bold">
+                            <div><p class="text-[var(--text4)] uppercase mb-0.5">Ideal C/VC</p><p class="text-yellow-500 uppercase">${d.ideal[0]} / ${d.ideal[1]}</p></div>
+                            <div class="text-right"><p class="text-[var(--text4)] uppercase mb-0.5">Points Missed</p><p class="text-red-400">-${d.diff} PTS</p></div>
+                        </div>
+                    </div>`;
+                }).join('')}`;
+        }
+
+        function renderHallOfFame(active, pcRows, completedMatches) {
+            const el = document.getElementById('hof-list');
+            if (!el) return;
+            const nameToId = {}; active.forEach(o => { nameToId[fixID(o.full)]=o.id; nameToId[fixID(o.first)]=o.id; nameToId[o.id]=o.id; });
+            const bestMatch = {}, matchRanks = {};
+            let bestPlayer = { name:'—', pts:0, owner:'—', match:'—' };
+
+            completedMatches.forEach(matchName => {
+                const matchTotals = {}; active.forEach(o => matchTotals[o.id]=0);
+                pcRows.filter(r => r[0]&&r[0].toString().trim()===matchName).forEach(r => {
+                    const raw=fixID(r[2]), id=nameToId[raw]||active.find(o=>raw.includes(o.id))?.id;
+                    if (!id) return;
+                    const pts=parseFloat(r[6])||0;
+                    matchTotals[id]=(matchTotals[id]||0)+pts;
+                    if (pts>bestPlayer.pts) bestPlayer={name:r[1],pts:Math.round(pts),owner:r[2],match:matchName};
+                });
+                active.forEach(o => { const pts=Math.round(matchTotals[o.id]||0); if(!bestMatch[o.id]||pts>bestMatch[o.id].pts) bestMatch[o.id]={pts,matchName}; });
+                matchRanks[matchName]=Object.entries(matchTotals).sort((a,b)=>b[1]-a[1]).map(([id])=>id);
+            });
+
+            const allBest=Object.entries(bestMatch).sort((a,b)=>b[1].pts-a[1].pts);
+            const topOwner=allBest[0]?active.find(o=>o.id===allBest[0][0]):null;
+            const dayWins={}; active.forEach(o=>dayWins[o.id]=0);
+            completedMatches.forEach(m=>{const r=matchRanks[m];if(r&&r[0]) dayWins[r[0]]++;});
+            const topDayWinner=Object.entries(dayWins).sort((a,b)=>b[1]-a[1])[0];
+            const dayWinOwner=topDayWinner?active.find(o=>o.id===topDayWinner[0]):null;
+
+            const cards=[
+                topOwner?{icon:'🔥',label:'Highest Match Score',name:topOwner.full,value:allBest[0][1].pts+' pts',sub:allBest[0][1].matchName,color:getColor(topOwner.id)}:null,
+                bestPlayer.pts>0?{icon:'⭐',label:'Best Player Score',name:bestPlayer.name,value:bestPlayer.pts+' pts',sub:`${bestPlayer.match} · Owned by ${bestPlayer.owner}`,color:getColor(bestPlayer.owner)}:null,
+                dayWinOwner?{icon:'🏅',label:'Most Match Wins',name:dayWinOwner.full,value:topDayWinner[1]+' days',sub:`out of ${completedMatches.length} match days`,color:getColor(dayWinOwner.id)}:null,
+                active[0]?{icon:'👑',label:'Current Leader',name:active[0].full,value:active[0].score+' pts',sub:'total this season',color:getColor(active[0].id)}:null,
+            ].filter(Boolean);
+
+            el.innerHTML = `
+                <div class="glass-panel p-4 mb-3">
+                    <p class="font-cyber text-[8px] font-black tracking-widest text-[var(--text4)] uppercase mb-1">Season Records</p>
+                    <p class="text-[11px] font-bold text-[var(--text2)]">Hall of Fame</p>
+                </div>
+                ${cards.map(c=>`
+                    <div class="glass-panel p-4 mb-2 stagger-item" style="border-left: 3px solid ${c.color}">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="font-cyber text-[8px] font-black uppercase text-[var(--text4)] tracking-widest mb-1">${c.icon} ${c.label}</p>
+                                <p class="text-sm font-black uppercase" style="color:${c.color}">${c.name}</p>
+                                <p class="text-[8px] font-bold text-[var(--text4)] mt-1">${c.sub}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-cyber text-lg font-black" style="color:${c.color}">${c.value.split(' ')[0]}</p>
+                                <p class="text-[7px] font-black text-[var(--text4)] uppercase">PTS</p>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}`;
+        }
+
+        function renderGems(rosRows, pPoints) {
+            const el = document.getElementById('gems-list');
+            if (!el) return;
+            const gems = [];
+            rosRows.forEach(row => {
+                const name=(row[0]||'').toString().trim(), owner=fixID(row[1]||'');
+                const team=(row[4]||'').toString().trim(), role=(row[6]||'').toString().trim();
+                if (!name || (owner!=='unsold'&&owner!==''&&!owner.includes('unsold'))) return;
+                const stats=pPoints[fixID(name)]||{act:0};
+                if (stats.act>0) gems.push({name,team,role,pts:Math.round(stats.act)});
+            });
+            gems.sort((a,b)=>b.pts-a.pts);
+            const totalMissed=gems.reduce((s,g)=>s+g.pts,0);
+
+            el.innerHTML = `
+                <div class="glass-panel p-4 mb-3 flex justify-between items-center">
+                    <div>
+                        <p class="font-cyber text-[8px] font-black tracking-widest text-[var(--text4)] uppercase mb-1">💎 Unsold</p>
+                        <p class="text-[11px] font-bold text-[#48dbfb]">Hidden Gems</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-cyber text-lg font-black text-red-400">${totalMissed}</p>
+                        <p class="text-[7px] font-black text-[var(--text4)] uppercase">Pts Missed</p>
+                    </div>
+                </div>
+                ${gems.length===0 ? `<div class="p-8 text-center text-[10px] text-[var(--text4)] font-cyber uppercase">No gems found</div>`
+                : gems.map((g,i)=>{
+                    const tc=TEAM_COLORS[g.team.toUpperCase()]||'#475569';
+                    return `
+                    <div class="glass-panel p-3 mb-2 flex justify-between items-center stagger-item" style="${i<3?'border-left: 3px solid #48dbfb':''}">
+                        <div class="flex items-center gap-3">
+                            <span class="text-[9px] font-black w-4 text-center ${i<3?'text-[#48dbfb]':'text-[var(--text4)]'}">${i+1}</span>
+                            <div>
+                                <p class="text-[11px] font-bold text-[var(--text1)]">${g.name}</p>
+                                <p class="text-[8px] font-bold text-[var(--text4)] mt-0.5"><span style="color:${tc}">${g.team}</span> · ${g.role}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-cyber text-sm font-black ${i<3?'text-[#48dbfb]':'text-[var(--text3)]'}">${g.pts}</p>
+                        </div>
                     </div>`;
                 }).join('')}`;
         }
