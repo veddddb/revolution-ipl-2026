@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -217,40 +216,11 @@
         .share-btn { font-size: 8px; font-family: var(--font-cyber); font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: var(--text1); transition: 0.2s; cursor: pointer; }
         body.light .share-btn { border-color: rgba(0,0,0,0.1); background: rgba(0,0,0,0.05); }
         .today-glow { border-color: rgba(241, 196, 15, 0.5) !important; background: rgba(241, 196, 15, 0.08) !important; box-shadow: 0 0 20px rgba(241, 196, 15, 0.15); }
-
-        /* Bottom Sheet Modal */
-        #player-modal { transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); }
     </style>
 </head>
 <body class="p-4 pb-32">
     <div class="mesh-bg"></div>
     <div id="search-overlay" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[2000] transition-opacity duration-300"></div>
-
-    <!-- PLAYER SCOUT MODAL (Bottom Sheet) -->
-    <div id="player-modal-overlay" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[4000] transition-opacity duration-300 opacity-0" onclick="closePlayerModal()"></div>
-    <div id="player-modal" class="fixed bottom-0 left-0 right-0 max-w-xl mx-auto bg-[var(--bg-void)] border-t border-[var(--glass-border)] rounded-t-3xl z-[4001] translate-y-full max-h-[85vh] flex flex-col shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
-        <div class="w-12 h-1.5 bg-slate-700 rounded-full mx-auto my-3 opacity-50 cursor-pointer" onclick="closePlayerModal()"></div>
-        <div id="player-modal-content" class="p-5 overflow-y-auto pb-12">
-            <!-- Populated via JS -->
-        </div>
-    </div>
-
-    <!-- INSTALL APP BANNER (PWA) -->
-    <div id="install-banner" class="hidden fixed bottom-28 left-4 right-4 sm:left-auto sm:right-4 sm:w-[340px] glass-panel p-4 z-[3000] border-yellow-500/30 bg-yellow-500/5 shadow-2xl flex items-center justify-between transition-all duration-500 translate-y-10 opacity-0">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-yellow-600 to-yellow-400 flex items-center justify-center shadow-[0_4px_12px_rgba(234,179,8,0.4)] flex-shrink-0">
-                <span class="font-main font-black text-white text-[11px] italic">REVO</span>
-            </div>
-            <div>
-                <p class="text-[11px] font-bold text-[var(--text1)]">Install REVO App</p>
-                <p class="text-[8px] text-[var(--text3)] mt-0.5 leading-tight pr-2">Add to home screen for native full-screen experience</p>
-            </div>
-        </div>
-        <div class="flex gap-1.5 flex-shrink-0">
-            <button onclick="dismissInstall()" class="w-7 h-7 flex items-center justify-center rounded-lg text-[var(--text4)] hover:bg-white/10 active-scale">✕</button>
-            <button id="btn-install" class="px-3 h-7 rounded-lg bg-yellow-500 text-slate-900 font-cyber font-black text-[9px] uppercase tracking-widest active-scale">Get</button>
-        </div>
-    </div>
 
     <!-- SPLASH SCREEN -->
     <div id="splash" onclick="dismissSplash()">
@@ -262,6 +232,33 @@
             <p class="text-[8px] font-bold tracking-widest text-[var(--text2)] uppercase">Syncing Live Data</p>
         </div>
         <p class="text-[8px] font-bold text-slate-600 uppercase tracking-widest absolute bottom-8">Designed by Vedant Bhansali</p>
+    </div>
+
+    <!-- NOTIFICATION UI -->
+    <div id="chat-toast" class="fixed top-4 left-1/2 -translate-x-1/2 z-[3000] glass-panel px-4 py-2 border-yellow-500/50 flex items-center gap-2 transition-all duration-300 transform -translate-y-20 opacity-0 pointer-events-none">
+        <span class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></span>
+        <span id="chat-toast-msg" class="text-[10px] font-bold text-[var(--text1)]"></span>
+    </div>
+
+    <!-- PLAYER STAT MODAL -->
+    <div id="player-stat-overlay" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[3000] hidden opacity-0 transition-opacity duration-300" onclick="window.closePlayerStats()"></div>
+    <div id="player-stat-sheet" class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-xl bg-[var(--bg-void)] border-t border-[var(--glass-border)] rounded-t-3xl z-[3001] translate-y-full transition-transform duration-300 flex flex-col max-h-[80vh] shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+        <div class="p-5 flex justify-between items-center border-b border-[var(--glass-border)] bg-white/5">
+            <div>
+                <p id="ps-team" class="text-[9px] font-black uppercase tracking-widest text-[var(--text4)]">TEAM</p>
+                <h2 id="ps-name" class="font-cyber text-lg font-black text-[var(--text1)] mt-0.5">PLAYER NAME</h2>
+            </div>
+            <div class="text-right">
+                <p id="ps-total" class="font-cyber text-3xl font-black text-yellow-500 leading-none">0</p>
+                <p class="text-[7px] font-black uppercase tracking-widest text-[var(--text4)] mt-1">Total Pts</p>
+            </div>
+        </div>
+        <div class="p-5 overflow-y-auto no-scrollbar flex-1" id="ps-content">
+            <!-- Content injected via JS -->
+        </div>
+        <div class="p-4 border-t border-[var(--glass-border)] bg-black/20">
+            <button onclick="window.closePlayerStats()" class="w-full py-3.5 rounded-xl bg-white/5 border border-[var(--glass-border)] text-xs font-bold text-[var(--text1)] active-scale uppercase tracking-widest">Close Player</button>
+        </div>
     </div>
 
     <div class="max-w-xl mx-auto">
@@ -290,6 +287,7 @@
 
         <!-- DISCOVERY SCROLL -->
         <div id="discovery-tabs" class="flex gap-2.5 overflow-x-auto no-scrollbar pb-1 mb-6 stagger-item relative" style="animation-delay: 0.15s">
+            <button onclick="switchTab('chat')" id="btn-chat" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)] border-yellow-500/30">💬 Banter</button>
             <button onclick="switchTab('hof')" id="btn-hof" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">🏆 Hall of Fame</button>
             <button onclick="switchTab('gems')" id="btn-gems" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">💎 Unsold Gems</button>
             <button onclick="switchTab('weekly')" id="btn-weekly" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">📊 Weekly Recap</button>
@@ -313,6 +311,38 @@
             <div id="mvp-spotlight"></div>
             <div id="last-match-collapsible"></div>
             <div id="leaderboard" class="space-y-3"></div>
+        </div>
+
+        <div id="view-chat" class="hidden space-y-4 pb-8 relative z-10 flex-col h-[65vh]">
+            <div class="glass-panel p-4 flex-shrink-0">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="font-cyber text-[8px] font-black tracking-widest text-[var(--text4)] uppercase mb-1">Live</p>
+                        <h2 class="font-cyber text-sm font-black text-yellow-500">Banter Box</h2>
+                    </div>
+                    <button onclick="window.changeIdentity()" id="btn-change-id" class="hidden text-[8px] font-bold border border-[var(--glass-border)] text-[var(--text3)] px-2 py-1 rounded active-scale uppercase tracking-widest">Change ID</button>
+                </div>
+            </div>
+
+            <!-- Identity Selection Setup -->
+            <div id="chat-setup" class="glass-panel p-6 flex flex-col items-center justify-center flex-1">
+                <div class="text-4xl mb-3">🎭</div>
+                <p class="text-[11px] font-bold mb-4 uppercase tracking-widest text-[var(--text3)]">Select your owner profile</p>
+                <select id="chat-identity-select" class="bg-[var(--bg-void)] border border-[var(--glass-border)] rounded-lg p-3 text-xs font-bold text-[var(--text1)] outline-none mb-6 w-full text-center"></select>
+                <button onclick="window.saveIdentity()" class="bg-yellow-500 text-black font-cyber text-[10px] font-black uppercase px-8 py-3 rounded-full active-scale tracking-widest shadow-[0_0_15px_rgba(234,179,8,0.3)]">Enter Chat</button>
+            </div>
+
+            <!-- Active Chat Interface -->
+            <div id="chat-interface" class="flex-1 hidden flex-col overflow-hidden glass-panel">
+                <div id="chat-connection-status" class="bg-white/5 text-[9px] text-center p-2 font-bold text-[var(--text4)] border-b border-[var(--glass-border)]">Connecting to server...</div>
+                <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar flex flex-col">
+                    <!-- Dynamic Messages go here -->
+                </div>
+                <div class="p-3 border-t border-[var(--glass-border)] flex gap-2 bg-black/20">
+                    <input type="text" id="chat-input" placeholder="Trash talk here..." class="flex-1 bg-white/5 border border-[var(--glass-border)] rounded-full px-4 py-2 text-xs outline-none focus:border-yellow-500/50 text-[var(--text1)]" onkeypress="if(event.key==='Enter') window.sendChatMessage()">
+                    <button onclick="window.sendChatMessage()" class="w-9 h-9 flex-shrink-0 rounded-full bg-yellow-500 text-black flex items-center justify-center font-black active-scale shadow-md">➤</button>
+                </div>
+            </div>
         </div>
 
         <div id="view-livepoints" class="hidden space-y-4 pb-8 relative z-10">
@@ -411,7 +441,7 @@
         }
 
         const fixID = s => s ? s.toString().toLowerCase().trim() : '';
-        function getColor(raw) {
+        window.getColor = function(raw) {
             const n = fixID(raw);
             if (ownerColors[n]) return ownerColors[n];
             for (const w of n.split(/\s+/)) if (ownerColors[w]) return ownerColors[w];
@@ -428,7 +458,7 @@
         function switchTab(t) {
             // Main Dock
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            const navBtn = document.getElementById('nav-' + (['hof','gems','weekly','strategy','h2h'].includes(t) ? 'main' : t));
+            const navBtn = document.getElementById('nav-' + (['hof','gems','weekly','strategy','h2h','chat'].includes(t) ? 'main' : t));
             if (navBtn) navBtn.classList.add('active');
 
             // Top Header Pills
@@ -438,21 +468,28 @@
             const pillBtn = document.getElementById('btn-' + (t==='strategy'?'strat':t));
             if(pillBtn) pillBtn.style.borderColor = 'var(--accent)';
 
-            const views = {main:'view-main', livepoints:'view-livepoints', schedule:'view-schedule', standings:'view-standings', hof:'view-hof', gems:'view-gems', weekly:'view-weekly', strategy:'view-strategy', h2h:'view-h2h'};
+            const views = {main:'view-main', livepoints:'view-livepoints', schedule:'view-schedule', standings:'view-standings', hof:'view-hof', gems:'view-gems', weekly:'view-weekly', strategy:'view-strategy', h2h:'view-h2h', chat:'view-chat'};
             
             Object.keys(views).forEach(k => {
                 const el = document.getElementById(views[k]);
                 if(!el) return;
                 if(k === t) {
                     el.classList.remove('hidden');
-                    // Retrigger animations
-                    el.querySelectorAll('.stagger-item').forEach((item, idx) => {
-                        item.style.animation = 'none';
-                        item.offsetHeight;
-                        item.style.animation = `slideUpFade 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) ${idx * 0.05}s forwards`;
-                    });
+                    if (k === 'chat') {
+                        el.classList.add('flex');
+                        const messages = document.getElementById('chat-messages');
+                        if (messages) messages.scrollTop = messages.scrollHeight;
+                    } else {
+                        // Retrigger animations
+                        el.querySelectorAll('.stagger-item').forEach((item, idx) => {
+                            item.style.animation = 'none';
+                            item.offsetHeight;
+                            item.style.animation = `slideUpFade 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) ${idx * 0.05}s forwards`;
+                        });
+                    }
                 } else {
                     el.classList.add('hidden');
+                    if (k === 'chat') el.classList.remove('flex');
                 }
             });
             _currentTab = t;
@@ -467,7 +504,7 @@
         }
         if (localStorage.getItem('revo-theme') === 'light') { document.body.classList.add('light'); document.getElementById('theme-toggle').textContent = '☀️'; }
 
-        let _state = {squads:{}, cumulScores:{}, completedMatches:[], active:[]};
+        window._state = {squads:{}, cumulScores:{}, completedMatches:[], active:[]};
 
         async function fetchSheet(name) {
             const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=0&sheet=${encodeURIComponent(name)}`;
@@ -551,7 +588,7 @@
                 const allOwners=unsold?[...active,unsold]:active;
                 const cumulScores=buildCumulScores(active,pcRows,completedMatches);
                 
-                _state={squads, cumulScores, completedMatches, rosRows, pPoints, pcRows, active, schedRows};
+                window._state={squads, cumulScores, completedMatches, rosRows, pPoints, pcRows, active, schedRows};
 
                 renderTop3(active);
                 renderLeaderboard(allOwners, squads);
@@ -560,6 +597,7 @@
                 renderStreakTracker(active, cumulScores, completedMatches);
                 renderStrategy(active, squads);
                 renderH2HDropdowns(active);
+                renderChatSetup(active);
                 
                 if(schedRows&&schedRows.length){ window._schedRows=schedRows; renderSchedule(schedRows); renderScheduleFilters(); }
                 renderTodayBar(schedRows||[]);
@@ -615,7 +653,7 @@
             ];
 
             el.innerHTML = top.map((p, i) => {
-                const c = i === 1 ? '#f1c40f' : getColor(p.o.id);
+                const c = i === 1 ? '#f1c40f' : window.getColor(p.o.id);
                 return `
                 <div class="flex-1 flex flex-col items-center stagger-item" style="animation-delay: ${p.delay}">
                     <p class="text-[11px] font-black font-cyber mb-1.5 uppercase truncate w-full text-center" style="color: ${c}">${p.o.first}</p>
@@ -636,7 +674,7 @@
             const _todayTeams = todaysTeams();
 
             el.innerHTML = owners.map((o, i) => {
-                const color = getColor(o.id);
+                const color = window.getColor(o.id);
                 const isUnsold = o.id === 'unsold';
                 const squad = squads[o.id] || [];
                 const cID = 'c-' + o.id.replace(/\s+/g,'-');
@@ -651,10 +689,9 @@
                     : squad.sort((a,b)=>b.act-a.act).map((p,idx) => {
                         const pt = (p.team||'').toString().trim().toUpperCase();
                         const isPlaying = _todayTeams.has(pt) || Array.from(_todayTeams).some(t => t.includes(pt) || pt.includes(t));
+                        const safeName = p.name.replace(/'/g, "\\'");
                         return `
-                        <div class="flex justify-between items-center py-1.5 border-b border-[var(--glass-border)] last:border-0 ${p.act===0?'player-row-ghost':''} cursor-pointer active-scale hover:bg-white/5 px-1 rounded transition-colors" 
-                             data-name="${p.name}" data-team="${p.team}" data-role="${p.role}" data-owner="${o.full}"
-                             onclick="event.stopPropagation(); openPlayerModal(this.dataset.name, this.dataset.team, this.dataset.role, this.dataset.owner)">
+                        <div class="flex justify-between items-center py-1.5 border-b border-[var(--glass-border)] last:border-0 cursor-pointer hover:bg-white/5 active-scale transition-colors px-1 rounded ${p.act===0?'player-row-ghost':''}" onclick="window.showPlayerStats('${safeName}')">
                             <div class="flex items-center flex-wrap gap-1">
                                 <span class="text-[8px] font-bold text-[var(--text4)] w-3">${idx+1}</span>
                                 <span class="text-[11px] font-bold text-[var(--text1)]">${p.name} <span class="text-[8px] text-[var(--text4)]">(${p.team})</span></span>
@@ -715,85 +752,6 @@
 
         function toggleSquad(id){ const s=document.getElementById('sq-'+id); if(s) s.classList.toggle('open'); }
 
-        // --- PLAYER SCOUT MODAL LOGIC ---
-        function openPlayerModal(name, team, role, owner) {
-            const overlay = document.getElementById('player-modal-overlay');
-            const modal = document.getElementById('player-modal');
-            const content = document.getElementById('player-modal-content');
-            
-            const color = getColor(owner);
-            const teamColor = TEAM_COLORS[team.toUpperCase()] || 'var(--text4)';
-
-            // Fetch Match History for this player from pcRows
-            const history = [];
-            let totalPts = 0;
-            _state.pcRows.forEach(r => {
-                if(r[1] && r[1].toString().trim() === name) {
-                    const pts = parseFloat(r[6]) || 0;
-                    if(pts > 0) { // Only log matches where they scored
-                        history.push({ match: r[0], pts: Math.round(pts) });
-                        totalPts += pts;
-                    }
-                }
-            });
-
-            // Populate Content
-            content.innerHTML = `
-                <div class="flex justify-between items-start mb-6 border-b border-[var(--glass-border)] pb-4">
-                    <div>
-                        <p class="font-cyber text-[8px] font-black uppercase tracking-widest text-[var(--text4)] mb-1">Player Scout</p>
-                        <h2 class="text-xl font-black text-[var(--text1)]">${name}</h2>
-                        <div class="flex items-center gap-2 mt-1.5 text-[10px] font-bold">
-                            <span style="color:${teamColor}" class="uppercase">${team}</span>
-                            <span class="text-[var(--text4)]">•</span>
-                            <span class="text-[var(--text3)] uppercase">${role}</span>
-                        </div>
-                        <p class="text-[9px] font-bold text-[var(--text4)] mt-2">Owned by <span style="color:${color}" class="uppercase">${owner}</span></p>
-                    </div>
-                    <div class="text-right flex flex-col items-end">
-                        <div class="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg border" style="background:${color}15; border-color:${color}40">
-                            <p class="font-cyber text-xl font-black" style="color:${color}">${Math.round(totalPts)}</p>
-                        </div>
-                        <p class="text-[8px] font-black uppercase text-[var(--text4)] mt-1.5 tracking-widest">Total Pts</p>
-                    </div>
-                </div>
-                
-                <div>
-                    <h3 class="font-cyber text-[10px] font-black uppercase tracking-widest text-[var(--text2)] mb-3">Match History</h3>
-                    ${history.length === 0 ? `<p class="text-center text-[10px] text-[var(--text4)] py-6 italic">No points scored yet.</p>` : 
-                        `<div class="space-y-2">
-                            ${history.map(h => `
-                                <div class="flex justify-between items-center p-3 rounded-xl border border-white/5 bg-white/5">
-                                    <p class="text-xs font-bold text-[var(--text1)]">Match ${h.match}</p>
-                                    <p class="font-cyber text-sm font-black" style="color:${color}">+${h.pts}</p>
-                                </div>
-                            `).join('')}
-                        </div>`
-                    }
-                </div>
-            `;
-
-            // Animate In
-            overlay.classList.remove('hidden');
-            // Trigger reflow
-            void overlay.offsetWidth;
-            overlay.classList.remove('opacity-0');
-            modal.classList.remove('translate-y-full');
-        }
-
-        function closePlayerModal() {
-            const overlay = document.getElementById('player-modal-overlay');
-            const modal = document.getElementById('player-modal');
-            
-            overlay.classList.add('opacity-0');
-            modal.classList.add('translate-y-full');
-            
-            setTimeout(() => {
-                overlay.classList.add('hidden');
-            }, 400); // Wait for transition
-        }
-
-
         function renderMVPMerged(mvp, matchName, active, pcRows, completedMatches) {
             const el = document.getElementById('mvp-spotlight');
             if (!mvp || !mvp.owner) { el.innerHTML=''; return; }
@@ -812,9 +770,9 @@
                 if(sorted[0][1]>0){winnerId=sorted[0][0]; winnerPts=Math.round(sorted[0][1]);}
             }
 
-            const mvpColor = getColor(mvp.owner);
+            const mvpColor = window.getColor(mvp.owner);
             const winner = winnerId ? active.find(o=>o.id===winnerId) : null;
-            const winColor = winner ? getColor(winner.id) : '#f1c40f';
+            const winColor = winner ? window.getColor(winner.id) : '#f1c40f';
 
             el.innerHTML = `
                 <div class="glass-panel p-4 stagger-item" style="border-color: rgba(241,196,15,0.3); background: linear-gradient(135deg, rgba(241,196,15,0.05), transparent)">
@@ -866,7 +824,7 @@
                     </div>
                     <div class="hidden px-4 pb-4 space-y-2">
                         ${sorted.map((o,i)=>{
-                            const c=getColor(o.id), pct=Math.round((o.matchPts/maxPts)*100);
+                            const c=window.getColor(o.id), pct=Math.round((o.matchPts/maxPts)*100);
                             return `
                             <div class="flex items-center gap-2">
                                 <span class="text-[8px] font-black w-3 text-right" style="color:${i===0?c:'var(--text4)'}">${i+1}</span>
@@ -903,7 +861,7 @@
             }
             
             const sorted = [...owners].sort((a,b) => (leadCount[b.id]||0)-(leadCount[a.id]||0));
-            const lc = leader ? getColor(leader.id) : '#f1c40f';
+            const lc = leader ? window.getColor(leader.id) : '#f1c40f';
 
             el.innerHTML = `
                 <div class="glass-panel p-5">
@@ -921,7 +879,7 @@
                     </div>` : ''}
                     <div class="space-y-2.5">
                         ${sorted.slice(0,5).map((o,i) => {
-                            const c=getColor(o.id), cnt=leadCount[o.id]||0, pct=Math.round((cnt/completedMatches.length)*100);
+                            const c=window.getColor(o.id), cnt=leadCount[o.id]||0, pct=Math.round((cnt/completedMatches.length)*100);
                             return `
                             <div class="flex items-center gap-2">
                                 <span class="text-[8px] font-black w-3 text-center text-[var(--text4)]">${i+1}</span>
@@ -964,7 +922,7 @@
                     <p class="text-[11px] font-bold text-[var(--text2)]">Last 7 Matches Performance</p>
                 </div>
                 ${weeklyData.map((d,i) => {
-                    const color=getColor(d.id), tIcon=d.trend==='hot'?'🔥':d.trend==='cold'?'🧊':'➡️';
+                    const color=window.getColor(d.id), tIcon=d.trend==='hot'?'🔥':d.trend==='cold'?'🧊':'➡️';
                     const tColor=d.trend==='hot'?'#4ade80':d.trend==='cold'?'#60a5fa':'var(--text3)';
                     const weekPct=d.avgMatch>0?Math.min(100,Math.round((d.weekAvg/d.avgMatch)*100)):50;
                     return `
@@ -1012,7 +970,7 @@
                     <p class="text-[11px] font-bold text-[var(--text2)]">Potential Rank based on Ideal C/VC</p>
                 </div>
                 ${data.map((d,i) => {
-                    const color=getColor(d.id), curRank=owners.findIndex(o=>o.id===d.id)+1;
+                    const color=window.getColor(d.id), curRank=owners.findIndex(o=>o.id===d.id)+1;
                     const icon = curRank>i+1?'🟢 ↑':curRank<i+1?'🔴 ↓':'⚪';
                     return `
                     <div class="glass-panel p-4 mb-2 stagger-item" style="border-left: 3px solid ${color}">
@@ -1062,10 +1020,10 @@
             const dayWinOwner=topDayWinner?active.find(o=>o.id===topDayWinner[0]):null;
 
             const cards=[
-                topOwner?{icon:'🔥',label:'Highest Match Score',name:topOwner.full,value:allBest[0][1].pts+' pts',sub:allBest[0][1].matchName,color:getColor(topOwner.id)}:null,
-                bestPlayer.pts>0?{icon:'⭐',label:'Best Player Score',name:bestPlayer.name,value:bestPlayer.pts+' pts',sub:`${bestPlayer.match} · Owned by ${bestPlayer.owner}`,color:getColor(bestPlayer.owner)}:null,
-                dayWinOwner?{icon:'🏅',label:'Most Match Wins',name:dayWinOwner.full,value:topDayWinner[1]+' days',sub:`out of ${completedMatches.length} match days`,color:getColor(dayWinOwner.id)}:null,
-                active[0]?{icon:'👑',label:'Current Leader',name:active[0].full,value:active[0].score+' pts',sub:'total this season',color:getColor(active[0].id)}:null,
+                topOwner?{icon:'🔥',label:'Highest Match Score',name:topOwner.full,value:allBest[0][1].pts+' pts',sub:allBest[0][1].matchName,color:window.getColor(topOwner.id)}:null,
+                bestPlayer.pts>0?{icon:'⭐',label:'Best Player Score',name:bestPlayer.name,value:bestPlayer.pts+' pts',sub:`${bestPlayer.match} · Owned by ${bestPlayer.owner}`,color:window.getColor(bestPlayer.owner)}:null,
+                dayWinOwner?{icon:'🏅',label:'Most Match Wins',name:dayWinOwner.full,value:topDayWinner[1]+' days',sub:`out of ${completedMatches.length} match days`,color:window.getColor(dayWinOwner.id)}:null,
+                active[0]?{icon:'👑',label:'Current Leader',name:active[0].full,value:active[0].score+' pts',sub:'total this season',color:window.getColor(active[0].id)}:null,
             ].filter(Boolean);
 
             el.innerHTML = `
@@ -1148,58 +1106,33 @@
                 p1.selectedIndex = 0;
                 p2.selectedIndex = 1;
             }
-            updateH2H();
+            window.updateH2H();
         }
 
-        function updateH2H() {
+        window.updateH2H = function() {
             const id1 = document.getElementById('h2h-p1').value;
             const id2 = document.getElementById('h2h-p2').value;
             const el = document.getElementById('h2h-content');
             
-            const o1 = _state.active.find(o => o.id === id1);
-            const o2 = _state.active.find(o => o.id === id2);
+            const o1 = window._state.active.find(o => o.id === id1);
+            const o2 = window._state.active.find(o => o.id === id2);
             if(!o1 || !o2) return;
 
-            const s1 = (_state.squads[id1] || []).sort((a,b)=>b.act-a.act);
-            const s2 = (_state.squads[id2] || []).sort((a,b)=>b.act-a.act);
+            const s1 = (window._state.squads[id1] || []).sort((a,b)=>b.act-a.act);
+            const s2 = (window._state.squads[id2] || []).sort((a,b)=>b.act-a.act);
             
-            const c1 = getColor(id1);
-            const c2 = getColor(id2);
+            const c1 = window.getColor(id1);
+            const c2 = window.getColor(id2);
 
             const diff = o1.score - o2.score;
             let leadText = diff === 0 ? "TIED" : (diff > 0 ? `${o1.first} +${diff}` : `${o2.first} +${Math.abs(diff)}`);
             let leadColor = diff === 0 ? 'var(--text4)' : (diff > 0 ? c1 : c2);
 
-            // --- Rivalry Tracker Logic ---
-            let w1 = 0, w2 = 0, ties = 0;
-            _state.completedMatches.forEach(matchName => {
-                const mRows = _state.pcRows.filter(r => r[0] && r[0].toString().trim() === matchName);
-                let score1 = 0, score2 = 0;
-                mRows.forEach(r => {
-                    if (!r[2]) return;
-                    const ownerRaw = fixID(r[2]);
-                    const isO1 = ownerRaw === o1.id || ownerRaw.includes(o1.id.split(' ')[0]) || o1.id.includes(ownerRaw.split(' ')[0]);
-                    const isO2 = ownerRaw === o2.id || ownerRaw.includes(o2.id.split(' ')[0]) || o2.id.includes(ownerRaw.split(' ')[0]);
-                    if (isO1) score1 += (parseFloat(r[6]) || 0);
-                    if (isO2) score2 += (parseFloat(r[6]) || 0);
-                });
-                // Only count matches where at least one of them scored
-                if(score1 > 0 || score2 > 0) {
-                    if (score1 > score2) w1++;
-                    else if (score2 > score1) w2++;
-                    else ties++;
-                }
-            });
-            const totalMatches = w1 + w2 + ties;
-            const w1Pct = totalMatches > 0 ? (w1/totalMatches)*100 : 0;
-            const w2Pct = totalMatches > 0 ? (w2/totalMatches)*100 : 0;
-            const tPct = totalMatches > 0 ? (ties/totalMatches)*100 : 100;
-
             el.innerHTML = `
                 <div class="glass-panel p-4 flex justify-between items-center stagger-item">
                     <div class="text-center w-[30%]">
                         <p class="font-cyber text-2xl font-black" style="color:${c1}">${o1.score}</p>
-                        <p class="text-[8px] font-bold text-[var(--text4)] uppercase mt-1">Rank #${_state.active.findIndex(o=>o.id===id1)+1}</p>
+                        <p class="text-[8px] font-bold text-[var(--text4)] uppercase mt-1">Rank #${window._state.active.findIndex(o=>o.id===id1)+1}</p>
                     </div>
                     <div class="text-center flex-1">
                         <p class="text-[7px] font-black text-yellow-500 uppercase tracking-widest mb-1 opacity-80">Gap</p>
@@ -1207,21 +1140,7 @@
                     </div>
                     <div class="text-center w-[30%]">
                         <p class="font-cyber text-2xl font-black" style="color:${c2}">${o2.score}</p>
-                        <p class="text-[8px] font-bold text-[var(--text4)] uppercase mt-1">Rank #${_state.active.findIndex(o=>o.id===id2)+1}</p>
-                    </div>
-                </div>
-
-                <div class="mt-4 bg-white/5 rounded-2xl p-4 border border-[var(--glass-border)] stagger-item shadow-inner" style="animation-delay: 0.05s">
-                    <p class="text-[8px] font-black uppercase text-center text-[var(--text4)] mb-2 tracking-widest">Head-to-Head Record</p>
-                    <div class="flex justify-between text-[10px] font-black font-cyber mb-1.5 uppercase">
-                        <span style="color:${c1}">${w1} WINS</span>
-                        <span class="text-[var(--text4)] text-[8px] tracking-widest">${ties} TIES</span>
-                        <span style="color:${c2}">${w2} WINS</span>
-                    </div>
-                    <div class="w-full h-1.5 rounded-full flex overflow-hidden opacity-80">
-                        <div style="width:${w1Pct}%; background:${c1}"></div>
-                        <div style="width:${tPct}%; background:var(--glass-border)"></div>
-                        <div style="width:${w2Pct}%; background:${c2}"></div>
+                        <p class="text-[8px] font-bold text-[var(--text4)] uppercase mt-1">Rank #${window._state.active.findIndex(o=>o.id===id2)+1}</p>
                     </div>
                 </div>
                 
@@ -1230,18 +1149,19 @@
                         <div class="text-center mb-2 pb-2 border-b border-[var(--glass-border)]">
                             <span class="text-[9px] font-black uppercase truncate block px-1" style="color:${c1}">${o1.first}'s Squad</span>
                         </div>
-                        <div class="space-y-1.5">
+                        <div class="space-y-1.5 h-[300px] overflow-y-auto no-scrollbar">
                             ${s1.length === 0 ? `<p class="text-center text-[9px] text-[var(--text4)] py-4">Empty</p>` : ''}
-                            ${s1.map(p => `
-                                <div class="flex justify-between items-center p-1.5 rounded hover:bg-white/5 cursor-pointer transition-colors active-scale"
-                                     data-name="${p.name}" data-team="${p.team}" data-role="${p.role}" data-owner="${o1.full}"
-                                     onclick="openPlayerModal(this.dataset.name, this.dataset.team, this.dataset.role, this.dataset.owner)">
+                            ${s1.map(p => {
+                                const safeName = p.name.replace(/'/g, "\\'");
+                                return `
+                                <div class="flex justify-between items-center p-1.5 rounded bg-white/5 border border-[var(--glass-border)] cursor-pointer hover:bg-white/10 active-scale transition-colors" onclick="window.showPlayerStats('${safeName}')">
                                     <div class="truncate mr-2 flex-1">
                                         <p class="text-[9px] font-bold text-[var(--text1)] truncate">${p.name} ${p.cvc ? `<span style="color:${c1}">[${p.cvc}]</span>`:''}</p>
                                     </div>
                                     <span class="font-cyber text-[10px] font-black" style="color:${p.act>0?c1:'var(--text4)'}">${p.act}</span>
                                 </div>
-                            `).join('')}
+                                `;
+                            }).join('')}
                         </div>
                     </div>
                     
@@ -1249,22 +1169,142 @@
                         <div class="text-center mb-2 pb-2 border-b border-[var(--glass-border)]">
                             <span class="text-[9px] font-black uppercase truncate block px-1" style="color:${c2}">${o2.first}'s Squad</span>
                         </div>
-                        <div class="space-y-1.5">
+                        <div class="space-y-1.5 h-[300px] overflow-y-auto no-scrollbar">
                             ${s2.length === 0 ? `<p class="text-center text-[9px] text-[var(--text4)] py-4">Empty</p>` : ''}
-                            ${s2.map(p => `
-                                <div class="flex justify-between items-center p-1.5 rounded hover:bg-white/5 cursor-pointer transition-colors active-scale"
-                                     data-name="${p.name}" data-team="${p.team}" data-role="${p.role}" data-owner="${o2.full}"
-                                     onclick="openPlayerModal(this.dataset.name, this.dataset.team, this.dataset.role, this.dataset.owner)">
+                            ${s2.map(p => {
+                                const safeName = p.name.replace(/'/g, "\\'");
+                                return `
+                                <div class="flex justify-between items-center p-1.5 rounded bg-white/5 border border-[var(--glass-border)] cursor-pointer hover:bg-white/10 active-scale transition-colors" onclick="window.showPlayerStats('${safeName}')">
                                     <div class="truncate mr-2 flex-1">
                                         <p class="text-[9px] font-bold text-[var(--text1)] truncate">${p.name} ${p.cvc ? `<span style="color:${c2}">[${p.cvc}]</span>`:''}</p>
                                     </div>
                                     <span class="font-cyber text-[10px] font-black" style="color:${p.act>0?c2:'var(--text4)'}">${p.act}</span>
                                 </div>
-                            `).join('')}
+                                `;
+                            }).join('')}
                         </div>
                     </div>
                 </div>
             `;
+        }
+
+        // --- PLAYER STAT BOTTOM SHEET ---
+        window.showPlayerStats = function(playerName) {
+            const player = window._state.rosRows.find(r => r[0] === playerName);
+            if (!player) return;
+            
+            document.getElementById('ps-name').textContent = playerName;
+            document.getElementById('ps-team').textContent = `${player[4] || 'Unknown'} · ${player[6] || 'Player'}`;
+            
+            // Calculate History
+            const matchHistory = window._state.pcRows.filter(r => r[1] === playerName);
+            const totalPts = window._state.pPoints[fixID(playerName)]?.act || 0;
+            const rawPts = window._state.pPoints[fixID(playerName)]?.raw || 0;
+            
+            document.getElementById('ps-total').textContent = Math.round(totalPts);
+            
+            const content = document.getElementById('ps-content');
+            if (matchHistory.length === 0) {
+                content.innerHTML = `<p class="text-center text-[10px] text-[var(--text4)] py-8 font-bold uppercase tracking-widest">No Match Data Yet</p>`;
+            } else {
+                content.innerHTML = `
+                    <div class="flex justify-between items-center mb-6 p-4 rounded-2xl bg-black/20 border border-[var(--glass-border)]">
+                        <div class="text-center flex-1">
+                            <p class="font-cyber text-lg font-black text-[var(--text1)]">${Math.round(rawPts)}</p>
+                            <p class="text-[8px] font-black text-[var(--text4)] uppercase mt-1 tracking-widest">Base Pts</p>
+                        </div>
+                        <div class="w-px h-8 bg-[var(--glass-border)]"></div>
+                        <div class="text-center flex-1">
+                            <p class="font-cyber text-lg font-black text-emerald-400">+${Math.round(totalPts - rawPts)}</p>
+                            <p class="text-[8px] font-black text-[var(--text4)] uppercase mt-1 tracking-widest">C/VC Bonus</p>
+                        </div>
+                    </div>
+                    
+                    <p class="text-[9px] font-black uppercase tracking-widest text-[var(--text3)] mb-3">Match History</p>
+                    <div class="space-y-2">
+                        ${[...matchHistory].reverse().map(m => {
+                            const matchName = m[0];
+                            const pts = parseFloat(m[6]) || 0;
+                            const mult = parseFloat(m[5]) || 1;
+                            return `
+                            <div class="flex justify-between items-center p-3 rounded-xl border border-[var(--glass-border)] bg-white/5">
+                                <div>
+                                    <p class="text-xs font-bold text-[var(--text1)]">${matchName}</p>
+                                    <p class="text-[8px] font-black uppercase tracking-widest mt-1 ${mult > 1 ? 'text-yellow-500' : 'text-[var(--text4)]'}">
+                                        ${mult > 1 ? `Multiplier: ${mult}x` : 'Base Points'}
+                                    </p>
+                                </div>
+                                <span class="font-cyber text-sm font-black ${pts > 0 ? 'text-[var(--text1)]' : 'text-[var(--text4)]'}">${pts}</span>
+                            </div>`;
+                        }).join('')}
+                    </div>
+                `;
+            }
+            
+            const overlay = document.getElementById('player-stat-overlay');
+            const sheet = document.getElementById('player-stat-sheet');
+            
+            overlay.classList.remove('hidden');
+            void overlay.offsetWidth; // Force reflow
+            overlay.classList.remove('opacity-0');
+            sheet.classList.remove('translate-y-full');
+        };
+
+        window.closePlayerStats = function() {
+            const overlay = document.getElementById('player-stat-overlay');
+            const sheet = document.getElementById('player-stat-sheet');
+            
+            overlay.classList.add('opacity-0');
+            sheet.classList.add('translate-y-full');
+            
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+            }, 300);
+        };
+
+        // --- CHAT & IDENTITY SETUP ---
+        function renderChatSetup(active) {
+            const select = document.getElementById('chat-identity-select');
+            if(select && select.options.length === 0) {
+                select.innerHTML = active.map(o => `<option value="${o.id}">${o.full}</option>`).join('');
+            }
+            window.checkChatIdentity();
+        }
+
+        window.checkChatIdentity = function() {
+            const id = localStorage.getItem('revo-identity');
+            const setup = document.getElementById('chat-setup');
+            const interface = document.getElementById('chat-interface');
+            const btnChange = document.getElementById('btn-change-id');
+            
+            if(id) {
+                setup.classList.add('hidden');
+                interface.classList.remove('hidden'); interface.classList.add('flex');
+                btnChange.classList.remove('hidden');
+            } else {
+                setup.classList.remove('hidden');
+                interface.classList.add('hidden'); interface.classList.remove('flex');
+                btnChange.classList.add('hidden');
+            }
+        }
+
+        window.saveIdentity = function() {
+            const val = document.getElementById('chat-identity-select').value;
+            localStorage.setItem('revo-identity', val);
+            window.checkChatIdentity();
+            showChatToast(`Joined chat as ${val.toUpperCase()}`);
+        }
+
+        window.changeIdentity = function() {
+            localStorage.removeItem('revo-identity');
+            window.checkChatIdentity();
+        }
+
+        function showChatToast(msg) {
+            const t = document.getElementById('chat-toast');
+            document.getElementById('chat-toast-msg').textContent = msg;
+            t.classList.remove('-translate-y-20', 'opacity-0');
+            setTimeout(() => t.classList.add('-translate-y-20', 'opacity-0'), 3000);
         }
 
         // --- LIVE, SCHEDULE & LIVEPOINTS VIEWS ---
@@ -1312,7 +1352,7 @@
                         <p class="font-cyber text-[8px] font-black uppercase tracking-widest text-[var(--text3)] mb-3">Live Leaderboard</p>
                         <div class="space-y-2">
                             ${oRanked.map(([o, pts], i) => {
-                                const c = getColor(o), pct = Math.round((pts/maxPts)*100);
+                                const c = window.getColor(o), pct = Math.round((pts/maxPts)*100);
                                 return `
                                 <div class="flex items-center gap-2">
                                     <span class="text-[9px] font-black w-4 text-center" style="color:${i===0?c:'var(--text4)'}">${i===0?'👑':i+1}</span>
@@ -1333,11 +1373,9 @@
                             </thead>
                             <tbody>
                                 ${mRows.map(d => {
-                                    const oc = getColor(d.owner), tc = TEAM_COLORS[d.team?.toUpperCase()]||'var(--text4)';
+                                    const oc = window.getColor(d.owner), tc = TEAM_COLORS[d.team?.toUpperCase()]||'var(--text4)';
                                     return `
-                                    <tr class="border-t border-[var(--glass-border)] cursor-pointer hover:bg-white/5 transition-colors"
-                                        data-name="${d.player}" data-team="${d.team}" data-role="—" data-owner="${d.owner}"
-                                        onclick="openPlayerModal(this.dataset.name, this.dataset.team, this.dataset.role, this.dataset.owner)">
+                                    <tr class="border-t border-[var(--glass-border)]">
                                         <td class="p-2 pl-4">
                                             <p class="font-bold text-[var(--text1)]">${d.player}</p>
                                             <p class="text-[7px] font-black uppercase" style="color:${tc}">${d.team}</p>
@@ -1404,7 +1442,7 @@
         }
         
         function todaysTeams() {
-            const rows = _state.schedRows || []; 
+            const rows = window._state?.schedRows || []; 
             const playing = new Set();
             const source = rows.length ? rows : SCHEDULE;
             
@@ -1468,7 +1506,7 @@
             el.innerHTML = teams.map(t => `<button class="sched-pill ${t==='ALL'?'active':''}" data-team="${t}" onclick="filterSchedule('${t}')" style="${t!=='ALL'?`border-color:${TEAM_COLORS[t]}55; color:${TEAM_COLORS[t]}`:''}">${t}</button>`).join('');
         }
 
-        function filterSchedule(team) {
+        window.filterSchedule = function(team) {
             document.querySelectorAll('.sched-pill').forEach(b => b.classList.toggle('active', b.dataset.team === team));
             document.querySelectorAll('.sched-row').forEach(row => {
                 const show = team === 'ALL' || row.dataset.t1 === team || row.dataset.t2 === team;
@@ -1511,7 +1549,7 @@
                     </div>
                 </div>`;
             }).join('');
-            filterSchedule('ALL');
+            window.filterSchedule('ALL');
         }
 
         function renderStandings(rows) {
@@ -1569,23 +1607,22 @@
         function onSearchInput(q) {
             const dd = document.getElementById('search-dropdown');
             const query = q.trim().toLowerCase();
-            if(!query || !_state.rosRows) { dd.style.display='none'; return; }
+            if(!query || !window._state?.rosRows) { dd.style.display='none'; return; }
             
-            const results = _state.rosRows.filter(r=>r[0]&&!r[1].includes('owner')).map(r=>({
-                name:r[0], owner:r[1], team:r[4], role:r[6], pts: _state.pPoints[fixID(r[0])]?.act||0
+            const results = window._state.rosRows.filter(r=>r[0]&&!r[1].includes('owner')).map(r=>({
+                name:r[0], owner:r[1], team:r[4], pts: window._state.pPoints[fixID(r[0])]?.act||0
             })).filter(p=>p.name.toLowerCase().includes(query) || p.owner.toLowerCase().includes(query))
                .sort((a,b)=>b.pts-a.pts).slice(0,8);
 
             dd.style.display='block';
             dd.innerHTML = results.map(p=>`
                 <div class="p-3 border-b border-[var(--glass-border)] cursor-pointer hover:bg-white/5 active-scale flex justify-between items-center" 
-                     data-name="${p.name}" data-team="${p.team}" data-role="${p.role}" data-owner="${p.owner}"
-                     onclick="document.getElementById('player-search').value=''; hideSearchOverlay(); openPlayerModal(this.dataset.name, this.dataset.team, this.dataset.role, this.dataset.owner);">
+                     onclick="document.getElementById('player-search').value=''; hideSearchOverlay(); switchTab('main'); const c=document.getElementById('c-${fixID(p.owner).replace(/\s+/g,'-')}'); if(c){c.scrollIntoView({behavior:'smooth'}); c.classList.add('border-yellow-500'); setTimeout(()=>c.classList.remove('border-yellow-500'), 1500);} window.showPlayerStats('${p.name.replace(/'/g, "\\'")}');">
                     <div>
                         <p class="text-xs font-bold text-[var(--text1)]">${p.name}</p>
                         <p class="text-[8px] font-bold text-[var(--text4)] uppercase mt-0.5">${p.team} · ${p.owner}</p>
                     </div>
-                    <p class="font-cyber text-sm font-black" style="color:${getColor(p.owner)}">${p.pts}</p>
+                    <p class="font-cyber text-sm font-black" style="color:${window.getColor(p.owner)}">${p.pts}</p>
                 </div>`).join('');
             if(!results.length) dd.innerHTML=`<div class="p-4 text-center text-[10px] text-[var(--text4)]">No results</div>`;
         }
@@ -1598,8 +1635,8 @@
         });
 
         async function shareCard(cID, ownerFull, score, rank) {
-            const color = getColor(ownerFull);
-            const squad = (_state.squads[fixID(ownerFull)]||[]).sort((a,b)=>b.act-a.act);
+            const color = window.getColor(ownerFull);
+            const squad = (window._state.squads[fixID(ownerFull)]||[]).sort((a,b)=>b.act-a.act);
             const captain = squad.find(p=>p.cvc==='C'), vice = squad.find(p=>p.cvc==='VC');
             const PLAYER_ROW_H = 24, W = 600, H = 240+50+16+Math.max(squad.length,1)*PLAYER_ROW_H+60;
             
@@ -1668,49 +1705,6 @@
             }
         }
 
-        // PWA Service Worker & Install Logic
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW Reg Failed:', err));
-            });
-        }
-
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            // Delay banner slightly so it doesn't overlap splash
-            setTimeout(() => {
-                const banner = document.getElementById('install-banner');
-                if (banner) {
-                    banner.classList.remove('hidden');
-                    // Trigger reflow to start animation
-                    void banner.offsetWidth;
-                    banner.classList.remove('translate-y-10', 'opacity-0');
-                }
-            }, 5000);
-        });
-
-        document.getElementById('btn-install')?.addEventListener('click', async () => {
-            const banner = document.getElementById('install-banner');
-            if (banner) banner.classList.add('opacity-0', 'translate-y-10');
-            setTimeout(() => banner.classList.add('hidden'), 500);
-            
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                await deferredPrompt.userChoice;
-                deferredPrompt = null;
-            }
-        });
-
-        function dismissInstall() {
-            const banner = document.getElementById('install-banner');
-            if (banner) {
-                banner.classList.add('opacity-0', 'translate-y-10');
-                setTimeout(() => banner.classList.add('hidden'), 500);
-            }
-        }
-
         // Init App Data
         updateApp();
         setInterval(updateApp, 60000);
@@ -1722,6 +1716,137 @@
             if(btn) btn.style.display = window.scrollY > 300 ? 'flex' : 'none';
         }, {passive:true});
 
+        // Chat HTML Escaping utility
+        function escapeHTML(str) {
+            const p = document.createElement('p');
+            p.textContent = str;
+            return p.innerHTML;
+        }
+
+    </script>
+
+    <!-- LIVE CHAT BACKEND (Firebase) -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+        import { getFirestore, collection, onSnapshot, addDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+
+        let db, auth, currentUser;
+        
+        async function initChat() {
+            const statusEl = document.getElementById('chat-connection-status');
+            
+            if (typeof __firebase_config === 'undefined') {
+                if(statusEl) {
+                    statusEl.textContent = 'Preview Mode Only: Real-time chat requires deployment backend.';
+                    statusEl.classList.replace('text-[var(--text4)]', 'text-yellow-500');
+                }
+                return;
+            }
+
+            try {
+                const firebaseConfig = JSON.parse(__firebase_config);
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                window._chatAppId = typeof __app_id !== 'undefined' ? __app_id : 'revo-ipl-2026';
+
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                onAuthStateChanged(auth, user => {
+                    currentUser = user;
+                    if (user) {
+                        if(statusEl) statusEl.style.display = 'none';
+                        listenToMessages();
+                    }
+                });
+            } catch(e) {
+                console.warn("Chat setup skipped:", e);
+                if(statusEl) statusEl.textContent = 'Chat server disconnected.';
+            }
+        }
+
+        function listenToMessages() {
+            if (!currentUser || !db) return;
+            const chatRef = collection(db, 'artifacts', window._chatAppId, 'public', 'data', 'banter_chat');
+            
+            onSnapshot(chatRef, (snapshot) => {
+                const messages = [];
+                snapshot.forEach(doc => {
+                    messages.push({ id: doc.id, ...doc.data() });
+                });
+                // Sort chronologically in memory
+                messages.sort((a, b) => a.timestamp - b.timestamp);
+                renderMessages(messages);
+            }, (error) => {
+                console.error("Chat sync error:", error);
+            });
+        }
+
+        function renderMessages(msgs) {
+            const container = document.getElementById('chat-messages');
+            if (!container) return;
+            const myId = localStorage.getItem('revo-identity');
+            
+            container.innerHTML = msgs.map(m => {
+                const isMe = m.senderId === myId;
+                const c = window.getColor ? window.getColor(m.senderId) : '#64748b';
+                
+                // Try to find the full first name from the active state, fallback to ID
+                const activeState = window._state?.active || [];
+                const matchedOwner = activeState.find(o => o.id === m.senderId);
+                const name = matchedOwner ? matchedOwner.first : m.senderId;
+                
+                if (isMe) {
+                    return `
+                    <div class="self-end max-w-[85%] flex flex-col items-end stagger-item" style="animation-delay: 0s; opacity: 1;">
+                        <div class="bg-gradient-to-br from-yellow-400 to-yellow-600 text-black px-3.5 py-2 rounded-2xl rounded-tr-sm text-[11px] font-bold shadow-lg">
+                            ${escapeHTML(m.text)}
+                        </div>
+                    </div>`;
+                } else {
+                    return `
+                    <div class="self-start max-w-[85%] flex flex-col items-start stagger-item" style="animation-delay: 0s; opacity: 1;">
+                        <span class="text-[8px] font-black uppercase mb-1 ml-1 tracking-widest" style="color:${c}">${name}</span>
+                        <div class="bg-white/10 border border-white/5 backdrop-blur-md px-3.5 py-2 rounded-2xl rounded-tl-sm text-[11px] font-medium text-[var(--text1)] shadow-lg leading-relaxed">
+                            ${escapeHTML(m.text)}
+                        </div>
+                    </div>`;
+                }
+            }).join('');
+            
+            // Auto scroll to bottom
+            container.scrollTop = container.scrollHeight;
+        }
+
+        window.sendChatMessage = async function() {
+            if (!currentUser || !db) return;
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const identity = localStorage.getItem('revo-identity');
+            if (!identity) return;
+
+            input.value = '';
+            
+            try {
+                const chatRef = collection(db, 'artifacts', window._chatAppId, 'public', 'data', 'banter_chat');
+                await addDoc(chatRef, {
+                    text: text,
+                    senderId: identity,
+                    timestamp: Date.now()
+                });
+            } catch(e) {
+                console.error("Error sending:", e);
+            }
+        }
+
+        initChat();
     </script>
 </body>
 </html>
