@@ -43,22 +43,22 @@
             transition: background 0.4s, color 0.4s;
         }
 
-        /* High-End Background Mesh */
+        /* High-End Background Mesh with Dynamic Theming Support */
         .mesh-bg {
             position: fixed;
             inset: 0;
             z-index: -1;
             background: 
-                radial-gradient(circle at 0% 0%, rgba(30, 58, 138, 0.12) 0%, transparent 40%),
-                radial-gradient(circle at 100% 100%, rgba(241, 196, 15, 0.04) 0%, transparent 40%),
+                radial-gradient(circle at 0% 0%, var(--mesh-c1, rgba(30, 58, 138, 0.12)) 0%, transparent 40%),
+                radial-gradient(circle at 100% 100%, var(--mesh-c2, rgba(241, 196, 15, 0.04)) 0%, transparent 40%),
                 radial-gradient(circle at 50% 50%, var(--bg-void) 0%, var(--bg-void) 100%);
-            transition: background 0.4s;
+            transition: background 1s ease-in-out; /* Smooth color morphing */
         }
 
         body.light .mesh-bg {
             background: 
-                radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 100% 100%, rgba(245, 158, 11, 0.1) 0%, transparent 50%);
+                radial-gradient(circle at 0% 0%, var(--mesh-c1, rgba(59, 130, 246, 0.1)) 0%, transparent 50%),
+                radial-gradient(circle at 100% 100%, var(--mesh-c2, rgba(245, 158, 11, 0.1)) 0%, transparent 50%);
         }
 
         /* Staggered Entry Animation */
@@ -350,9 +350,9 @@
             <div class="glass-panel p-4 mb-3">
                 <p class="font-cyber text-[8px] font-black tracking-widest text-[var(--text4)] uppercase mb-3 text-center">Tactical Matchup</p>
                 <div class="flex items-center gap-2">
-                    <select id="h2h-p1" onchange="updateH2H()" class="flex-1 bg-[var(--bg-void)] border border-[var(--glass-border)] rounded-lg p-2 text-[10px] sm:text-xs font-bold text-[var(--text1)] outline-none appearance-none text-center"></select>
+                    <select id="h2h-p1" onchange="window.haptic(10); updateH2H()" class="flex-1 bg-[var(--bg-void)] border border-[var(--glass-border)] rounded-lg p-2 text-[10px] sm:text-xs font-bold text-[var(--text1)] outline-none appearance-none text-center"></select>
                     <span class="font-cyber text-[10px] font-black text-[var(--text4)]">VS</span>
-                    <select id="h2h-p2" onchange="updateH2H()" class="flex-1 bg-[var(--bg-void)] border border-[var(--glass-border)] rounded-lg p-2 text-[10px] sm:text-xs font-bold text-[var(--text1)] outline-none appearance-none text-center"></select>
+                    <select id="h2h-p2" onchange="window.haptic(10); updateH2H()" class="flex-1 bg-[var(--bg-void)] border border-[var(--glass-border)] rounded-lg p-2 text-[10px] sm:text-xs font-bold text-[var(--text1)] outline-none appearance-none text-center"></select>
                 </div>
             </div>
             <div id="h2h-content"></div>
@@ -377,10 +377,17 @@
     </nav>
 
     <!-- SCROLL TO TOP -->
-    <button id="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})"
+    <button id="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'}); window.haptic(15);"
         class="hidden fixed bottom-24 right-4 z-[500] w-10 h-10 rounded-full glass-panel flex items-center justify-center text-yellow-500 font-bold shadow-lg active-scale border-yellow-500/30">↑</button>
 
     <script>
+        // --- HAPTIC ENGINE ---
+        window.haptic = function(pattern = 15) {
+            if (navigator.vibrate) {
+                try { navigator.vibrate(pattern); } catch(e) {}
+            }
+        };
+
         window._appStartTime = Date.now(); // Track exact load start time
         const SHEET_ID = '1xIRCNr0tteFfMk6l7inIkKeSJMb7WLBswsXepHRqjio';
         const TOTAL_SEASON_MATCHES = 74;
@@ -431,6 +438,35 @@
             return '#64748b';
         }
 
+        function hex2rgb(hex) {
+            let v = hex.replace('#', '');
+            if(v.length === 3) v = v.split('').map(c=>c+c).join('');
+            return `${parseInt(v.slice(0,2),16)}, ${parseInt(v.slice(2,4),16)}, ${parseInt(v.slice(4,6),16)}`;
+        }
+
+        window.setTeamTheme = function(team) {
+            window.haptic([20, 30, 40]); // Distinctive haptic feedback for theming
+            const tc = IPL_TEAMS[team];
+            if(!tc) return;
+            
+            const mesh = document.querySelector('.mesh-bg');
+            const c1 = hex2rgb(tc.color);
+            const c2 = hex2rgb(tc.accent === '#ffffff' || tc.accent === '#1a1a1a' ? tc.color : tc.accent);
+            
+            const isLight = document.body.classList.contains('light');
+            const alpha1 = isLight ? '0.25' : '0.35';
+            const alpha2 = isLight ? '0.2' : '0.25';
+            
+            mesh.style.setProperty('--mesh-c1', `rgba(${c1}, ${alpha1})`);
+            mesh.style.setProperty('--mesh-c2', `rgba(${c2}, ${alpha2})`);
+        };
+
+        window.resetTeamTheme = function() {
+            const mesh = document.querySelector('.mesh-bg');
+            mesh.style.removeProperty('--mesh-c1');
+            mesh.style.removeProperty('--mesh-c2');
+        };
+
         function dismissSplash() { 
             const s=document.getElementById('splash'); 
             if(s) { s.classList.add('hide'); setTimeout(()=>s.remove(),900); }
@@ -438,6 +474,9 @@
 
         let _currentTab = 'main';
         function switchTab(t) {
+            window.haptic(15);
+            if (t !== 'standings') window.resetTeamTheme(); // Reset background morph when leaving standings
+
             // Main Dock
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             const navBtn = document.getElementById('nav-' + (['hof','gems','weekly','strategy','h2h'].includes(t) ? 'main' : t));
@@ -473,9 +512,13 @@
         }
 
         function toggleTheme() {
+            window.haptic(20);
             const isLight = document.body.classList.toggle('light');
             localStorage.setItem('revo-theme', isLight ? 'light' : 'dark');
             document.getElementById('theme-toggle').textContent = isLight ? '☀️' : '🌙';
+            
+            // Retrigger theme if on standings
+            if(_currentTab === 'standings') window.resetTeamTheme(); 
         }
         if (localStorage.getItem('revo-theme') === 'light') { document.body.classList.add('light'); document.getElementById('theme-toggle').textContent = '☀️'; }
 
@@ -724,7 +767,11 @@
             });
         }
 
-        function toggleSquad(id){ const s=document.getElementById('sq-'+id); if(s) s.classList.toggle('open'); }
+        function toggleSquad(id){ 
+            window.haptic(10);
+            const s=document.getElementById('sq-'+id); 
+            if(s) s.classList.toggle('open'); 
+        }
 
         function renderMVPMerged(mvp, matchName, active, pcRows, completedMatches) {
             const el = document.getElementById('mvp-spotlight');
@@ -792,7 +839,7 @@
 
             el.innerHTML = `
                 <div class="glass-panel stagger-item">
-                    <div class="p-3 flex justify-between items-center cursor-pointer active-scale" onclick="const b=this.nextElementSibling; b.classList.toggle('hidden'); this.querySelector('span').textContent=b.classList.contains('hidden')?'▼':'▲';">
+                    <div class="p-3 flex justify-between items-center cursor-pointer active-scale" onclick="window.haptic(10); const b=this.nextElementSibling; b.classList.toggle('hidden'); this.querySelector('span').textContent=b.classList.contains('hidden')?'▼':'▲';">
                         <p class="font-cyber text-[9px] font-black text-[var(--text3)] uppercase tracking-widest">Match ${lastMatch} Breakdown</p>
                         <span class="text-[10px] text-[var(--text4)]">▼</span>
                     </div>
@@ -1164,6 +1211,7 @@
 
         // --- PLAYER STAT BOTTOM SHEET ---
         window.showPlayerStats = function(playerName) {
+            window.haptic([15, 30]);
             const player = window._state.rosRows.find(r => r[0] === playerName);
             if (!player) return;
             
@@ -1225,6 +1273,7 @@
         };
 
         window.closePlayerStats = function() {
+            window.haptic(10);
             const overlay = document.getElementById('player-stat-overlay');
             const sheet = document.getElementById('player-stat-sheet');
             
@@ -1432,7 +1481,7 @@
         function renderScheduleFilters() {
             const el = document.getElementById('schedule-filters');
             const teams = ['ALL', 'MI', 'CSK', 'RCB', 'KKR', 'SRH', 'DC', 'PBKS', 'RR', 'GT', 'LSG'];
-            el.innerHTML = teams.map(t => `<button class="sched-pill ${t==='ALL'?'active':''}" data-team="${t}" onclick="filterSchedule('${t}')" style="${t!=='ALL'?`border-color:${TEAM_COLORS[t]}55; color:${TEAM_COLORS[t]}`:''}">${t}</button>`).join('');
+            el.innerHTML = teams.map(t => `<button class="sched-pill ${t==='ALL'?'active':''}" data-team="${t}" onclick="window.haptic(10); filterSchedule('${t}')" style="${t!=='ALL'?`border-color:${TEAM_COLORS[t]}55; color:${TEAM_COLORS[t]}`:''}">${t}</button>`).join('');
         }
 
         window.filterSchedule = function(team) {
@@ -1492,6 +1541,10 @@
                         <p class="font-cyber text-[8px] font-black tracking-widest text-[var(--text4)] uppercase mb-1">IPL 2026</p>
                         <h2 class="font-cyber text-sm font-black text-yellow-500">Points Table</h2>
                     </div>
+                    <div class="text-right">
+                        <p class="text-[7px] font-black tracking-widest text-[var(--text3)] uppercase">Tap team</p>
+                        <p class="text-[9px] font-black tracking-widest text-[var(--text1)] uppercase">To Theme App</p>
+                    </div>
                 </div>
                 <div class="glass-panel overflow-hidden stagger-item" style="animation-delay: 0.1s">
                     <table class="w-full text-left text-[10px]">
@@ -1502,7 +1555,7 @@
                             ${data.map(t => {
                                 const stName = getShortTeam(t[2]);
                                 return `
-                                <tr class="border-t border-[var(--glass-border)] ${t[0]<=4?'bg-emerald-500/5':''}">
+                                <tr class="border-t border-[var(--glass-border)] cursor-pointer hover:bg-white/5 active-scale transition-colors ${t[0]<=4?'bg-emerald-500/5':''}" onclick="setTeamTheme('${stName}')">
                                     <td class="p-3 text-center font-cyber font-bold ${t[0]<=4?'text-emerald-500':'text-[var(--text4)]'}">${t[0]}</td>
                                     <td class="p-3 font-bold text-[var(--text1)] flex items-center gap-2">
                                         <span class="w-2 h-2 rounded-full flex-shrink-0" style="background:${TEAM_COLORS[stName]||'#fff'}"></span><span class="truncate">${t[2]}</span>
@@ -1564,6 +1617,7 @@
         });
 
         async function shareCard(cID, ownerFull, score, rank) {
+            window.haptic(30);
             const color = window.getColor(ownerFull);
             const squad = (window._state.squads[fixID(ownerFull)]||[]).sort((a,b)=>b.act-a.act);
             const captain = squad.find(p=>p.cvc==='C'), vice = squad.find(p=>p.cvc==='VC');
