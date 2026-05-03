@@ -52,7 +52,7 @@
                 radial-gradient(circle at 0% 0%, var(--mesh-c1, rgba(30, 58, 138, 0.12)) 0%, transparent 40%),
                 radial-gradient(circle at 100% 100%, var(--mesh-c2, rgba(241, 196, 15, 0.04)) 0%, transparent 40%),
                 radial-gradient(circle at 50% 50%, var(--bg-void) 0%, var(--bg-void) 100%);
-            transition: background 1s ease-in-out; /* Smooth color morphing */
+            transition: background 1s ease-in-out;
         }
 
         body.light .mesh-bg {
@@ -103,30 +103,21 @@
             transform: translateX(-50%);
             width: calc(100% - 24px);
             max-width: 420px;
-            
-            /* Liquid effect core */
-            background: rgba(15, 23, 42, 0.25); /* Highly transparent */
+            background: rgba(15, 23, 42, 0.25);
             backdrop-filter: blur(40px) saturate(250%);
             -webkit-backdrop-filter: blur(40px) saturate(250%);
-            
-            /* Edge reflection lighting */
             border: 1px solid rgba(255, 255, 255, 0.05);
             border-top: 1px solid rgba(255, 255, 255, 0.18);
-            
             padding: 6px;
             border-radius: 40px;
             display: flex;
             justify-content: space-around;
             z-index: 2000;
-            
-            /* Depth and inner glow */
-            box-shadow: 
-                0 30px 60px rgba(0, 0, 0, 0.5),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
         
         body.light .nav-dock { 
-            background: rgba(255, 255, 255, 0.35); /* Highly transparent */
+            background: rgba(255, 255, 255, 0.35); 
             border: 1px solid rgba(0, 0, 0, 0.05);
             border-top: 1px solid rgba(255, 255, 255, 0.8);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.5);
@@ -173,11 +164,9 @@
 
         .active-scale:active { transform: scale(0.96); }
 
-        /* Custom Scroll */
         ::-webkit-scrollbar { width: 0px; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* Pillar Podium */
         .pillar {
             height: 0;
             width: 100%;
@@ -188,25 +177,21 @@
         }
         body.light .pillar { opacity: 0.4; }
 
-        /* Squad Toggle Animation */
         .squad-container { display: none; padding: 0 20px 20px; border-top: 1px solid var(--glass-border); }
         .squad-container.open { display: block; animation: slideIn 0.3s ease-out; }
         @keyframes slideIn { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
 
         .player-row-ghost { opacity: 0.3; filter: grayscale(1); }
 
-        /* Badge/Tags */
         .role-tag { font-size: 7px; padding: 2px 6px; border-radius: 5px; background: rgba(255,255,255,0.05); color: var(--text3); text-transform: uppercase; font-weight: 700; margin-left: 5px; }
         body.light .role-tag { background: rgba(0,0,0,0.05); }
 
-        /* Specific Status Indicators */
         @keyframes livePulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
         .live-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #4ade80; margin-left: 6px; flex-shrink: 0; animation: livePulse 1.2s ease-in-out infinite; box-shadow: 0 0 7px #4ade80; }
 
-        /* Splash Screen Redesign */
         #splash {
             position: fixed; inset: 0; z-index: 9999;
-            background: #020617; /* Solid dark void */
+            background: #020617;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             transition: opacity 0.8s ease, transform 0.8s ease;
         }
@@ -230,7 +215,6 @@
         }
         @keyframes spinRing { to { transform: rotate(360deg); } }
 
-        /* Utilities */
         .error-banner { background:rgba(220,38,38,0.1); border:1px solid rgba(220,38,38,0.3); border-radius:16px; padding:12px 16px; margin-bottom:14px; display:flex; align-items:center; gap:12px; }
         .sched-pill { font-family: var(--font-cyber); font-size: 9px; font-weight: 900; padding: 6px 14px; border-radius: 20px; border: 1px solid var(--glass-border); background: var(--glass); color: var(--text3); cursor: pointer; transition: 0.2s; white-space: nowrap; }
         .sched-pill.active { transform: scale(1.05); box-shadow: 0 0 12px -2px currentColor; opacity: 1!important; }
@@ -268,9 +252,7 @@
                 <p class="text-[7px] font-black uppercase tracking-widest text-[var(--text4)] mt-1">Total Pts</p>
             </div>
         </div>
-        <div class="p-5 overflow-y-auto no-scrollbar flex-1" id="ps-content">
-            <!-- Content injected via JS -->
-        </div>
+        <div class="p-5 overflow-y-auto no-scrollbar flex-1" id="ps-content"></div>
         <div class="p-4 border-t border-[var(--glass-border)] bg-black/20">
             <button onclick="window.closePlayerStats()" class="w-full py-3.5 rounded-xl bg-white/5 border border-[var(--glass-border)] text-xs font-bold text-[var(--text1)] active-scale uppercase tracking-widest">Close Player</button>
         </div>
@@ -290,7 +272,6 @@
                 </div>
             </div>
 
-            <!-- SEARCH BAR -->
             <div class="relative mb-5" id="search-container">
                 <input id="player-search" type="text" placeholder="Search player or owner..." 
                     oninput="onSearchInput(this.value)" onfocus="showSearchOverlay(); onSearchInput(this.value)"
@@ -318,7 +299,6 @@
             <button onclick="updateApp()" class="text-[9px] font-black uppercase tracking-widest text-red-400 border border-red-500/30 rounded-lg px-3 py-1.5 active-scale">Retry</button>
         </div>
 
-        <!-- MAIN VIEWS -->
         <div id="view-main" class="space-y-4 pb-8 relative z-10">
             <div id="today-match-bar"></div>
             <div id="top3-strip" class="flex items-end gap-2 px-1 min-h-[140px]"></div>
@@ -327,16 +307,12 @@
             <div id="leaderboard" class="space-y-3"></div>
         </div>
 
-        <div id="view-livepoints" class="hidden space-y-4 pb-8 relative z-10">
-            <div id="live-points-list"></div>
-        </div>
-
+        <div id="view-livepoints" class="hidden space-y-4 pb-8 relative z-10"><div id="live-points-list"></div></div>
         <div id="view-schedule" class="hidden space-y-4 pb-8 relative z-10">
             <div id="schedule-filters" class="flex flex-wrap gap-2 justify-center mb-2 px-1"></div>
             <div id="sched-stats" class="flex justify-center gap-4 mt-2 mb-4"></div>
             <div id="schedule-list" class="space-y-3"></div>
         </div>
-
         <div id="view-standings" class="hidden space-y-4 pb-8 relative z-10"><div id="standings-list"></div></div>
         <div id="view-hof" class="hidden space-y-4 pb-8 relative z-10"><div id="hof-list"></div></div>
         <div id="view-gems" class="hidden space-y-4 pb-8 relative z-10"><div id="gems-list"></div></div>
@@ -359,7 +335,6 @@
         </div>
     </div>
 
-    <!-- NAVIGATION DOCK -->
     <nav class="nav-dock">
         <button onclick="switchTab('main')" id="nav-main" class="nav-item active active-scale flex-1">
             <span class="nav-icon">📊</span><span class="nav-label">Ranks</span>
@@ -376,19 +351,13 @@
         </button>
     </nav>
 
-    <!-- SCROLL TO TOP -->
     <button id="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'}); window.haptic(15);"
         class="hidden fixed bottom-24 right-4 z-[500] w-10 h-10 rounded-full glass-panel flex items-center justify-center text-yellow-500 font-bold shadow-lg active-scale border-yellow-500/30">↑</button>
 
     <script>
-        // --- HAPTIC ENGINE ---
-        window.haptic = function(pattern = 15) {
-            if (navigator.vibrate) {
-                try { navigator.vibrate(pattern); } catch(e) {}
-            }
-        };
+        window.haptic = function(pattern = 15) { if (navigator.vibrate) { try { navigator.vibrate(pattern); } catch(e) {} } };
 
-        window._appStartTime = Date.now(); // Track exact load start time
+        window._appStartTime = Date.now();
         const SHEET_ID = '1xIRCNr0tteFfMk6l7inIkKeSJMb7WLBswsXepHRqjio';
         const TOTAL_SEASON_MATCHES = 74;
         const SITE_URL = 'revolution-ipl-2026.vercel.app';
@@ -409,24 +378,16 @@
         };
         const TEAM_COLORS = { RCB:'#C8102E', MI:'#004BA0', CSK:'#F4C430', KKR:'#3A225D', SRH:'#F26522', RR:'#EA1A85', PBKS:'#ED1C24', GT:'#1D4E89', LSG:'#A4D65E', DC:'#00529A', TBD:'#64748b' };
 
-        // Translates full names from Schedule to matching acronyms in Roster
         function getShortTeam(name) {
             if (!name) return '';
             const n = name.toString().toUpperCase().trim();
-            if (n.includes('MUMBAI')) return 'MI';
-            if (n.includes('CHENNAI')) return 'CSK';
-            if (n.includes('ROYAL CHALLENGERS')) return 'RCB';
-            if (n.includes('KOLKATA')) return 'KKR';
-            if (n.includes('SUNRISERS')) return 'SRH';
-            if (n.includes('DELHI')) return 'DC';
-            if (n.includes('PUNJAB')) return 'PBKS';
-            if (n.includes('RAJASTHAN')) return 'RR';
-            if (n.includes('GUJARAT')) return 'GT';
-            if (n.includes('LUCKNOW')) return 'LSG';
+            if (n.includes('MUMBAI')) return 'MI'; if (n.includes('CHENNAI')) return 'CSK';
+            if (n.includes('ROYAL CHALLENGERS')) return 'RCB'; if (n.includes('KOLKATA')) return 'KKR';
+            if (n.includes('SUNRISERS')) return 'SRH'; if (n.includes('DELHI')) return 'DC';
+            if (n.includes('PUNJAB')) return 'PBKS'; if (n.includes('RAJASTHAN')) return 'RR';
+            if (n.includes('GUJARAT')) return 'GT'; if (n.includes('LUCKNOW')) return 'LSG';
             if (TEAM_COLORS[n]) return n;
-            
-            const acr = n.split(/[\s_]+/).map(w=>w[0]).join('');
-            return acr === 'PK' ? 'PBKS' : acr;
+            const acr = n.split(/[\s_]+/).map(w=>w[0]).join(''); return acr === 'PK' ? 'PBKS' : acr;
         }
 
         const fixID = s => s ? s.toString().toLowerCase().trim() : '';
@@ -439,50 +400,36 @@
         }
 
         function hex2rgb(hex) {
-            let v = hex.replace('#', '');
-            if(v.length === 3) v = v.split('').map(c=>c+c).join('');
+            let v = hex.replace('#', ''); if(v.length === 3) v = v.split('').map(c=>c+c).join('');
             return `${parseInt(v.slice(0,2),16)}, ${parseInt(v.slice(2,4),16)}, ${parseInt(v.slice(4,6),16)}`;
         }
 
         window.setTeamTheme = function(team) {
-            window.haptic([20, 30, 40]); // Distinctive haptic feedback for theming
-            const tc = IPL_TEAMS[team];
-            if(!tc) return;
-            
+            window.haptic([20, 30, 40]); 
+            const tc = IPL_TEAMS[team]; if(!tc) return;
             const mesh = document.querySelector('.mesh-bg');
-            const c1 = hex2rgb(tc.color);
-            const c2 = hex2rgb(tc.accent === '#ffffff' || tc.accent === '#1a1a1a' ? tc.color : tc.accent);
-            
+            const c1 = hex2rgb(tc.color), c2 = hex2rgb(tc.accent === '#ffffff' || tc.accent === '#1a1a1a' ? tc.color : tc.accent);
             const isLight = document.body.classList.contains('light');
-            const alpha1 = isLight ? '0.25' : '0.35';
-            const alpha2 = isLight ? '0.2' : '0.25';
-            
-            mesh.style.setProperty('--mesh-c1', `rgba(${c1}, ${alpha1})`);
-            mesh.style.setProperty('--mesh-c2', `rgba(${c2}, ${alpha2})`);
+            mesh.style.setProperty('--mesh-c1', `rgba(${c1}, ${isLight ? '0.25' : '0.35'})`);
+            mesh.style.setProperty('--mesh-c2', `rgba(${c2}, ${isLight ? '0.2' : '0.25'})`);
         };
 
         window.resetTeamTheme = function() {
             const mesh = document.querySelector('.mesh-bg');
-            mesh.style.removeProperty('--mesh-c1');
-            mesh.style.removeProperty('--mesh-c2');
+            mesh.style.removeProperty('--mesh-c1'); mesh.style.removeProperty('--mesh-c2');
         };
 
-        function dismissSplash() { 
-            const s=document.getElementById('splash'); 
-            if(s) { s.classList.add('hide'); setTimeout(()=>s.remove(),900); }
-        }
+        function dismissSplash() { const s=document.getElementById('splash'); if(s) { s.classList.add('hide'); setTimeout(()=>s.remove(),900); } }
 
         let _currentTab = 'main';
         function switchTab(t) {
             window.haptic(15);
-            if (t !== 'standings') window.resetTeamTheme(); // Reset background morph when leaving standings
+            if (t !== 'standings') window.resetTeamTheme(); 
 
-            // Main Dock
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             const navBtn = document.getElementById('nav-' + (['hof','gems','weekly','strategy','h2h'].includes(t) ? 'main' : t));
             if (navBtn) navBtn.classList.add('active');
 
-            // Top Header Pills
             document.querySelectorAll('#discovery-tabs .glass-panel').forEach(el => {
                 if(el.id && el.id.startsWith('btn-')) el.style.borderColor = 'var(--glass-border)';
             });
@@ -496,15 +443,11 @@
                 if(!el) return;
                 if(k === t) {
                     el.classList.remove('hidden');
-                    // Retrigger animations
                     el.querySelectorAll('.stagger-item').forEach((item, idx) => {
-                        item.style.animation = 'none';
-                        item.offsetHeight;
+                        item.style.animation = 'none'; item.offsetHeight;
                         item.style.animation = `slideUpFade 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) ${idx * 0.05}s forwards`;
                     });
-                } else {
-                    el.classList.add('hidden');
-                }
+                } else { el.classList.add('hidden'); }
             });
             _currentTab = t;
             if(typeof hideSearchOverlay === 'function') hideSearchOverlay();
@@ -516,8 +459,6 @@
             const isLight = document.body.classList.toggle('light');
             localStorage.setItem('revo-theme', isLight ? 'light' : 'dark');
             document.getElementById('theme-toggle').textContent = isLight ? '☀️' : '🌙';
-            
-            // Retrigger theme if on standings
             if(_currentTab === 'standings') window.resetTeamTheme(); 
         }
         if (localStorage.getItem('revo-theme') === 'light') { document.body.classList.add('light'); document.getElementById('theme-toggle').textContent = '☀️'; }
@@ -529,32 +470,14 @@
             const r=await fetch(url);
             if(!r.ok) throw new Error(`HTTP Error: ${r.status} on sheet ${name}`);
             const t=await r.text();
-            
             try {
-                // Bulletproof JSON extraction: Grabs everything between the first '{' and last '}'
-                const startIdx = t.indexOf('{');
-                const endIdx = t.lastIndexOf('}');
-                
-                if (startIdx === -1 || endIdx === -1) {
-                    if (t.toLowerCase().includes('<html')) {
-                        throw new Error(`Access Denied! Ensure the Google Sheet is set to "Anyone with the link can view".`);
-                    }
-                    throw new Error(`Invalid data format received from sheet: ${name}`);
-                }
-                
-                const jsonStr = t.substring(startIdx, endIdx + 1);
-                const j = JSON.parse(jsonStr);
-                
-                if (j.status === 'error') {
-                    throw new Error(`Google Sheets Error on "${name}": ${j.errors?.[0]?.message || 'Check tab name'}`);
-                }
+                const startIdx = t.indexOf('{'), endIdx = t.lastIndexOf('}');
+                if (startIdx === -1 || endIdx === -1) { if (t.toLowerCase().includes('<html')) throw new Error(`Access Denied! Check Sheet sharing.`); throw new Error(`Invalid data.`); }
+                const j = JSON.parse(t.substring(startIdx, endIdx + 1));
+                if (j.status === 'error') throw new Error(`Google Sheets Error`);
                 if (!j.table || !j.table.rows) return [];
-                
                 return j.table.rows.map(row => row.c.map(cell => cell ? (cell.v !== null ? cell.v : '') : ''));
-            } catch(e) {
-                console.error(`Parse Error on sheet "${name}":`, e);
-                throw e; // Rethrow so the UI catches it and displays the specific error
-            }
+            } catch(e) { throw e; }
         }
 
         function showError(msg) { document.getElementById('error-msg').textContent=msg; document.getElementById('error-banner').classList.remove('hidden'); }
@@ -575,8 +498,7 @@
                 pcRows.forEach(row=>{
                     if(!row[1]) return;
                     const k=fixID(row[1]), v=parseFloat(row[6])||0, m=parseFloat(row[5])||1;
-                    if(!pPoints[k]) pPoints[k]={act:0,raw:0};
-                    pPoints[k].act+=v; pPoints[k].raw+=(v/m);
+                    if(!pPoints[k]) pPoints[k]={act:0,raw:0}; pPoints[k].act+=v; pPoints[k].raw+=(v/m);
                 });
 
                 let matchPlayers=[], lastMatchName='';
@@ -587,88 +509,59 @@
 
                 const squads={};
                 rosRows.forEach(row=>{
-                    const oKey=fixID(row[1]);
-                    if(!oKey||oKey.includes('owner')) return;
+                    const oKey=fixID(row[1]); if(!oKey||oKey.includes('owner')) return;
                     if(!squads[oKey]) squads[oKey]=[];
                     const stats=pPoints[fixID(row[0])]||{act:0,raw:0};
                     squads[oKey].push({name:row[0], team:row[4], role:row[6], act:Math.round(stats.act), raw:stats.raw, cvc:parseFloat(row[2])===2?'C':parseFloat(row[2])===1.5?'VC':''});
                 });
 
                 let owners=lbRows.map(row=>{
-                    const full=row[0]?row[0].toString().trim():'';
-                    const id=full.toLowerCase();
+                    const full=row[0]?row[0].toString().trim():''; const id=full.toLowerCase();
                     if(!full||['owner name','owner','name'].includes(id)) return null;
                     return {full, score:Math.round(parseFloat(row[1]))||0, id, first:full.split(' ')[0]};
                 }).filter(Boolean);
 
                 const active=owners.filter(o=>o.id!=='unsold').sort((a,b)=>b.score-a.score);
-                const unsold=owners.find(o=>o.id==='unsold');
-                const allOwners=unsold?[...active,unsold]:active;
+                const unsold=owners.find(o=>o.id==='unsold'); const allOwners=unsold?[...active,unsold]:active;
                 const cumulScores=buildCumulScores(active,pcRows,completedMatches);
                 
                 window._state={squads, cumulScores, completedMatches, rosRows, pPoints, pcRows, active, schedRows};
 
-                renderTop3(active);
-                renderLeaderboard(allOwners, squads);
+                renderTop3(active); renderLeaderboard(allOwners, squads);
                 renderMVPMerged(matchPlayers.sort((a,b)=>b.pts-a.pts)[0], lastMatchName, active, pcRows, completedMatches);
-                renderLastMatchCollapsible(active, pcRows, completedMatches);
-                renderStreakTracker(active, cumulScores, completedMatches);
-                renderStrategy(active, squads);
-                renderH2HDropdowns(active);
+                renderLastMatchCollapsible(active, pcRows, completedMatches); renderStreakTracker(active, cumulScores, completedMatches);
+                renderStrategy(active, squads); renderH2HDropdowns(active);
                 
                 if(schedRows&&schedRows.length){ window._schedRows=schedRows; renderSchedule(schedRows); renderScheduleFilters(); }
-                renderTodayBar(schedRows||[]);
-                renderWeekly(active, pcRows, completedMatches, squads);
-                renderStandings(standRows||[]);
-                renderHallOfFame(active, pcRows, completedMatches);
-                renderGems(rosRows, pPoints);
-                renderLivePoints(liveRows||[]);
+                renderTodayBar(schedRows||[]); renderWeekly(active, pcRows, completedMatches, squads);
+                renderStandings(standRows||[]); renderHallOfFame(active, pcRows, completedMatches);
+                renderGems(rosRows, pPoints); renderLivePoints(liveRows||[]);
 
                 if(!window._confettiFired && active.length > 0) { window._confettiFired=true; setTimeout(fireConfetti,800); }
-                
-                // Enforce minimum splash screen time (2.5 seconds)
-                const elapsed = Date.now() - window._appStartTime;
-                setTimeout(dismissSplash, Math.max(0, 2500 - elapsed));
-
+                setTimeout(dismissSplash, Math.max(0, 2500 - (Date.now() - window._appStartTime)));
             } catch(e) {
-                console.error('Sync Error:', e);
-                // Now displays the exact specific error to help you debug the sheet
-                showError(e.message || 'Could not sync with live sheet. Auto-retrying...');
-                
-                const elapsed = Date.now() - window._appStartTime;
-                setTimeout(dismissSplash, Math.max(0, 2500 - elapsed));
+                showError(e.message || 'Could not sync. Retrying...');
+                setTimeout(dismissSplash, Math.max(0, 2500 - (Date.now() - window._appStartTime)));
             }
         }
 
         function buildCumulScores(owners,pcRows,completedMatches) {
-            const cumul={}, running={};
-            owners.forEach(o=>{cumul[o.id]=[];running[o.id]=0;});
-            const nameToId={};
-            owners.forEach(o=>{nameToId[fixID(o.full)]=o.id;nameToId[fixID(o.first)]=o.id;nameToId[o.id]=o.id;});
+            const cumul={}, running={}; owners.forEach(o=>{cumul[o.id]=[];running[o.id]=0;});
+            const nameToId={}; owners.forEach(o=>{nameToId[fixID(o.full)]=o.id;nameToId[fixID(o.first)]=o.id;nameToId[o.id]=o.id;});
             completedMatches.forEach(matchName=>{
                 const totals={};
                 pcRows.filter(r=>r[0]&&r[0].toString().trim()===matchName&&r[2]).forEach(r=>{
-                    const raw=fixID(r[2]);
-                    const id=nameToId[raw]||owners.find(o=>raw.includes(o.id)||o.id.includes(raw))?.id;
-                    if(!id) return;
-                    totals[id]=(totals[id]||0)+(parseFloat(r[6])||0);
+                    const raw=fixID(r[2]), id=nameToId[raw]||owners.find(o=>raw.includes(o.id)||o.id.includes(raw))?.id;
+                    if(id) totals[id]=(totals[id]||0)+(parseFloat(r[6])||0);
                 });
                 owners.forEach(o=>{running[o.id]+=(totals[o.id]||0);cumul[o.id].push(Math.round(running[o.id]));});
             });
             return cumul;
         }
 
-        // --- CORE RANKING RENDERERS ---
-
         function renderTop3(active) {
-            const el = document.getElementById('top3-strip');
-            if (active.length < 3) return;
-            const top = [
-                { o: active[1], label: '2ND', h: '85px', delay: '0.1s' },
-                { o: active[0], label: '1ST', h: '115px', delay: '0s' },
-                { o: active[2], label: '3RD', h: '65px', delay: '0.2s' }
-            ];
-
+            const el = document.getElementById('top3-strip'); if (active.length < 3) return;
+            const top = [ { o: active[1], label: '2ND', h: '85px', delay: '0.1s' }, { o: active[0], label: '1ST', h: '115px', delay: '0s' }, { o: active[2], label: '3RD', h: '65px', delay: '0.2s' } ];
             el.innerHTML = top.map((p, i) => {
                 const c = i === 1 ? '#f1c40f' : window.getColor(p.o.id);
                 return `
@@ -691,24 +584,15 @@
             const _todayTeams = todaysTeams();
 
             el.innerHTML = owners.map((o, i) => {
-                const color = window.getColor(o.id);
-                const isUnsold = o.id === 'unsold';
-                const squad = squads[o.id] || [];
-                const cID = 'c-' + o.id.replace(/\s+/g,'-');
-                const gap = (i > 0 && !isUnsold) ? leaderScore - o.score : 0;
-                const pct = isUnsold ? 100 : Math.max(5, Math.min(100, Math.round((o.score / leaderScore) * 100)));
-
-                // Grab first letter of first name and first letter of last name
-                const parts = o.full.split(' ').filter(Boolean);
-                const initials = parts.length > 1 ? (parts[0][0] + parts[1][0]) : (parts[0] ? parts[0].substring(0,2) : 'UN');
+                const color = window.getColor(o.id), isUnsold = o.id === 'unsold', squad = squads[o.id] || [], cID = 'c-' + o.id.replace(/\s+/g,'-');
+                const gap = (i > 0 && !isUnsold) ? leaderScore - o.score : 0, pct = isUnsold ? 100 : Math.max(5, Math.min(100, Math.round((o.score / leaderScore) * 100)));
+                const parts = o.full.split(' ').filter(Boolean), initials = parts.length > 1 ? (parts[0][0] + parts[1][0]) : (parts[0] ? parts[0].substring(0,2) : 'UN');
 
                 const playerRows = squad.length === 0 ? `<p class="text-center text-[10px] text-[var(--text4)] py-4 font-bold uppercase">No players</p>`
                     : squad.sort((a,b)=>b.act-a.act).map((p,idx) => {
-                        const pt = (p.team||'').toString().trim().toUpperCase();
-                        const isPlaying = _todayTeams.has(pt) || Array.from(_todayTeams).some(t => t.includes(pt) || pt.includes(t));
-                        const safeName = p.name.replace(/'/g, "\\'");
+                        const pt = (p.team||'').toString().trim().toUpperCase(), isPlaying = _todayTeams.has(pt) || Array.from(_todayTeams).some(t => t.includes(pt) || pt.includes(t));
                         return `
-                        <div class="flex justify-between items-center py-1.5 border-b border-[var(--glass-border)] last:border-0 cursor-pointer hover:bg-white/5 active-scale transition-colors px-1 rounded ${p.act===0?'player-row-ghost':''}" onclick="window.showPlayerStats('${safeName}')">
+                        <div class="flex justify-between items-center py-1.5 border-b border-[var(--glass-border)] last:border-0 cursor-pointer hover:bg-white/5 active-scale transition-colors px-1 rounded ${p.act===0?'player-row-ghost':''}" onclick="window.showPlayerStats('${p.name.replace(/'/g, "\\'")}')">
                             <div class="flex items-center flex-wrap gap-1">
                                 <span class="text-[8px] font-bold text-[var(--text4)] w-3">${idx+1}</span>
                                 <span class="text-[11px] font-bold text-[var(--text1)]">${p.name} <span class="text-[8px] text-[var(--text4)]">(${p.team})</span></span>
@@ -721,24 +605,17 @@
                     }).join('');
 
                 return `
-                <div id="${cID}" class="glass-panel stagger-item ${isUnsold ? 'opacity-50 mt-8' : ''}" 
-                     style="animation-delay: ${0.2 + (i * 0.05)}s; --owner-color: ${color}">
+                <div id="${cID}" class="glass-panel stagger-item ${isUnsold ? 'opacity-50 mt-8' : ''}" style="animation-delay: ${0.2 + (i * 0.05)}s; --owner-color: ${color}">
                     <div class="aura-glow"></div>
                     <div class="p-4 relative z-10 cursor-pointer active-scale" onclick="toggleSquad('${cID}')">
                         <div class="flex justify-between items-center mb-3">
                             <div class="flex items-center gap-3.5">
                                 <div class="relative">
-                                    <div class="w-10 h-10 rounded-full flex items-center justify-center font-cyber font-black text-xs border flex-shrink-0" 
-                                         style="border-color: ${color}55; background: ${color}15; color: ${color}">
-                                        ${isUnsold ? 'UN' : initials.toUpperCase()}
-                                    </div>
+                                    <div class="w-10 h-10 rounded-full flex items-center justify-center font-cyber font-black text-xs border flex-shrink-0" style="border-color: ${color}55; background: ${color}15; color: ${color}">${isUnsold ? 'UN' : initials.toUpperCase()}</div>
                                     ${!isUnsold ? `<div class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[var(--bg-void)] border border-[var(--glass-border)] flex items-center justify-center text-[9px] font-black text-[var(--text2)] font-cyber">${i+1}</div>` : ''}
                                 </div>
                                 <div>
-                                    <h3 class="text-sm font-extrabold uppercase tracking-tight text-[var(--text1)] flex items-center gap-2">
-                                        ${o.full}
-                                        ${gap > 0 ? `<span class="text-[7px] font-black px-1.5 py-0.5 rounded-sm bg-red-500/10 text-red-400 border border-red-500/20">-${gap}</span>` : ''}
-                                    </h3>
+                                    <h3 class="text-sm font-extrabold uppercase tracking-tight text-[var(--text1)] flex items-center gap-2">${o.full}${gap > 0 ? `<span class="text-[7px] font-black px-1.5 py-0.5 rounded-sm bg-red-500/10 text-red-400 border border-red-500/20">-${gap}</span>` : ''}</h3>
                                     <p class="text-[9px] font-bold text-[var(--text4)] uppercase mt-0.5">${squad.length} Players</p>
                                 </div>
                             </div>
@@ -747,54 +624,28 @@
                                 ${!isUnsold ? `<button class="share-btn" onclick="event.stopPropagation();shareCard('${cID}','${o.full}',${o.score},${i+1})">Share</button>` : '<p class="text-[8px] text-[var(--text4)]">PTS</p>'}
                             </div>
                         </div>
-                        ${!isUnsold && i > 0 ? `
-                        <div class="w-full h-1 bg-[var(--glass-border)] rounded-full overflow-hidden">
-                            <div class="h-full rounded-full transition-all duration-1000" style="width: ${pct}%; background: linear-gradient(90deg, ${color}66, ${color})"></div>
-                        </div>` : ''}
+                        ${!isUnsold && i > 0 ? `<div class="w-full h-1 bg-[var(--glass-border)] rounded-full overflow-hidden"><div class="h-full rounded-full transition-all duration-1000" style="width: ${pct}%; background: linear-gradient(90deg, ${color}66, ${color})"></div></div>` : ''}
                     </div>
-                    <div id="sq-${cID}" class="squad-container relative z-10">
-                        <div class="pt-2">
-                            ${playerRows}
-                        </div>
-                    </div>
+                    <div id="sq-${cID}" class="squad-container relative z-10"><div class="pt-2">${playerRows}</div></div>
                 </div>`;
             }).join('');
-
-            requestAnimationFrame(()=>{
-                document.querySelectorAll('.score-animated').forEach(el=>{
-                    const target=parseInt(el.dataset.score)||0; el.textContent=target; 
-                });
-            });
+            requestAnimationFrame(()=>{ document.querySelectorAll('.score-animated').forEach(el=>{ el.textContent=parseInt(el.dataset.score)||0; }); });
         }
 
-        function toggleSquad(id){ 
-            window.haptic(10);
-            const s=document.getElementById('sq-'+id); 
-            if(s) s.classList.toggle('open'); 
-        }
+        function toggleSquad(id){ window.haptic(10); const s=document.getElementById('sq-'+id); if(s) s.classList.toggle('open'); }
 
         function renderMVPMerged(mvp, matchName, active, pcRows, completedMatches) {
-            const el = document.getElementById('mvp-spotlight');
-            if (!mvp || !mvp.owner) { el.innerHTML=''; return; }
-
+            const el = document.getElementById('mvp-spotlight'); if (!mvp || !mvp.owner) { el.innerHTML=''; return; }
             let winnerId=null, winnerPts=0;
             if(completedMatches.length){
-                const lastMatch = completedMatches[completedMatches.length-1];
-                const totals = {}; active.forEach(o=>totals[o.id]=0);
+                const lastMatch = completedMatches[completedMatches.length-1], totals = {}; active.forEach(o=>totals[o.id]=0);
                 const nameToId={}; active.forEach(o=>{nameToId[fixID(o.first)]=o.id; nameToId[o.id]=o.id;});
-                
                 pcRows.filter(r=>r[0]&&r[0].toString().trim()===lastMatch).forEach(r=>{
-                    const raw=fixID(r[2]), id=nameToId[raw]||active.find(o=>raw.includes(o.id))?.id;
-                    if(id) totals[id]=(totals[id]||0)+(parseFloat(r[6])||0);
+                    const id=nameToId[fixID(r[2])]||active.find(o=>fixID(r[2]).includes(o.id))?.id; if(id) totals[id]=(totals[id]||0)+(parseFloat(r[6])||0);
                 });
-                const sorted=Object.entries(totals).sort((a,b)=>b[1]-a[1]);
-                if(sorted[0][1]>0){winnerId=sorted[0][0]; winnerPts=Math.round(sorted[0][1]);}
+                const sorted=Object.entries(totals).sort((a,b)=>b[1]-a[1]); if(sorted[0][1]>0){winnerId=sorted[0][0]; winnerPts=Math.round(sorted[0][1]);}
             }
-
-            const mvpColor = window.getColor(mvp.owner);
-            const winner = winnerId ? active.find(o=>o.id===winnerId) : null;
-            const winColor = winner ? window.getColor(winner.id) : '#f1c40f';
-
+            const mvpColor = window.getColor(mvp.owner), winner = winnerId ? active.find(o=>o.id===winnerId) : null, winColor = winner ? window.getColor(winner.id) : '#f1c40f';
             el.innerHTML = `
                 <div class="glass-panel p-4 stagger-item" style="border-color: rgba(241,196,15,0.3); background: linear-gradient(135deg, rgba(241,196,15,0.05), transparent)">
                     <div class="flex justify-between items-start gap-3">
@@ -814,34 +665,23 @@
                             <p class="font-cyber text-[7px] font-black uppercase tracking-widest mb-0.5" style="color:${winColor}">🏅 Day Winner</p>
                             <p class="text-xs font-black uppercase" style="color:${winColor}">${winner.full}</p>
                         </div>
-                        <div class="text-right">
-                            <p class="font-cyber text-lg font-black" style="color:${winColor}">${winnerPts}</p>
-                        </div>
+                        <div class="text-right"><p class="font-cyber text-lg font-black" style="color:${winColor}">${winnerPts}</p></div>
                     </div>` : ''}
                 </div>`;
         }
 
         function renderLastMatchCollapsible(active, pcRows, completedMatches) {
-            const el = document.getElementById('last-match-collapsible');
-            if(!completedMatches.length){el.innerHTML='';return;}
-            
-            const lastMatch = completedMatches[completedMatches.length-1];
-            const totals = {}; active.forEach(o=>totals[o.id]=0);
+            const el = document.getElementById('last-match-collapsible'); if(!completedMatches.length){el.innerHTML='';return;}
+            const lastMatch = completedMatches[completedMatches.length-1], totals = {}; active.forEach(o=>totals[o.id]=0);
             const nameToId={}; active.forEach(o=>{nameToId[fixID(o.first)]=o.id; nameToId[o.id]=o.id;});
-            
             pcRows.filter(r=>r[0]&&r[0].toString().trim()===lastMatch).forEach(r=>{
-                const raw=fixID(r[2]), id=nameToId[raw]||active.find(o=>raw.includes(o.id))?.id;
-                if(id) totals[id]=(totals[id]||0)+(parseFloat(r[6])||0);
+                const id=nameToId[fixID(r[2])]||active.find(o=>fixID(r[2]).includes(o.id))?.id; if(id) totals[id]=(totals[id]||0)+(parseFloat(r[6])||0);
             });
-            
-            const sorted = active.map(o=>({...o, matchPts:Math.round(totals[o.id]||0)})).sort((a,b)=>b.matchPts-a.matchPts);
-            const maxPts = sorted[0]?.matchPts || 1;
-
+            const sorted = active.map(o=>({...o, matchPts:Math.round(totals[o.id]||0)})).sort((a,b)=>b.matchPts-a.matchPts), maxPts = sorted[0]?.matchPts || 1;
             el.innerHTML = `
                 <div class="glass-panel stagger-item">
                     <div class="p-3 flex justify-between items-center cursor-pointer active-scale" onclick="window.haptic(10); const b=this.nextElementSibling; b.classList.toggle('hidden'); this.querySelector('span').textContent=b.classList.contains('hidden')?'▼':'▲';">
-                        <p class="font-cyber text-[9px] font-black text-[var(--text3)] uppercase tracking-widest">Match ${lastMatch} Breakdown</p>
-                        <span class="text-[10px] text-[var(--text4)]">▼</span>
+                        <p class="font-cyber text-[9px] font-black text-[var(--text3)] uppercase tracking-widest">Match ${lastMatch} Breakdown</p><span class="text-[10px] text-[var(--text4)]">▼</span>
                     </div>
                     <div class="hidden px-4 pb-4 space-y-2">
                         ${sorted.map((o,i)=>{
@@ -850,9 +690,7 @@
                             <div class="flex items-center gap-2">
                                 <span class="text-[8px] font-black w-3 text-right" style="color:${i===0?c:'var(--text4)'}">${i+1}</span>
                                 <span class="text-[9px] font-bold uppercase w-14 truncate" style="color:${i===0?'var(--text1)':'var(--text3)'}">${o.first}</span>
-                                <div class="flex-1 h-1 bg-[var(--glass-border)] rounded-full overflow-hidden">
-                                    <div class="h-full rounded-full" style="width:${pct}%; background:${c}"></div>
-                                </div>
+                                <div class="flex-1 h-1 bg-[var(--glass-border)] rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:${pct}%; background:${c}"></div></div>
                                 <span class="font-cyber text-[10px] font-black w-8 text-right" style="color:${c}">${o.matchPts}</span>
                             </div>`;
                         }).join('')}
@@ -861,18 +699,14 @@
         }
 
         function renderStreakTracker(owners, cumulScores, completedMatches) {
-            const el = document.getElementById('streak-tracker');
-            if (!el || completedMatches.length === 0) return;
+            const el = document.getElementById('streak-tracker'); if (!el || completedMatches.length === 0) return;
             const leadCount = {}; owners.forEach(o => leadCount[o.id] = 0);
-            
             for (let m = 0; m < completedMatches.length; m++) {
                 let best=-1, bestId=null;
                 owners.forEach(o => { const s=(cumulScores[o.id]||[])[m]||0; if(s>best){best=s;bestId=o.id;} });
                 if (bestId) leadCount[bestId]++;
             }
-
-            const leader = [...owners].sort((a,b) => b.score-a.score)[0];
-            let streak = 0;
+            const leader = [...owners].sort((a,b) => b.score-a.score)[0]; let streak = 0;
             if (leader) {
                 for (let m = completedMatches.length-1; m >= 0; m--) {
                     let best=-1, bestId=null;
@@ -880,10 +714,7 @@
                     if (bestId === leader.id) streak++; else break;
                 }
             }
-            
-            const sorted = [...owners].sort((a,b) => (leadCount[b.id]||0)-(leadCount[a.id]||0));
-            const lc = leader ? window.getColor(leader.id) : '#f1c40f';
-
+            const sorted = [...owners].sort((a,b) => (leadCount[b.id]||0)-(leadCount[a.id]||0)), lc = leader ? window.getColor(leader.id) : '#f1c40f';
             el.innerHTML = `
                 <div class="glass-panel p-5">
                     <p class="font-cyber text-[8px] font-black tracking-widest text-[var(--text4)] uppercase mb-4">Streak Tracker</p>
@@ -905,9 +736,7 @@
                             <div class="flex items-center gap-2">
                                 <span class="text-[8px] font-black w-3 text-center text-[var(--text4)]">${i+1}</span>
                                 <span class="text-[9px] font-bold uppercase w-14 truncate text-[var(--text2)]">${o.first}</span>
-                                <div class="flex-1 h-1 bg-[var(--glass-border)] rounded-full overflow-hidden">
-                                    <div class="h-full rounded-full" style="width:${pct}%; background:${c}"></div>
-                                </div>
+                                <div class="flex-1 h-1 bg-[var(--glass-border)] rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:${pct}%; background:${c}"></div></div>
                                 <span class="font-cyber text-[9px] font-black w-6 text-right" style="color:${c}">${cnt}d</span>
                             </div>`;
                         }).join('')}
@@ -915,95 +744,58 @@
                 </div>`;
         }
 
-        // --- SECONDARY DISCOVERY RENDERERS ---
-
         function renderWeekly(active, pcRows, completedMatches, squads) {
-            const el = document.getElementById('weekly-list');
-            if (!el || !completedMatches.length) return;
+            const el = document.getElementById('weekly-list'); if (!el || !completedMatches.length) return;
             const last7 = completedMatches.slice(-7), all = completedMatches;
             const weeklyData = active.map(o => {
                 let weekPts=0, bestPlayer=null, bestPts=0;
                 pcRows.forEach(r => {
-                    if (!r[1]||!r[2]) return;
-                    const ownerRaw = fixID(r[2]);
-                    const isOwner = ownerRaw===o.id || ownerRaw.includes(o.id.split(' ')[0]) || o.id.includes(ownerRaw.split(' ')[0]);
-                    if (!isOwner) return;
-                    const pts = parseFloat(r[6])||0, match = r[0]?r[0].toString().trim():'';
+                    if (!r[1]||!r[2]) return; const ownerRaw = fixID(r[2]), isOwner = ownerRaw===o.id || ownerRaw.includes(o.id.split(' ')[0]) || o.id.includes(ownerRaw.split(' ')[0]);
+                    if (!isOwner) return; const pts = parseFloat(r[6])||0, match = r[0]?r[0].toString().trim():'';
                     if (last7.includes(match)) { weekPts+=pts; if(pts>bestPts){bestPts=pts;bestPlayer=r[1];} }
                 });
-                const avgMatch = all.length>0 ? o.score/all.length : 0;
-                const weekAvg = last7.length>0 ? weekPts/last7.length : 0;
-                const trend = weekAvg>avgMatch ? 'hot' : weekAvg<avgMatch*0.8 ? 'cold' : 'steady';
+                const avgMatch = all.length>0 ? o.score/all.length : 0, weekAvg = last7.length>0 ? weekPts/last7.length : 0, trend = weekAvg>avgMatch ? 'hot' : weekAvg<avgMatch*0.8 ? 'cold' : 'steady';
                 return {...o, weekPts:Math.round(weekPts), avgMatch:Math.round(avgMatch), weekAvg:Math.round(weekAvg), trend, bestPlayer, bestPts:Math.round(bestPts)};
             }).sort((a,b) => b.weekPts-a.weekPts);
 
             el.innerHTML = `
-                <div class="glass-panel p-4 mb-3">
-                    <p class="font-cyber text-[8px] font-black tracking-widest text-[var(--text4)] uppercase mb-1">Form Guide</p>
-                    <p class="text-[11px] font-bold text-[var(--text2)]">Last 7 Matches Performance</p>
-                </div>
+                <div class="glass-panel p-4 mb-3"><p class="font-cyber text-[8px] font-black tracking-widest text-[var(--text4)] uppercase mb-1">Form Guide</p><p class="text-[11px] font-bold text-[var(--text2)]">Last 7 Matches Performance</p></div>
                 ${weeklyData.map((d,i) => {
-                    const color=window.getColor(d.id), tIcon=d.trend==='hot'?'🔥':d.trend==='cold'?'🧊':'➡️';
-                    const tColor=d.trend==='hot'?'#4ade80':d.trend==='cold'?'#60a5fa':'var(--text3)';
-                    const weekPct=d.avgMatch>0?Math.min(100,Math.round((d.weekAvg/d.avgMatch)*100)):50;
+                    const color=window.getColor(d.id), tIcon=d.trend==='hot'?'🔥':d.trend==='cold'?'🧊':'➡️', tColor=d.trend==='hot'?'#4ade80':d.trend==='cold'?'#60a5fa':'var(--text3)', weekPct=d.avgMatch>0?Math.min(100,Math.round((d.weekAvg/d.avgMatch)*100)):50;
                     return `
                     <div class="glass-panel p-4 mb-2 stagger-item" style="border-left: 3px solid ${color}">
                         <div class="flex justify-between items-start mb-3">
                             <div class="flex items-center gap-2.5">
                                 <span class="font-cyber text-sm font-black" style="color:${i===0?color:'var(--text4)'}">${i===0?'👑':i+1}</span>
-                                <div>
-                                    <p class="font-cyber text-xs font-black text-[var(--text1)] uppercase">${d.first}</p>
-                                    <p class="text-[9px] font-bold text-[var(--text4)] mt-1">${tIcon} <span style="color:${tColor}">${d.trend.toUpperCase()}</span> · ${d.weekAvg} avg</p>
-                                </div>
+                                <div><p class="font-cyber text-xs font-black text-[var(--text1)] uppercase">${d.first}</p><p class="text-[9px] font-bold text-[var(--text4)] mt-1">${tIcon} <span style="color:${tColor}">${d.trend.toUpperCase()}</span> · ${d.weekAvg} avg</p></div>
                             </div>
-                            <div class="text-right">
-                                <p class="font-cyber text-xl font-black" style="color:${color}">${d.weekPts}</p>
-                                <p class="text-[7px] font-black text-[var(--text4)] uppercase">7-match pts</p>
-                            </div>
+                            <div class="text-right"><p class="font-cyber text-xl font-black" style="color:${color}">${d.weekPts}</p><p class="text-[7px] font-black text-[var(--text4)] uppercase">7-match pts</p></div>
                         </div>
                         <div>
                             <div class="flex justify-between text-[7px] font-bold uppercase text-[var(--text4)] mb-1"><span>Week vs Season Avg</span><span style="color:${tColor}">${d.weekAvg} / ${d.avgMatch}</span></div>
-                            <div class="w-full h-1 bg-[var(--glass-border)] rounded-full overflow-hidden">
-                                <div class="h-full rounded-full" style="width:${weekPct}%; background:${color}"></div>
-                            </div>
+                            <div class="w-full h-1 bg-[var(--glass-border)] rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:${weekPct}%; background:${color}"></div></div>
                         </div>
-                        ${d.bestPlayer ? `
-                        <div class="mt-3 pt-3 border-t border-[var(--glass-border)] flex items-center justify-between">
-                            <div class="flex items-center gap-1.5"><span class="text-[8px] text-[var(--text4)] font-bold uppercase">⭐ Week Best:</span><span class="text-[9px] font-bold" style="color:${color}">${d.bestPlayer}</span></div>
-                            <span class="font-cyber text-[9px] font-black text-[var(--text2)]">${d.bestPts} pts</span>
-                        </div>` : ''}
+                        ${d.bestPlayer ? `<div class="mt-3 pt-3 border-t border-[var(--glass-border)] flex items-center justify-between"><div class="flex items-center gap-1.5"><span class="text-[8px] text-[var(--text4)] font-bold uppercase">⭐ Week Best:</span><span class="text-[9px] font-bold" style="color:${color}">${d.bestPlayer}</span></div><span class="font-cyber text-[9px] font-black text-[var(--text2)]">${d.bestPts} pts</span></div>` : ''}
                     </div>`;
                 }).join('')}`;
         }
 
         function renderStrategy(owners, squads) {
-            const el = document.getElementById('strategy-list');
-            if(!el) return;
+            const el = document.getElementById('strategy-list'); if(!el) return;
             const data = owners.map(o => {
-                const s = squads[o.id]||[], sorted = [...s].sort((a,b)=>b.raw-a.raw);
-                const pot = Math.round((sorted[0]?.raw||0)*2 + (sorted[1]?.raw||0)*1.5 + sorted.slice(2).reduce((sum,p)=>sum+p.raw,0));
+                const s = squads[o.id]||[], sorted = [...s].sort((a,b)=>b.raw-a.raw), pot = Math.round((sorted[0]?.raw||0)*2 + (sorted[1]?.raw||0)*1.5 + sorted.slice(2).reduce((sum,p)=>sum+p.raw,0));
                 return {...o, pot, diff:pot-o.score, ideal:[sorted[0]?.name||'—', sorted[1]?.name||'—']};
             }).sort((a,b)=>b.pot-a.pot);
 
             el.innerHTML = `
-                <div class="glass-panel p-4 mb-3">
-                    <p class="font-cyber text-[8px] font-black tracking-widest text-[var(--text4)] uppercase mb-1">Luckiest vs Unluckiest</p>
-                    <p class="text-[11px] font-bold text-[var(--text2)]">Potential Rank based on Ideal C/VC</p>
-                </div>
+                <div class="glass-panel p-4 mb-3"><p class="font-cyber text-[8px] font-black tracking-widest text-[var(--text4)] uppercase mb-1">Luckiest vs Unluckiest</p><p class="text-[11px] font-bold text-[var(--text2)]">Potential Rank based on Ideal C/VC</p></div>
                 ${data.map((d,i) => {
-                    const color=window.getColor(d.id), curRank=owners.findIndex(o=>o.id===d.id)+1;
-                    const icon = curRank>i+1?'🟢 ↑':curRank<i+1?'🔴 ↓':'⚪';
+                    const color=window.getColor(d.id), curRank=owners.findIndex(o=>o.id===d.id)+1, icon = curRank>i+1?'🟢 ↑':curRank<i+1?'🔴 ↓':'⚪';
                     return `
                     <div class="glass-panel p-4 mb-2 stagger-item" style="border-left: 3px solid ${color}">
                         <div class="flex justify-between items-center mb-3">
-                            <div>
-                                <span class="font-cyber text-[9px] text-[var(--text4)]">${icon} POTENTIAL #${i+1}</span>
-                                <h3 class="font-black uppercase text-sm mt-0.5 text-[var(--text1)]">${d.full}</h3>
-                            </div>
-                            <div class="text-right">
-                                <span class="font-cyber text-lg font-black text-[var(--text1)]">${d.pot}</span>
-                                <p class="text-[7px] font-bold text-[var(--text4)] uppercase">Max Potential</p>
-                            </div>
+                            <div><span class="font-cyber text-[9px] text-[var(--text4)]">${icon} POTENTIAL #${i+1}</span><h3 class="font-black uppercase text-sm mt-0.5 text-[var(--text1)]">${d.full}</h3></div>
+                            <div class="text-right"><span class="font-cyber text-lg font-black text-[var(--text1)]">${d.pot}</span><p class="text-[7px] font-bold text-[var(--text4)] uppercase">Max Potential</p></div>
                         </div>
                         <div class="grid grid-cols-2 gap-3 border-t border-[var(--glass-border)] pt-3 text-[9px] font-bold">
                             <div><p class="text-[var(--text4)] uppercase mb-0.5">Ideal C/VC</p><p class="text-yellow-500 uppercase">${d.ideal[0]} / ${d.ideal[1]}</p></div>
@@ -1014,31 +806,24 @@
         }
 
         function renderHallOfFame(active, pcRows, completedMatches) {
-            const el = document.getElementById('hof-list');
-            if (!el) return;
+            const el = document.getElementById('hof-list'); if (!el) return;
             const nameToId = {}; active.forEach(o => { nameToId[fixID(o.full)]=o.id; nameToId[fixID(o.first)]=o.id; nameToId[o.id]=o.id; });
-            const bestMatch = {}, matchRanks = {};
-            let bestPlayer = { name:'—', pts:0, owner:'—', match:'—' };
+            const bestMatch = {}, matchRanks = {}; let bestPlayer = { name:'—', pts:0, owner:'—', match:'—' };
 
             completedMatches.forEach(matchName => {
                 const matchTotals = {}; active.forEach(o => matchTotals[o.id]=0);
                 pcRows.filter(r => r[0]&&r[0].toString().trim()===matchName).forEach(r => {
-                    const raw=fixID(r[2]), id=nameToId[raw]||active.find(o=>raw.includes(o.id))?.id;
-                    if (!id) return;
-                    const pts=parseFloat(r[6])||0;
-                    matchTotals[id]=(matchTotals[id]||0)+pts;
+                    const id=nameToId[fixID(r[2])]||active.find(o=>fixID(r[2]).includes(o.id))?.id; if (!id) return;
+                    const pts=parseFloat(r[6])||0; matchTotals[id]=(matchTotals[id]||0)+pts;
                     if (pts>bestPlayer.pts) bestPlayer={name:r[1],pts:Math.round(pts),owner:r[2],match:matchName};
                 });
                 active.forEach(o => { const pts=Math.round(matchTotals[o.id]||0); if(!bestMatch[o.id]||pts>bestMatch[o.id].pts) bestMatch[o.id]={pts,matchName}; });
                 matchRanks[matchName]=Object.entries(matchTotals).sort((a,b)=>b[1]-a[1]).map(([id])=>id);
             });
 
-            const allBest=Object.entries(bestMatch).sort((a,b)=>b[1].pts-a[1].pts);
-            const topOwner=allBest[0]?active.find(o=>o.id===allBest[0][0]):null;
-            const dayWins={}; active.forEach(o=>dayWins[o.id]=0);
-            completedMatches.forEach(m=>{const r=matchRanks[m];if(r&&r[0]) dayWins[r[0]]++;});
-            const topDayWinner=Object.entries(dayWins).sort((a,b)=>b[1]-a[1])[0];
-            const dayWinOwner=topDayWinner?active.find(o=>o.id===topDayWinner[0]):null;
+            const allBest=Object.entries(bestMatch).sort((a,b)=>b[1].pts-a[1].pts), topOwner=allBest[0]?active.find(o=>o.id===allBest[0][0]):null;
+            const dayWins={}; active.forEach(o=>dayWins[o.id]=0); completedMatches.forEach(m=>{const r=matchRanks[m];if(r&&r[0]) dayWins[r[0]]++;});
+            const topDayWinner=Object.entries(dayWins).sort((a,b)=>b[1]-a[1])[0], dayWinOwner=topDayWinner?active.find(o=>o.id===topDayWinner[0]):null;
 
             const cards=[
                 topOwner?{icon:'🔥',label:'Highest Match Score',name:topOwner.full,value:allBest[0][1].pts+' pts',sub:allBest[0][1].matchName,color:window.getColor(topOwner.id)}:null,
@@ -1048,244 +833,122 @@
             ].filter(Boolean);
 
             el.innerHTML = `
-                <div class="glass-panel p-4 mb-3">
-                    <p class="font-cyber text-[8px] font-black tracking-widest text-[var(--text4)] uppercase mb-1">Season Records</p>
-                    <p class="text-[11px] font-bold text-[var(--text2)]">Hall of Fame</p>
-                </div>
+                <div class="glass-panel p-4 mb-3"><p class="font-cyber text-[8px] font-black tracking-widest text-[var(--text4)] uppercase mb-1">Season Records</p><p class="text-[11px] font-bold text-[var(--text2)]">Hall of Fame</p></div>
                 ${cards.map(c=>`
                     <div class="glass-panel p-4 mb-2 stagger-item" style="border-left: 3px solid ${c.color}">
                         <div class="flex justify-between items-start">
-                            <div>
-                                <p class="font-cyber text-[8px] font-black uppercase text-[var(--text4)] tracking-widest mb-1">${c.icon} ${c.label}</p>
-                                <p class="text-sm font-black uppercase" style="color:${c.color}">${c.name}</p>
-                                <p class="text-[8px] font-bold text-[var(--text4)] mt-1">${c.sub}</p>
-                            </div>
-                            <div class="text-right">
-                                <p class="font-cyber text-lg font-black" style="color:${c.color}">${c.value.split(' ')[0]}</p>
-                                <p class="text-[7px] font-black text-[var(--text4)] uppercase">PTS</p>
-                            </div>
+                            <div><p class="font-cyber text-[8px] font-black uppercase text-[var(--text4)] tracking-widest mb-1">${c.icon} ${c.label}</p><p class="text-sm font-black uppercase" style="color:${c.color}">${c.name}</p><p class="text-[8px] font-bold text-[var(--text4)] mt-1">${c.sub}</p></div>
+                            <div class="text-right"><p class="font-cyber text-lg font-black" style="color:${c.color}">${c.value.split(' ')[0]}</p><p class="text-[7px] font-black text-[var(--text4)] uppercase">PTS</p></div>
                         </div>
                     </div>
                 `).join('')}`;
         }
 
         function renderGems(rosRows, pPoints) {
-            const el = document.getElementById('gems-list');
-            if (!el) return;
+            const el = document.getElementById('gems-list'); if (!el) return;
             const gems = [];
             rosRows.forEach(row => {
-                const name=(row[0]||'').toString().trim(), owner=fixID(row[1]||'');
-                const team=(row[4]||'').toString().trim(), role=(row[6]||'').toString().trim();
+                const name=(row[0]||'').toString().trim(), owner=fixID(row[1]||''), team=(row[4]||'').toString().trim(), role=(row[6]||'').toString().trim();
                 if (!name || (owner!=='unsold'&&owner!==''&&!owner.includes('unsold'))) return;
-                const stats=pPoints[fixID(name)]||{act:0};
-                if (stats.act>0) gems.push({name,team,role,pts:Math.round(stats.act)});
+                const stats=pPoints[fixID(name)]||{act:0}; if (stats.act>0) gems.push({name,team,role,pts:Math.round(stats.act)});
             });
-            gems.sort((a,b)=>b.pts-a.pts);
-            const totalMissed=gems.reduce((s,g)=>s+g.pts,0);
+            gems.sort((a,b)=>b.pts-a.pts); const totalMissed=gems.reduce((s,g)=>s+g.pts,0);
 
             el.innerHTML = `
                 <div class="glass-panel p-4 mb-3 flex justify-between items-center">
-                    <div>
-                        <p class="font-cyber text-[8px] font-black tracking-widest text-[var(--text4)] uppercase mb-1">💎 Unsold</p>
-                        <p class="text-[11px] font-bold text-[#48dbfb]">Hidden Gems</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="font-cyber text-lg font-black text-red-400">${totalMissed}</p>
-                        <p class="text-[7px] font-black text-[var(--text4)] uppercase">Pts Missed</p>
-                    </div>
+                    <div><p class="font-cyber text-[8px] font-black tracking-widest text-[var(--text4)] uppercase mb-1">💎 Unsold</p><p class="text-[11px] font-bold text-[#48dbfb]">Hidden Gems</p></div>
+                    <div class="text-right"><p class="font-cyber text-lg font-black text-red-400">${totalMissed}</p><p class="text-[7px] font-black text-[var(--text4)] uppercase">Pts Missed</p></div>
                 </div>
-                ${gems.length===0 ? `<div class="p-8 text-center text-[10px] text-[var(--text4)] font-cyber uppercase">No gems found</div>`
-                : gems.map((g,i)=>{
+                ${gems.length===0 ? `<div class="p-8 text-center text-[10px] text-[var(--text4)] font-cyber uppercase">No gems found</div>` : gems.map((g,i)=>{
                     const tc=TEAM_COLORS[g.team.toUpperCase()]||'#475569';
                     return `
                     <div class="glass-panel p-3 mb-2 flex justify-between items-center stagger-item" style="${i<3?'border-left: 3px solid #48dbfb':''}">
                         <div class="flex items-center gap-3">
                             <span class="text-[9px] font-black w-4 text-center ${i<3?'text-[#48dbfb]':'text-[var(--text4)]'}">${i+1}</span>
-                            <div>
-                                <p class="text-[11px] font-bold text-[var(--text1)]">${g.name}</p>
-                                <p class="text-[8px] font-bold text-[var(--text4)] mt-0.5"><span style="color:${tc}">${g.team}</span> · ${g.role}</p>
-                            </div>
+                            <div><p class="text-[11px] font-bold text-[var(--text1)]">${g.name}</p><p class="text-[8px] font-bold text-[var(--text4)] mt-0.5"><span style="color:${tc}">${g.team}</span> · ${g.role}</p></div>
                         </div>
-                        <div class="text-right">
-                            <p class="font-cyber text-sm font-black ${i<3?'text-[#48dbfb]':'text-[var(--text3)]'}">${g.pts}</p>
-                        </div>
+                        <div class="text-right"><p class="font-cyber text-sm font-black ${i<3?'text-[#48dbfb]':'text-[var(--text3)]'}">${g.pts}</p></div>
                     </div>`;
                 }).join('')}`;
         }
 
-        // --- H2H COMPARISON RENDERER ---
-        
         function renderH2HDropdowns(active) {
-            const p1 = document.getElementById('h2h-p1');
-            const p2 = document.getElementById('h2h-p2');
-            if(!p1 || !p2 || active.length < 2) return;
-            
+            const p1 = document.getElementById('h2h-p1'), p2 = document.getElementById('h2h-p2'); if(!p1 || !p2 || active.length < 2) return;
             if(p1.options.length === 0) {
                 const opts = active.map((o, i) => `<option value="${o.id}">#${i+1} ${o.first}</option>`).join('');
-                p1.innerHTML = opts;
-                p2.innerHTML = opts;
-                p1.selectedIndex = 0;
-                p2.selectedIndex = 1;
+                p1.innerHTML = opts; p2.innerHTML = opts; p1.selectedIndex = 0; p2.selectedIndex = 1;
             }
             window.updateH2H();
         }
 
         window.updateH2H = function() {
-            const id1 = document.getElementById('h2h-p1').value;
-            const id2 = document.getElementById('h2h-p2').value;
-            const el = document.getElementById('h2h-content');
-            
-            const o1 = window._state.active.find(o => o.id === id1);
-            const o2 = window._state.active.find(o => o.id === id2);
-            if(!o1 || !o2) return;
-
-            const s1 = (window._state.squads[id1] || []).sort((a,b)=>b.act-a.act);
-            const s2 = (window._state.squads[id2] || []).sort((a,b)=>b.act-a.act);
-            
-            const c1 = window.getColor(id1);
-            const c2 = window.getColor(id2);
-
-            const diff = o1.score - o2.score;
-            let leadText = diff === 0 ? "TIED" : (diff > 0 ? `${o1.first} +${diff}` : `${o2.first} +${Math.abs(diff)}`);
-            let leadColor = diff === 0 ? 'var(--text4)' : (diff > 0 ? c1 : c2);
+            const id1 = document.getElementById('h2h-p1').value, id2 = document.getElementById('h2h-p2').value, el = document.getElementById('h2h-content');
+            const o1 = window._state.active.find(o => o.id === id1), o2 = window._state.active.find(o => o.id === id2); if(!o1 || !o2) return;
+            const s1 = (window._state.squads[id1] || []).sort((a,b)=>b.act-a.act), s2 = (window._state.squads[id2] || []).sort((a,b)=>b.act-a.act);
+            const c1 = window.getColor(id1), c2 = window.getColor(id2), diff = o1.score - o2.score;
+            let leadText = diff === 0 ? "TIED" : (diff > 0 ? `${o1.first} +${diff}` : `${o2.first} +${Math.abs(diff)}`), leadColor = diff === 0 ? 'var(--text4)' : (diff > 0 ? c1 : c2);
 
             el.innerHTML = `
                 <div class="glass-panel p-4 flex justify-between items-center stagger-item">
-                    <div class="text-center w-[30%]">
-                        <p class="font-cyber text-2xl font-black" style="color:${c1}">${o1.score}</p>
-                        <p class="text-[8px] font-bold text-[var(--text4)] uppercase mt-1">Rank #${window._state.active.findIndex(o=>o.id===id1)+1}</p>
-                    </div>
-                    <div class="text-center flex-1">
-                        <p class="text-[7px] font-black text-yellow-500 uppercase tracking-widest mb-1 opacity-80">Gap</p>
-                        <p class="font-cyber text-[11px] font-black uppercase" style="color:${leadColor}">${leadText}</p>
-                    </div>
-                    <div class="text-center w-[30%]">
-                        <p class="font-cyber text-2xl font-black" style="color:${c2}">${o2.score}</p>
-                        <p class="text-[8px] font-bold text-[var(--text4)] uppercase mt-1">Rank #${window._state.active.findIndex(o=>o.id===id2)+1}</p>
-                    </div>
+                    <div class="text-center w-[30%]"><p class="font-cyber text-2xl font-black" style="color:${c1}">${o1.score}</p><p class="text-[8px] font-bold text-[var(--text4)] uppercase mt-1">Rank #${window._state.active.findIndex(o=>o.id===id1)+1}</p></div>
+                    <div class="text-center flex-1"><p class="text-[7px] font-black text-yellow-500 uppercase tracking-widest mb-1 opacity-80">Gap</p><p class="font-cyber text-[11px] font-black uppercase" style="color:${leadColor}">${leadText}</p></div>
+                    <div class="text-center w-[30%]"><p class="font-cyber text-2xl font-black" style="color:${c2}">${o2.score}</p><p class="text-[8px] font-bold text-[var(--text4)] uppercase mt-1">Rank #${window._state.active.findIndex(o=>o.id===id2)+1}</p></div>
                 </div>
-                
                 <div class="mt-4 flex gap-2 stagger-item" style="animation-delay: 0.1s">
                     <div class="flex-1 glass-panel p-2">
-                        <div class="text-center mb-2 pb-2 border-b border-[var(--glass-border)]">
-                            <span class="text-[9px] font-black uppercase truncate block px-1" style="color:${c1}">${o1.first}'s Squad</span>
-                        </div>
+                        <div class="text-center mb-2 pb-2 border-b border-[var(--glass-border)]"><span class="text-[9px] font-black uppercase truncate block px-1" style="color:${c1}">${o1.first}'s Squad</span></div>
                         <div class="space-y-1.5 h-[300px] overflow-y-auto no-scrollbar">
-                            ${s1.length === 0 ? `<p class="text-center text-[9px] text-[var(--text4)] py-4">Empty</p>` : ''}
-                            ${s1.map(p => {
-                                const safeName = p.name.replace(/'/g, "\\'");
-                                return `
-                                <div class="flex justify-between items-center p-1.5 rounded bg-white/5 border border-[var(--glass-border)] cursor-pointer hover:bg-white/10 active-scale transition-colors" onclick="window.showPlayerStats('${safeName}')">
-                                    <div class="truncate mr-2 flex-1">
-                                        <p class="text-[9px] font-bold text-[var(--text1)] truncate">${p.name} ${p.cvc ? `<span style="color:${c1}">[${p.cvc}]</span>`:''}</p>
-                                    </div>
+                            ${s1.length === 0 ? `<p class="text-center text-[9px] text-[var(--text4)] py-4">Empty</p>` : s1.map(p => `
+                                <div class="flex justify-between items-center p-1.5 rounded bg-white/5 border border-[var(--glass-border)] cursor-pointer hover:bg-white/10 active-scale transition-colors" onclick="window.showPlayerStats('${p.name.replace(/'/g, "\\'")}')">
+                                    <div class="truncate mr-2 flex-1"><p class="text-[9px] font-bold text-[var(--text1)] truncate">${p.name} ${p.cvc ? `<span style="color:${c1}">[${p.cvc}]</span>`:''}</p></div>
                                     <span class="font-cyber text-[10px] font-black" style="color:${p.act>0?c1:'var(--text4)'}">${p.act}</span>
-                                </div>
-                                `;
-                            }).join('')}
+                                </div>`).join('')}
                         </div>
                     </div>
-                    
                     <div class="flex-1 glass-panel p-2">
-                        <div class="text-center mb-2 pb-2 border-b border-[var(--glass-border)]">
-                            <span class="text-[9px] font-black uppercase truncate block px-1" style="color:${c2}">${o2.first}'s Squad</span>
-                        </div>
+                        <div class="text-center mb-2 pb-2 border-b border-[var(--glass-border)]"><span class="text-[9px] font-black uppercase truncate block px-1" style="color:${c2}">${o2.first}'s Squad</span></div>
                         <div class="space-y-1.5 h-[300px] overflow-y-auto no-scrollbar">
-                            ${s2.length === 0 ? `<p class="text-center text-[9px] text-[var(--text4)] py-4">Empty</p>` : ''}
-                            ${s2.map(p => {
-                                const safeName = p.name.replace(/'/g, "\\'");
-                                return `
-                                <div class="flex justify-between items-center p-1.5 rounded bg-white/5 border border-[var(--glass-border)] cursor-pointer hover:bg-white/10 active-scale transition-colors" onclick="window.showPlayerStats('${safeName}')">
-                                    <div class="truncate mr-2 flex-1">
-                                        <p class="text-[9px] font-bold text-[var(--text1)] truncate">${p.name} ${p.cvc ? `<span style="color:${c2}">[${p.cvc}]</span>`:''}</p>
-                                    </div>
+                            ${s2.length === 0 ? `<p class="text-center text-[9px] text-[var(--text4)] py-4">Empty</p>` : s2.map(p => `
+                                <div class="flex justify-between items-center p-1.5 rounded bg-white/5 border border-[var(--glass-border)] cursor-pointer hover:bg-white/10 active-scale transition-colors" onclick="window.showPlayerStats('${p.name.replace(/'/g, "\\'")}')">
+                                    <div class="truncate mr-2 flex-1"><p class="text-[9px] font-bold text-[var(--text1)] truncate">${p.name} ${p.cvc ? `<span style="color:${c2}">[${p.cvc}]</span>`:''}</p></div>
                                     <span class="font-cyber text-[10px] font-black" style="color:${p.act>0?c2:'var(--text4)'}">${p.act}</span>
-                                </div>
-                                `;
-                            }).join('')}
+                                </div>`).join('')}
                         </div>
                     </div>
-                </div>
-            `;
+                </div>`;
         }
 
-        // --- PLAYER STAT BOTTOM SHEET ---
         window.showPlayerStats = function(playerName) {
             window.haptic([15, 30]);
-            const player = window._state.rosRows.find(r => r[0] === playerName);
-            if (!player) return;
-            
-            document.getElementById('ps-name').textContent = playerName;
-            document.getElementById('ps-team').textContent = `${player[4] || 'Unknown'} · ${player[6] || 'Player'}`;
-            
-            // Calculate History
-            const matchHistory = window._state.pcRows.filter(r => r[1] === playerName);
-            const totalPts = window._state.pPoints[fixID(playerName)]?.act || 0;
-            const rawPts = window._state.pPoints[fixID(playerName)]?.raw || 0;
-            
+            const player = window._state.rosRows.find(r => r[0] === playerName); if (!player) return;
+            document.getElementById('ps-name').textContent = playerName; document.getElementById('ps-team').textContent = `${player[4] || 'Unknown'} · ${player[6] || 'Player'}`;
+            const matchHistory = window._state.pcRows.filter(r => r[1] === playerName), totalPts = window._state.pPoints[fixID(playerName)]?.act || 0, rawPts = window._state.pPoints[fixID(playerName)]?.raw || 0;
             document.getElementById('ps-total').textContent = Math.round(totalPts);
-            
             const content = document.getElementById('ps-content');
-            if (matchHistory.length === 0) {
-                content.innerHTML = `<p class="text-center text-[10px] text-[var(--text4)] py-8 font-bold uppercase tracking-widest">No Match Data Yet</p>`;
-            } else {
+            if (matchHistory.length === 0) { content.innerHTML = `<p class="text-center text-[10px] text-[var(--text4)] py-8 font-bold uppercase tracking-widest">No Match Data Yet</p>`; } else {
                 content.innerHTML = `
                     <div class="flex justify-between items-center mb-6 p-4 rounded-2xl bg-black/20 border border-[var(--glass-border)]">
-                        <div class="text-center flex-1">
-                            <p class="font-cyber text-lg font-black text-[var(--text1)]">${Math.round(rawPts)}</p>
-                            <p class="text-[8px] font-black text-[var(--text4)] uppercase mt-1 tracking-widest">Base Pts</p>
-                        </div>
+                        <div class="text-center flex-1"><p class="font-cyber text-lg font-black text-[var(--text1)]">${Math.round(rawPts)}</p><p class="text-[8px] font-black text-[var(--text4)] uppercase mt-1 tracking-widest">Base Pts</p></div>
                         <div class="w-px h-8 bg-[var(--glass-border)]"></div>
-                        <div class="text-center flex-1">
-                            <p class="font-cyber text-lg font-black text-emerald-400">+${Math.round(totalPts - rawPts)}</p>
-                            <p class="text-[8px] font-black text-[var(--text4)] uppercase mt-1 tracking-widest">C/VC Bonus</p>
-                        </div>
+                        <div class="text-center flex-1"><p class="font-cyber text-lg font-black text-emerald-400">+${Math.round(totalPts - rawPts)}</p><p class="text-[8px] font-black text-[var(--text4)] uppercase mt-1 tracking-widest">C/VC Bonus</p></div>
                     </div>
-                    
                     <p class="text-[9px] font-black uppercase tracking-widest text-[var(--text3)] mb-3">Match History</p>
                     <div class="space-y-2">
                         ${[...matchHistory].reverse().map(m => {
-                            const matchName = m[0];
-                            const pts = parseFloat(m[6]) || 0;
-                            const mult = parseFloat(m[5]) || 1;
-                            return `
-                            <div class="flex justify-between items-center p-3 rounded-xl border border-[var(--glass-border)] bg-white/5">
-                                <div>
-                                    <p class="text-xs font-bold text-[var(--text1)]">${matchName}</p>
-                                    <p class="text-[8px] font-black uppercase tracking-widest mt-1 ${mult > 1 ? 'text-yellow-500' : 'text-[var(--text4)]'}">
-                                        ${mult > 1 ? `Multiplier: ${mult}x` : 'Base Points'}
-                                    </p>
-                                </div>
-                                <span class="font-cyber text-sm font-black ${pts > 0 ? 'text-[var(--text1)]' : 'text-[var(--text4)]'}">${pts}</span>
-                            </div>`;
+                            const pts = parseFloat(m[6]) || 0, mult = parseFloat(m[5]) || 1;
+                            return `<div class="flex justify-between items-center p-3 rounded-xl border border-[var(--glass-border)] bg-white/5"><div><p class="text-xs font-bold text-[var(--text1)]">${m[0]}</p><p class="text-[8px] font-black uppercase tracking-widest mt-1 ${mult > 1 ? 'text-yellow-500' : 'text-[var(--text4)]'}">${mult > 1 ? `Multiplier: ${mult}x` : 'Base Points'}</p></div><span class="font-cyber text-sm font-black ${pts > 0 ? 'text-[var(--text1)]' : 'text-[var(--text4)]'}">${pts}</span></div>`;
                         }).join('')}
-                    </div>
-                `;
+                    </div>`;
             }
-            
-            const overlay = document.getElementById('player-stat-overlay');
-            const sheet = document.getElementById('player-stat-sheet');
-            
-            overlay.classList.remove('hidden');
-            void overlay.offsetWidth; // Force reflow
-            overlay.classList.remove('opacity-0');
-            sheet.classList.remove('translate-y-full');
+            const overlay = document.getElementById('player-stat-overlay'), sheet = document.getElementById('player-stat-sheet');
+            overlay.classList.remove('hidden'); void overlay.offsetWidth; overlay.classList.remove('opacity-0'); sheet.classList.remove('translate-y-full');
         };
 
         window.closePlayerStats = function() {
             window.haptic(10);
-            const overlay = document.getElementById('player-stat-overlay');
-            const sheet = document.getElementById('player-stat-sheet');
-            
-            overlay.classList.add('opacity-0');
-            sheet.classList.add('translate-y-full');
-            
-            setTimeout(() => {
-                overlay.classList.add('hidden');
-            }, 300);
+            const overlay = document.getElementById('player-stat-overlay'), sheet = document.getElementById('player-stat-sheet');
+            overlay.classList.add('opacity-0'); sheet.classList.add('translate-y-full'); setTimeout(() => { overlay.classList.add('hidden'); }, 300);
         };
-
-        // --- LIVE, SCHEDULE & LIVEPOINTS VIEWS ---
 
         function renderLivePoints(rows) {
             const el = document.getElementById('live-points-list');
@@ -1317,15 +980,11 @@
                         <div class="flex justify-between items-center">
                             <div class="flex items-center gap-2">
                                 <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]"></span>
-                                <div>
-                                    <p class="font-cyber text-[8px] font-black uppercase text-emerald-500 tracking-widest">Live Now</p>
-                                    <p class="font-black text-sm text-[var(--text1)]">${title}</p>
-                                </div>
+                                <div><p class="font-cyber text-[8px] font-black uppercase text-emerald-500 tracking-widest">Live Now</p><p class="font-black text-sm text-[var(--text1)]">${title}</p></div>
                             </div>
                             <p class="text-[8px] text-[var(--text4)] font-bold">↻ 5 MIN</p>
                         </div>
                     </div>
-
                     <div class="glass-panel p-4 mb-2">
                         <p class="font-cyber text-[8px] font-black uppercase tracking-widest text-[var(--text3)] mb-3">Live Leaderboard</p>
                         <div class="space-y-2">
@@ -1335,34 +994,19 @@
                                 <div class="flex items-center gap-2">
                                     <span class="text-[9px] font-black w-4 text-center" style="color:${i===0?c:'var(--text4)'}">${i===0?'👑':i+1}</span>
                                     <span class="text-[10px] font-bold uppercase w-14 truncate" style="color:${i===0?'var(--text1)':'var(--text2)'}">${o.split(' ')[0]}</span>
-                                    <div class="flex-1 h-1 bg-[var(--glass-border)] rounded-full overflow-hidden">
-                                        <div class="h-full rounded-full" style="width:${pct}%; background:${c}"></div>
-                                    </div>
+                                    <div class="flex-1 h-1 bg-[var(--glass-border)] rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:${pct}%; background:${c}"></div></div>
                                     <span class="font-cyber text-[11px] font-black w-8 text-right" style="color:${c}">${Math.round(pts)}</span>
                                 </div>`;
                             }).join('')}
                         </div>
                     </div>
-
                     <div class="glass-panel overflow-hidden">
                         <table class="w-full text-left text-[9px]">
-                            <thead class="bg-white/5 font-cyber text-[var(--text4)] uppercase">
-                                <tr><th class="p-2 pl-4">Player</th><th class="p-2 text-right">R</th><th class="p-2 text-right">W</th><th class="p-2">Own</th><th class="p-2 pr-4 text-right">Pts</th></tr>
-                            </thead>
+                            <thead class="bg-white/5 font-cyber text-[var(--text4)] uppercase"><tr><th class="p-2 pl-4">Player</th><th class="p-2 text-right">R</th><th class="p-2 text-right">W</th><th class="p-2">Own</th><th class="p-2 pr-4 text-right">Pts</th></tr></thead>
                             <tbody>
                                 ${mRows.map(d => {
                                     const oc = window.getColor(d.owner), tc = TEAM_COLORS[d.team?.toUpperCase()]||'var(--text4)';
-                                    return `
-                                    <tr class="border-t border-[var(--glass-border)]">
-                                        <td class="p-2 pl-4">
-                                            <p class="font-bold text-[var(--text1)]">${d.player}</p>
-                                            <p class="text-[7px] font-black uppercase" style="color:${tc}">${d.team}</p>
-                                        </td>
-                                        <td class="p-2 text-right font-cyber font-bold text-[var(--text2)]">${d.runs||'—'}</td>
-                                        <td class="p-2 text-right font-cyber font-bold text-emerald-400">${d.wickets||'—'}</td>
-                                        <td class="p-2 font-bold uppercase truncate max-w-[40px]" style="color:${oc}">${(d.owner||'—').split(' ')[0]}</td>
-                                        <td class="p-2 pr-4 text-right font-cyber font-black text-sm" style="color:${d.points>0?oc:'var(--text4)'}">${d.points||'—'}</td>
-                                    </tr>`;
+                                    return `<tr class="border-t border-[var(--glass-border)]"><td class="p-2 pl-4"><p class="font-bold text-[var(--text1)]">${d.player}</p><p class="text-[7px] font-black uppercase" style="color:${tc}">${d.team}</p></td><td class="p-2 text-right font-cyber font-bold text-[var(--text2)]">${d.runs||'—'}</td><td class="p-2 text-right font-cyber font-bold text-emerald-400">${d.wickets||'—'}</td><td class="p-2 font-bold uppercase truncate max-w-[40px]" style="color:${oc}">${(d.owner||'—').split(' ')[0]}</td><td class="p-2 pr-4 text-right font-cyber font-black text-sm" style="color:${d.points>0?oc:'var(--text4)'}">${d.points||'—'}</td></tr>`;
                                 }).join('')}
                             </tbody>
                         </table>
@@ -1374,102 +1018,53 @@
         const SCHEDULE = [
             {m:1, date:'28 Mar', t1:'RCB', t2:'SRH'}, {m:2, date:'29 Mar', t1:'MI', t2:'KKR'},
             {m:3, date:'30 Mar', t1:'RR', t2:'CSK'}, {m:4, date:'31 Mar', t1:'PBKS', t2:'GT'},
-            {m:5, date:'01 Apr', t1:'LSG', t2:'DC'} // truncated for fallback
+            {m:5, date:'01 Apr', t1:'LSG', t2:'DC'}
         ];
-        
+
         function parseDate(raw) {
             if (!raw) return { ts:null, display:'TBD' };
-            const s = raw.toString().trim();
-            // Try to match Google Sheet exact format: Date(YYYY,MM,DD)
-            const gm = s.match(/Date\((\d+),(\d+),(\d+)\)/i);
-            if(gm) { 
-                const dt = new Date(+gm[1], +gm[2], +gm[3]); 
-                return { ts:dt, display: `${String(dt.getDate()).padStart(2,'0')} ${dt.toLocaleString('en',{month:'short'})}` }; 
-            }
-            
-            // Failsafe for strict DD/MM or DD-MM formats coming from raw sheet strings
+            const s = raw.toString().trim(), gm = s.match(/Date\((\d+),(\d+),(\d+)\)/i);
+            if(gm) { const dt = new Date(+gm[1], +gm[2], +gm[3]); return { ts:dt, display: `${String(dt.getDate()).padStart(2,'0')} ${dt.toLocaleString('en',{month:'short'})}` }; }
             const parts = s.split(/[-/ \.]/);
             if (parts.length >= 2) {
                 const d = parseInt(parts[0], 10);
-                let m = parseInt(parts[1], 10) - 1; // Month is 0-indexed in JS
-                if (isNaN(m)) {
-                    const mNames = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
-                    m = mNames.findIndex(mn => parts[1].toLowerCase().includes(mn));
-                }
+                let m = parseInt(parts[1], 10) - 1;
+                if (isNaN(m)) { const mNames = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"]; m = mNames.findIndex(mn => parts[1].toLowerCase().includes(mn)); }
                 const y = parts[2] ? parseInt(parts[2], 10) : new Date().getFullYear();
-                if (!isNaN(d) && !isNaN(m) && m >= 0) {
-                    const dt2 = new Date(y, m, d);
-                    if (!isNaN(dt2.getTime())) return { ts: dt2, display: `${String(dt2.getDate()).padStart(2,'0')} ${dt2.toLocaleString('en',{month:'short'})}` };
-                }
+                if (!isNaN(d) && !isNaN(m) && m >= 0) { const dt2 = new Date(y, m, d); if (!isNaN(dt2.getTime())) return { ts: dt2, display: `${String(dt2.getDate()).padStart(2,'0')} ${dt2.toLocaleString('en',{month:'short'})}` }; }
             }
-
-            // Fallback for standard string dates like "28 Mar 2026"
-            const dt = new Date(s);
-            if (!isNaN(dt.getTime())) {
-                return { ts: dt, display: `${String(dt.getDate()).padStart(2,'0')} ${dt.toLocaleString('en',{month:'short'})}` };
-            }
-
+            const dt = new Date(s); if (!isNaN(dt.getTime())) return { ts: dt, display: `${String(dt.getDate()).padStart(2,'0')} ${dt.toLocaleString('en',{month:'short'})}` };
             return { ts:null, display: s.substring(0,6) };
         }
-        
+
         function isToday(ts) {
-            if(!ts) return false; 
-            const now = new Date();
-            // Exclusively check Date and Month to entirely avoid year parsing discrepancies
+            if(!ts) return false; const now = new Date();
             return ts.getDate() === now.getDate() && ts.getMonth() === now.getMonth();
         }
-        
+
         function todaysTeams() {
-            const rows = window._state?.schedRows || []; 
-            const playing = new Set();
-            const source = rows.length ? rows : SCHEDULE;
-            
-            const now = new Date();
-            const dStr = String(now.getDate());
-            const dPad = dStr.padStart(2, '0');
-            const mNames = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
-            const mStr = mNames[now.getMonth()];
-            const mNum = String(now.getMonth() + 1).padStart(2, '0');
-
+            const rows = window._state?.schedRows || [], playing = new Set(), source = rows.length ? rows : SCHEDULE;
+            const now = new Date(), dStr = String(now.getDate()), dPad = dStr.padStart(2, '0');
+            const mNames = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"], mStr = mNames[now.getMonth()], mNum = String(now.getMonth() + 1).padStart(2, '0');
             source.forEach(r => {
-                const rawDate = (r.date || r[1] || '').toString().toLowerCase();
-                const t1 = getShortTeam(r.t1 || r[3]);
-                const t2 = getShortTeam(r.t2 || r[4]);
-                
-                const d = parseDate(rawDate);
+                const rawDate = (r.date || r[1] || '').toString().toLowerCase(), t1 = getShortTeam(r.t1 || r[3]), t2 = getShortTeam(r.t2 || r[4]), d = parseDate(rawDate);
                 let isMatchToday = false;
-
-                if (d.ts && isToday(d.ts)) {
-                    isMatchToday = true;
-                } else if ((rawDate.includes(dStr) || rawDate.includes(dPad)) && 
-                           (rawDate.includes(mStr) || rawDate.includes(mNum))) {
-                    // Aggressive text matching fallback for absolute certainty
-                    isMatchToday = true;
-                }
-
-                if (isMatchToday) {
-                    if (t1) playing.add(t1);
-                    if (t2) playing.add(t2);
-                }
+                if (d.ts && isToday(d.ts)) isMatchToday = true;
+                else if ((rawDate.includes(dStr) || rawDate.includes(dPad)) && (rawDate.includes(mStr) || rawDate.includes(mNum))) isMatchToday = true;
+                if (isMatchToday) { if (t1) playing.add(t1); if (t2) playing.add(t2); }
             });
             return playing;
         }
 
         function renderTodayBar(schedRows) {
-            const el = document.getElementById('today-match-bar');
-            let todayMatches = [];
+            const el = document.getElementById('today-match-bar'); let todayMatches = [];
             (schedRows.length ? schedRows : SCHEDULE).forEach(r => {
-                const d = parseDate(r.date || r[1]);
-                if (d.ts && isToday(d.ts)) todayMatches.push({ t1: getShortTeam(r.t1 || r[3]), t2: getShortTeam(r.t2 || r[4]) });
+                const d = parseDate(r.date || r[1]); if (d.ts && isToday(d.ts)) todayMatches.push({ t1: getShortTeam(r.t1 || r[3]), t2: getShortTeam(r.t2 || r[4]) });
             });
             if(!todayMatches.length) { el.innerHTML=''; return; }
-
             el.innerHTML = todayMatches.map(tm => `
                 <div class="glass-panel p-4 mb-4 border-yellow-500/30 flex items-center justify-between stagger-item bg-yellow-500/5">
-                    <div class="flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse shadow-[0_0_8px_#eab308]"></span>
-                        <p class="font-cyber text-[9px] font-black uppercase tracking-widest text-yellow-500">Today</p>
-                    </div>
+                    <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse shadow-[0_0_8px_#eab308]"></span><p class="font-cyber text-[9px] font-black uppercase tracking-widest text-yellow-500">Today</p></div>
                     <div class="flex gap-3 items-center">
                         <span class="font-cyber font-black text-sm" style="color:${TEAM_COLORS[tm.t1]||'#fff'}; text-shadow:0 0 10px ${TEAM_COLORS[tm.t1]}88">${tm.t1}</span>
                         <span class="text-[8px] font-black text-[var(--text4)]">VS</span>
@@ -1479,92 +1074,49 @@
         }
 
         function renderScheduleFilters() {
-            const el = document.getElementById('schedule-filters');
-            const teams = ['ALL', 'MI', 'CSK', 'RCB', 'KKR', 'SRH', 'DC', 'PBKS', 'RR', 'GT', 'LSG'];
+            const el = document.getElementById('schedule-filters'), teams = ['ALL', 'MI', 'CSK', 'RCB', 'KKR', 'SRH', 'DC', 'PBKS', 'RR', 'GT', 'LSG'];
             el.innerHTML = teams.map(t => `<button class="sched-pill ${t==='ALL'?'active':''}" data-team="${t}" onclick="window.haptic(10); filterSchedule('${t}')" style="${t!=='ALL'?`border-color:${TEAM_COLORS[t]}55; color:${TEAM_COLORS[t]}`:''}">${t}</button>`).join('');
         }
 
         window.filterSchedule = function(team) {
             document.querySelectorAll('.sched-pill').forEach(b => b.classList.toggle('active', b.dataset.team === team));
-            document.querySelectorAll('.sched-row').forEach(row => {
-                const show = team === 'ALL' || row.dataset.t1 === team || row.dataset.t2 === team;
-                row.style.display = show ? '' : 'none';
-            });
-            
-            const vis = document.querySelectorAll('.sched-row:not([style*="display: none"])');
-            const done = Array.from(vis).filter(r => r.dataset.done === 'true').length;
-            document.getElementById('sched-stats').innerHTML = `
-                <div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span><span class="font-cyber text-[8px] font-black text-emerald-500 tracking-widest">${done} PLAYED</span></div>
-                <div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-yellow-500"></span><span class="font-cyber text-[8px] font-black text-yellow-500 tracking-widest">${vis.length - done} REMAINING</span></div>`;
+            document.querySelectorAll('.sched-row').forEach(row => { row.style.display = (team === 'ALL' || row.dataset.t1 === team || row.dataset.t2 === team) ? '' : 'none'; });
+            const vis = document.querySelectorAll('.sched-row:not([style*="display: none"])'), done = Array.from(vis).filter(r => r.dataset.done === 'true').length;
+            document.getElementById('sched-stats').innerHTML = `<div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span><span class="font-cyber text-[8px] font-black text-emerald-500 tracking-widest">${done} PLAYED</span></div><div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-yellow-500"></span><span class="font-cyber text-[8px] font-black text-yellow-500 tracking-widest">${vis.length - done} REMAINING</span></div>`;
         }
 
         function renderSchedule(rows) {
-            const el = document.getElementById('schedule-list');
-            const data = rows.filter(r => r[0] && !isNaN(parseInt(r[0])));
+            const el = document.getElementById('schedule-list'), data = rows.filter(r => r[0] && !isNaN(parseInt(r[0])));
             el.innerHTML = data.map((m, i) => {
-                const isDone = !!m[6];
-                const d = parseDate(m[1]);
-                const isTodayMatch = isToday(d.ts);
-                const t1 = getShortTeam(m[3]);
-                const t2 = getShortTeam(m[4]);
+                const isDone = !!m[6], d = parseDate(m[1]), isTodayMatch = isToday(d.ts), t1 = getShortTeam(m[3]), t2 = getShortTeam(m[4]);
                 return `
-                <div class="glass-panel p-4 flex items-center justify-between sched-row stagger-item active-scale ${isTodayMatch ? 'today-glow' : ''}" 
-                     data-t1="${t1}" data-t2="${t2}" data-done="${isDone}" style="animation-delay: ${(i%10)*0.05}s">
-                    <div class="text-center min-w-[40px] pr-3 border-r border-[var(--glass-border)]">
-                        <p class="font-cyber text-[9px] font-black text-[var(--text4)]">M${m[0]}</p>
-                        <p class="text-[10px] font-bold text-[var(--text2)] mt-0.5 whitespace-nowrap">${d.display}</p>
-                    </div>
-                    <div class="flex-1 px-4 flex flex-col items-center">
-                        <div class="flex items-center gap-3 w-full justify-center">
-                            <span class="font-cyber font-black text-xs flex-1 text-right" style="color:${TEAM_COLORS[t1]||'#fff'}">${t1}</span>
-                            <span class="text-[8px] font-black text-[var(--text4)]">VS</span>
-                            <span class="font-cyber font-black text-xs flex-1 text-left" style="color:${TEAM_COLORS[t2]||'#fff'}">${t2}</span>
-                        </div>
-                    </div>
-                    <div class="min-w-[50px] text-center flex flex-col justify-center">
-                        ${isDone ? `<p class="font-cyber text-[10px] font-black text-emerald-400">${m[6]}</p><p class="text-[6px] font-bold text-[var(--text4)] mt-1 uppercase truncate max-w-[60px]">${m[7]}</p>`
-                                 : `<p class="font-cyber text-[8px] font-black text-yellow-500/50">${m[2]||'TBA'}</p>`}
-                    </div>
+                <div class="glass-panel p-4 flex items-center justify-between sched-row stagger-item active-scale ${isTodayMatch ? 'today-glow' : ''}" data-t1="${t1}" data-t2="${t2}" data-done="${isDone}" style="animation-delay: ${(i%10)*0.05}s">
+                    <div class="text-center min-w-[40px] pr-3 border-r border-[var(--glass-border)]"><p class="font-cyber text-[9px] font-black text-[var(--text4)]">M${m[0]}</p><p class="text-[10px] font-bold text-[var(--text2)] mt-0.5 whitespace-nowrap">${d.display}</p></div>
+                    <div class="flex-1 px-4 flex flex-col items-center"><div class="flex items-center gap-3 w-full justify-center"><span class="font-cyber font-black text-xs flex-1 text-right" style="color:${TEAM_COLORS[t1]||'#fff'}">${t1}</span><span class="text-[8px] font-black text-[var(--text4)]">VS</span><span class="font-cyber font-black text-xs flex-1 text-left" style="color:${TEAM_COLORS[t2]||'#fff'}">${t2}</span></div></div>
+                    <div class="min-w-[50px] text-center flex flex-col justify-center">${isDone ? `<p class="font-cyber text-[10px] font-black text-emerald-400">${m[6]}</p><p class="text-[6px] font-bold text-[var(--text4)] mt-1 uppercase truncate max-w-[60px]">${m[7]}</p>` : `<p class="font-cyber text-[8px] font-black text-yellow-500/50">${m[2]||'TBA'}</p>`}</div>
                 </div>`;
             }).join('');
             window.filterSchedule('ALL');
         }
 
         function renderStandings(rows) {
-            const el = document.getElementById('standings-list');
-            const data = rows.filter(r => r[0] && !isNaN(parseInt(r[0])));
-            if(!data.length) return;
-
+            const el = document.getElementById('standings-list'), data = rows.filter(r => r[0] && !isNaN(parseInt(r[0]))); if(!data.length) return;
             el.innerHTML = `
                 <div class="glass-panel p-4 mb-3 flex justify-between items-center stagger-item">
-                    <div>
-                        <p class="font-cyber text-[8px] font-black tracking-widest text-[var(--text4)] uppercase mb-1">IPL 2026</p>
-                        <h2 class="font-cyber text-sm font-black text-yellow-500">Points Table</h2>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-[7px] font-black tracking-widest text-[var(--text3)] uppercase">Tap team</p>
-                        <p class="text-[9px] font-black tracking-widest text-[var(--text1)] uppercase">To Theme App</p>
-                    </div>
+                    <div><p class="font-cyber text-[8px] font-black tracking-widest text-[var(--text4)] uppercase mb-1">IPL 2026</p><h2 class="font-cyber text-sm font-black text-yellow-500">Points Table</h2></div>
+                    <div class="text-right"><p class="text-[7px] font-black tracking-widest text-[var(--text3)] uppercase">Tap team</p><p class="text-[9px] font-black tracking-widest text-[var(--text1)] uppercase">To Theme App</p></div>
                 </div>
                 <div class="glass-panel overflow-hidden stagger-item" style="animation-delay: 0.1s">
                     <table class="w-full text-left text-[10px]">
-                        <thead class="bg-white/5 font-cyber text-[var(--text4)] uppercase">
-                            <tr><th class="p-3 text-center">#</th><th class="p-3">Team</th><th class="p-3 text-center">P</th><th class="p-3 text-center">W</th><th class="p-3 text-center">L</th><th class="p-3 text-right">Pts</th><th class="p-3 text-right">NRR</th></tr>
-                        </thead>
+                        <thead class="bg-white/5 font-cyber text-[var(--text4)] uppercase"><tr><th class="p-3 text-center">#</th><th class="p-3">Team</th><th class="p-3 text-center">P</th><th class="p-3 text-center">W</th><th class="p-3 text-center">L</th><th class="p-3 text-right">Pts</th><th class="p-3 text-right">NRR</th></tr></thead>
                         <tbody>
                             ${data.map(t => {
                                 const stName = getShortTeam(t[2]);
                                 return `
                                 <tr class="border-t border-[var(--glass-border)] cursor-pointer hover:bg-white/5 active-scale transition-colors ${t[0]<=4?'bg-emerald-500/5':''}" onclick="setTeamTheme('${stName}')">
                                     <td class="p-3 text-center font-cyber font-bold ${t[0]<=4?'text-emerald-500':'text-[var(--text4)]'}">${t[0]}</td>
-                                    <td class="p-3 font-bold text-[var(--text1)] flex items-center gap-2">
-                                        <span class="w-2 h-2 rounded-full flex-shrink-0" style="background:${TEAM_COLORS[stName]||'#fff'}"></span><span class="truncate">${t[2]}</span>
-                                    </td>
-                                    <td class="p-3 text-center text-[var(--text3)]">${t[3]}</td>
-                                    <td class="p-3 text-center font-bold text-emerald-400">${t[4]}</td>
-                                    <td class="p-3 text-center font-bold text-red-400">${t[5] || '0'}</td>
-                                    <td class="p-3 text-right font-cyber font-black text-[var(--text1)]">${t[7]}</td>
-                                    <td class="p-3 text-right font-bold ${parseFloat(t[8])>=0?'text-emerald-400':'text-red-400'}">${t[8] || '0.000'}</td>
+                                    <td class="p-3 font-bold text-[var(--text1)] flex items-center gap-2"><span class="w-2 h-2 rounded-full flex-shrink-0" style="background:${TEAM_COLORS[stName]||'#fff'}"></span><span class="truncate">${t[2]}</span></td>
+                                    <td class="p-3 text-center text-[var(--text3)]">${t[3]}</td><td class="p-3 text-center font-bold text-emerald-400">${t[4]}</td><td class="p-3 text-center font-bold text-red-400">${t[5] || '0'}</td><td class="p-3 text-right font-cyber font-black text-[var(--text1)]">${t[7]}</td><td class="p-3 text-right font-bold ${parseFloat(t[8])>=0?'text-emerald-400':'text-red-400'}">${t[8] || '0.000'}</td>
                                 </tr>`;
                             }).join('')}
                         </tbody>
@@ -1572,99 +1124,153 @@
                 </div>`;
         }
 
-        // --- EXTRAS ---
-        function showSearchOverlay() {
-            document.getElementById('search-overlay').classList.remove('hidden');
-            const header = document.getElementById('main-header');
-            if (header) header.style.zIndex = '2001';
-        }
-
-        function hideSearchOverlay() {
-            document.getElementById('search-overlay').classList.add('hidden');
-            document.getElementById('search-dropdown').style.display = 'none';
-            const header = document.getElementById('main-header');
-            if (header) header.style.zIndex = '';
-        }
-
+        function showSearchOverlay() { document.getElementById('search-overlay').classList.remove('hidden'); const header = document.getElementById('main-header'); if (header) header.style.zIndex = '2001'; }
+        function hideSearchOverlay() { document.getElementById('search-overlay').classList.add('hidden'); document.getElementById('search-dropdown').style.display = 'none'; const header = document.getElementById('main-header'); if (header) header.style.zIndex = ''; }
         function onSearchInput(q) {
-            const dd = document.getElementById('search-dropdown');
-            const query = q.trim().toLowerCase();
+            const dd = document.getElementById('search-dropdown'), query = q.trim().toLowerCase();
             if(!query || !window._state?.rosRows) { dd.style.display='none'; return; }
-            
-            const results = window._state.rosRows.filter(r=>r[0]&&!r[1].includes('owner')).map(r=>({
-                name:r[0], owner:r[1], team:r[4], pts: window._state.pPoints[fixID(r[0])]?.act||0
-            })).filter(p=>p.name.toLowerCase().includes(query) || p.owner.toLowerCase().includes(query))
-               .sort((a,b)=>b.pts-a.pts).slice(0,8);
-
+            const results = window._state.rosRows.filter(r=>r[0]&&!r[1].includes('owner')).map(r=>({name:r[0], owner:r[1], team:r[4], pts: window._state.pPoints[fixID(r[0])]?.act||0}))
+                .filter(p=>p.name.toLowerCase().includes(query) || p.owner.toLowerCase().includes(query)).sort((a,b)=>b.pts-a.pts).slice(0,8);
             dd.style.display='block';
             dd.innerHTML = results.map(p=>`
-                <div class="p-3 border-b border-[var(--glass-border)] cursor-pointer hover:bg-white/5 active-scale flex justify-between items-center" 
-                     onclick="document.getElementById('player-search').value=''; hideSearchOverlay(); switchTab('main'); const c=document.getElementById('c-${fixID(p.owner).replace(/\s+/g,'-')}'); if(c){c.scrollIntoView({behavior:'smooth'}); c.classList.add('border-yellow-500'); setTimeout(()=>c.classList.remove('border-yellow-500'), 1500);} window.showPlayerStats('${p.name.replace(/'/g, "\\'")}');">
-                    <div>
-                        <p class="text-xs font-bold text-[var(--text1)]">${p.name}</p>
-                        <p class="text-[8px] font-bold text-[var(--text4)] uppercase mt-0.5">${p.team} · ${p.owner}</p>
-                    </div>
+                <div class="p-3 border-b border-[var(--glass-border)] cursor-pointer hover:bg-white/5 active-scale flex justify-between items-center" onclick="document.getElementById('player-search').value=''; hideSearchOverlay(); switchTab('main'); const c=document.getElementById('c-${fixID(p.owner).replace(/\s+/g,'-')}'); if(c){c.scrollIntoView({behavior:'smooth'}); c.classList.add('border-yellow-500'); setTimeout(()=>c.classList.remove('border-yellow-500'), 1500);} window.showPlayerStats('${p.name.replace(/'/g, "\\'")}');">
+                    <div><p class="text-xs font-bold text-[var(--text1)]">${p.name}</p><p class="text-[8px] font-bold text-[var(--text4)] uppercase mt-0.5">${p.team} · ${p.owner}</p></div>
                     <p class="font-cyber text-sm font-black" style="color:${window.getColor(p.owner)}">${p.pts}</p>
                 </div>`).join('');
             if(!results.length) dd.innerHTML=`<div class="p-4 text-center text-[10px] text-[var(--text4)]">No results</div>`;
         }
-        
-        // Hide overlay when clicking outside
-        document.addEventListener('click', e => {
-            if (!e.target.closest('#search-container')) {
-                hideSearchOverlay();
-            }
-        });
+        document.addEventListener('click', e => { if (!e.target.closest('#search-container')) { hideSearchOverlay(); } });
 
+        // --- THE NEW INSTAGRAM STORY SHARE CARD GENERATOR ---
         async function shareCard(cID, ownerFull, score, rank) {
             window.haptic(30);
             const color = window.getColor(ownerFull);
             const squad = (window._state.squads[fixID(ownerFull)]||[]).sort((a,b)=>b.act-a.act);
-            const captain = squad.find(p=>p.cvc==='C'), vice = squad.find(p=>p.cvc==='VC');
-            const PLAYER_ROW_H = 24, W = 600, H = 240+50+16+Math.max(squad.length,1)*PLAYER_ROW_H+60;
+            const mvp = squad[0];
+            
+            const W = 1080;
+            const H = 1920;
             
             const canvas = document.createElement('canvas');
-            canvas.width = W*2; canvas.height = H*2;
-            const ctx = canvas.getContext('2d'); ctx.scale(2,2);
+            canvas.width = W; canvas.height = H;
+            const ctx = canvas.getContext('2d');
             
-            const bg = ctx.createLinearGradient(0,0,W,H); bg.addColorStop(0,'#0f172a'); bg.addColorStop(1,'#020617');
+            // Custom Rounded Rectangle Polyfill for Maximum Canvas Compatibility
+            const roundRect = (x, y, w, h, r) => {
+                ctx.beginPath(); ctx.moveTo(x+r, y); ctx.lineTo(x+w-r, y); ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+                ctx.lineTo(x+w, y+h-r); ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h); ctx.lineTo(x+r, y+h);
+                ctx.quadraticCurveTo(x, y+h, x, y+h-r); ctx.lineTo(x, y+r); ctx.quadraticCurveTo(x, y, x+r, y); ctx.closePath();
+            };
+
+            // 1. Deep Space Background
+            const bg = ctx.createLinearGradient(0,0,0,H);
+            bg.addColorStop(0, '#020617'); bg.addColorStop(1, '#0f172a');
             ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
-            ctx.fillStyle = color; ctx.fillRect(0,0,W,4);
             
-            const glow = ctx.createRadialGradient(W*0.78,H*0.2,0,W*0.78,H*0.2,200);
-            glow.addColorStop(0,color+'28'); glow.addColorStop(1,'transparent');
+            // 2. Giant Glow Orb (Owner Color)
+            const glow = ctx.createRadialGradient(W/2, 400, 0, W/2, 400, 800);
+            glow.addColorStop(0, color + '55');
+            glow.addColorStop(1, 'transparent');
             ctx.fillStyle = glow; ctx.fillRect(0,0,W,H);
+
+            // 3. Watermark Initials
+            const parts = ownerFull.split(' ').filter(Boolean);
+            const initials = parts.length > 1 ? (parts[0][0] + parts[1][0]) : (parts[0] ? parts[0].substring(0,2) : 'UN');
+            ctx.font = '900 600px system-ui, -apple-system, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.02)';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(initials.toUpperCase(), W/2, 450);
+            ctx.textBaseline = 'alphabetic'; // reset
             
-            ctx.font = '700 10px monospace'; ctx.fillStyle = color+'99'; ctx.fillText(`RANK #${rank}  ·  REVOLUTION IPL 2026`,28,46);
-            ctx.font = '900 28px monospace'; ctx.fillStyle = '#f8fafc'; ctx.fillText(ownerFull.toUpperCase(),28,80);
-            ctx.font = '900 44px monospace'; ctx.fillStyle = color; ctx.textAlign = 'right'; ctx.fillText(score,W-28,80); ctx.textAlign = 'left';
-            ctx.font = '600 9px monospace'; ctx.fillStyle = '#334155'; ctx.fillText('TOTAL POINTS',28,100);
+            // 4. Header Top Bar
+            ctx.fillStyle = color; ctx.fillRect(0, 0, W, 16);
+            ctx.font = '900 28px system-ui, -apple-system, sans-serif'; ctx.fillStyle = '#f1c40f'; ctx.textAlign = 'center';
+            ctx.fillText('R E V O L U T I O N   I P L   2 0 2 6', W/2, 100);
             
-            ctx.strokeStyle = 'rgba(255,255,255,0.07)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(28,114); ctx.lineTo(W-28,114); ctx.stroke();
-            let cy = 138;
-            if (captain||vice) {
-                if (captain){ctx.font='900 10px monospace';ctx.fillStyle=color;ctx.fillText('C',28,cy);ctx.font='700 11px monospace';ctx.fillStyle='#94a3b8';ctx.fillText(captain.name,44,cy);ctx.textAlign='right';ctx.fillText(`${captain.act} pts`,W/2-10,cy);ctx.textAlign='left';}
-                if (vice){ctx.font='900 10px monospace';ctx.fillStyle='#94a3b8';ctx.fillText('VC',W/2+10,cy);ctx.font='700 11px monospace';ctx.fillStyle='#64748b';ctx.fillText(vice.name,W/2+34,cy);ctx.textAlign='right';ctx.fillText(`${vice.act} pts`,W-28,cy);ctx.textAlign='left';}
-                cy += 20;
+            // 5. Rank Badge
+            ctx.fillStyle = color + '22';
+            roundRect(W/2 - 140, 160, 280, 50, 25); ctx.fill();
+            ctx.strokeStyle = color + '88'; ctx.lineWidth = 2; ctx.stroke();
+            ctx.font = '800 22px system-ui, -apple-system, sans-serif'; ctx.fillStyle = color;
+            ctx.fillText(`CURRENT RANK: #${rank}`, W/2, 194);
+            
+            // 6. Main Owner Text
+            ctx.font = '900 100px system-ui, -apple-system, sans-serif'; ctx.fillStyle = '#f8fafc';
+            ctx.fillText(ownerFull.toUpperCase(), W/2, 320);
+            
+            // 7. Score
+            ctx.font = '900 160px system-ui, -apple-system, sans-serif'; ctx.fillStyle = color;
+            ctx.fillText(score, W/2, 490);
+            ctx.font = '800 24px system-ui, -apple-system, sans-serif'; ctx.fillStyle = '#94a3b8';
+            ctx.fillText('TOTAL SEASON POINTS', W/2, 540);
+            
+            // 8. Frosted Glass Container
+            const pY = 640;
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
+            roundRect(80, pY, W-160, H - pY - 120, 40); ctx.fill();
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.lineWidth = 2; ctx.stroke();
+            
+            // 9. MVP Box
+            if(mvp) {
+                ctx.fillStyle = 'rgba(255,255,255,0.04)';
+                roundRect(120, pY + 40, W-240, 140, 24); ctx.fill();
+                ctx.strokeStyle = 'rgba(241,196,15,0.2)'; ctx.lineWidth = 1; ctx.stroke();
+                
+                ctx.textAlign = 'left';
+                ctx.font = '800 22px system-ui, -apple-system, sans-serif'; ctx.fillStyle = '#f1c40f';
+                ctx.fillText('⭐ SQUAD MVP', 160, pY + 85);
+                
+                ctx.font = '900 44px system-ui, -apple-system, sans-serif'; ctx.fillStyle = '#f8fafc';
+                ctx.fillText(mvp.name.toUpperCase(), 160, pY + 145);
+                
+                ctx.textAlign = 'right';
+                ctx.font = '900 54px system-ui, -apple-system, sans-serif'; ctx.fillStyle = '#f1c40f';
+                ctx.fillText(mvp.act, W - 160, pY + 145);
+                ctx.font = '800 20px system-ui, -apple-system, sans-serif'; ctx.fillStyle = '#94a3b8';
+                ctx.fillText('PTS', W - 160, pY + 85);
             }
-            ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.beginPath(); ctx.moveTo(28,cy); ctx.lineTo(W-28,cy); ctx.stroke(); cy+=16;
-            ctx.font = '700 8px monospace'; ctx.fillStyle = '#334155'; ctx.fillText('FULL SQUAD',28,cy); ctx.textAlign = 'right'; ctx.fillText('PTS',W-28,cy); ctx.textAlign = 'left'; cy+=18;
             
-            squad.forEach((p,i) => {
-                const y = cy+i*PLAYER_ROW_H, tag = p.cvc?` [${p.cvc}]`:'';
-                ctx.font = `${p.cvc?'800':'500'} 11px monospace`; ctx.fillStyle = p.cvc?color:(i%2===0?'#94a3b8':'#64748b');
-                ctx.fillText(`${p.name}${tag}  (${p.team})`,28,y);
-                ctx.font = `${p.cvc?'900':'700'} 11px monospace`; ctx.fillStyle = p.cvc?color:'#475569';
-                ctx.textAlign = 'right'; ctx.fillText(`${p.act}`,W-28,y); ctx.textAlign = 'left';
+            // 10. Squad List (2 Columns)
+            ctx.textAlign = 'left';
+            ctx.font = '800 22px system-ui, -apple-system, sans-serif'; ctx.fillStyle = '#94a3b8';
+            ctx.fillText('FULL SQUAD', 120, pY + 250);
+            
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(120, pY + 270); ctx.lineTo(W-120, pY + 270); ctx.stroke();
+            
+            let listY = pY + 330;
+            const colWidth = (W - 280) / 2;
+            
+            squad.slice(1).forEach((p, i) => {
+                const isLeft = i % 2 === 0;
+                const x = isLeft ? 120 : 120 + colWidth + 40;
+                const y = listY + Math.floor(i / 2) * 75;
+                
+                const isCVC = p.cvc ? true : false;
+                ctx.fillStyle = isCVC ? color : '#e2e8f0';
+                ctx.font = `${isCVC ? '800' : '600'} 26px system-ui, -apple-system, sans-serif`;
+                
+                const tag = p.cvc ? ` [${p.cvc}]` : '';
+                ctx.textAlign = 'left';
+                
+                // Truncate long names slightly to fit column perfectly
+                let dispName = p.name;
+                if(dispName.length > 14) dispName = dispName.substring(0, 12) + '..';
+                
+                ctx.fillText(`${dispName}${tag}`, x, y);
+                
+                ctx.textAlign = 'right';
+                ctx.fillStyle = isCVC ? color : '#94a3b8';
+                ctx.font = `800 26px system-ui, -apple-system, sans-serif`;
+                ctx.fillText(`${p.act}`, x + colWidth - 20, y);
             });
             
-            const footerY = H-28;
-            ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.beginPath(); ctx.moveTo(28,footerY-14); ctx.lineTo(W-28,footerY-14); ctx.stroke();
-            ctx.font = '700 9px monospace'; ctx.fillStyle = color+'bb'; ctx.fillText(`🏏 ${SITE_URL}`,28,footerY);
-            ctx.font = '600 8px monospace'; ctx.fillStyle = '#1e293b'; ctx.textAlign = 'right'; ctx.fillText('ULTIMA EDITION',W-28,footerY); ctx.textAlign = 'left';
-            
+            // 11. Footer
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#64748b'; ctx.font = '800 24px system-ui, -apple-system, sans-serif';
+            ctx.fillText(`🏏 ${SITE_URL}`, W/2, H - 50);
+
             const filename = `revo-${ownerFull.toLowerCase().replace(/\s/g,'-')}.png`;
-            const shareText = `${ownerFull} is ranked #${rank} with ${score} pts 🏏\nC: ${captain?.name||'—'} | VC: ${vice?.name||'—'}\n\n🔗 ${SITE_URL}`;
+            const shareText = `${ownerFull} is ranked #${rank} with ${score} pts 🏏\nMVP: ${mvp?.name||'—'}\n\n🔗 ${SITE_URL}`;
             
             if (navigator.share && navigator.canShare) {
                 try {
@@ -1688,17 +1294,14 @@
             }
         }
 
-        // Init App Data
         updateApp();
         setInterval(updateApp, 60000);
-        setTimeout(dismissSplash, 6000); // Failsafe extended to 6s
+        setTimeout(dismissSplash, 6000);
         
-        // Scroll listener for Top Button
         window.addEventListener('scroll',()=>{
             const btn = document.getElementById('scroll-top-btn');
             if(btn) btn.style.display = window.scrollY > 300 ? 'flex' : 'none';
         }, {passive:true});
-
     </script>
 </body>
 </html>
