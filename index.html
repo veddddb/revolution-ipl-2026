@@ -422,6 +422,13 @@
         function dismissSplash() { const s=document.getElementById('splash'); if(s) { s.classList.add('hide'); setTimeout(()=>s.remove(),900); } }
 
         let _currentTab = 'main';
+
+        function scrollScheduleToTodayMatch() {
+            const todayMatchCard = document.querySelector('#schedule-list .sched-row.today-glow');
+            if (!todayMatchCard) return;
+            todayMatchCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
         function switchTab(t) {
             window.haptic(15);
             if (t !== 'standings') window.resetTeamTheme(); 
@@ -451,7 +458,11 @@
             });
             _currentTab = t;
             if(typeof hideSearchOverlay === 'function') hideSearchOverlay();
-            if(t!=='main') window.scrollTo({top:0, behavior:'smooth'});
+            if (t === 'schedule') {
+                requestAnimationFrame(() => scrollScheduleToTodayMatch());
+            } else if(t!=='main') {
+                window.scrollTo({top:0, behavior:'smooth'});
+            }
         }
 
         function toggleTheme() {
