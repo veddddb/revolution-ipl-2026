@@ -422,6 +422,13 @@
         function dismissSplash() { const s=document.getElementById('splash'); if(s) { s.classList.add('hide'); setTimeout(()=>s.remove(),900); } }
 
         let _currentTab = 'main';
+
+        function scrollScheduleToTodayMatch() {
+            const todayMatchCard = document.querySelector('#schedule-list .sched-row.today-glow');
+            if (!todayMatchCard) return;
+            todayMatchCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
         function switchTab(t) {
             window.haptic(15);
             if (t !== 'standings') window.resetTeamTheme(); 
@@ -451,7 +458,11 @@
             });
             _currentTab = t;
             if(typeof hideSearchOverlay === 'function') hideSearchOverlay();
-            if(t!=='main') window.scrollTo({top:0, behavior:'smooth'});
+            if (t === 'schedule') {
+                requestAnimationFrame(() => scrollScheduleToTodayMatch());
+            } else if(t!=='main') {
+                window.scrollTo({top:0, behavior:'smooth'});
+            }
         }
 
         function toggleTheme() {
@@ -588,6 +599,12 @@
                 const gap = (i > 0 && !isUnsold) ? leaderScore - o.score : 0, pct = isUnsold ? 100 : Math.max(5, Math.min(100, Math.round((o.score / leaderScore) * 100)));
                 const parts = o.full.split(' ').filter(Boolean), initials = parts.length > 1 ? (parts[0][0] + parts[1][0]) : (parts[0] ? parts[0].substring(0,2) : 'UN');
 
+                const todayLiveCount = squad.reduce((count, player) => {
+                    const playerTeam = (player.team || '').toString().trim().toUpperCase();
+                    const isPlayingToday = _todayTeams.has(playerTeam) || Array.from(_todayTeams).some(team => team.includes(playerTeam) || playerTeam.includes(team));
+                    return isPlayingToday ? count + 1 : count;
+                }, 0);
+
                 const playerRows = squad.length === 0 ? `<p class="text-center text-[10px] text-[var(--text4)] py-4 font-bold uppercase">No players</p>`
                     : squad.sort((a,b)=>b.act-a.act).map((p,idx) => {
                         const pt = (p.team||'').toString().trim().toUpperCase(), isPlaying = _todayTeams.has(pt) || Array.from(_todayTeams).some(t => t.includes(pt) || pt.includes(t));
@@ -616,7 +633,7 @@
                                 </div>
                                 <div>
                                     <h3 class="text-sm font-extrabold uppercase tracking-tight text-[var(--text1)] flex items-center gap-2">${o.full}${gap > 0 ? `<span class="text-[7px] font-black px-1.5 py-0.5 rounded-sm bg-red-500/10 text-red-400 border border-red-500/20">-${gap}</span>` : ''}</h3>
-                                    <p class="text-[9px] font-bold text-[var(--text4)] uppercase mt-0.5">${squad.length} Players</p>
+                                    <p class="text-[9px] font-bold text-[var(--text4)] uppercase mt-0.5">${squad.length} Players${todayLiveCount > 0 ? ` (${todayLiveCount} Live Today)` : ''}</p>
                                 </div>
                             </div>
                             <div class="flex flex-col items-end gap-1 flex-shrink-0">
