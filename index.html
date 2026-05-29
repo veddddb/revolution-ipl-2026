@@ -287,6 +287,7 @@
             <button onclick="switchTab('gems')" id="btn-gems" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">💎 Unsold Gems</button>
             <button onclick="switchTab('weekly')" id="btn-weekly" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">📊 Weekly Recap</button>
             <button onclick="switchTab('strategy')" id="btn-strat" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">🎯 Luckiest</button>
+            <button onclick="switchTab('dream11')" id="btn-dream11" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">🏏 Dream11 Rankings</button>
             <button onclick="switchTab('h2h')" id="btn-h2h" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">⚔️ Head-to-Head</button>
         </div>
 
@@ -321,6 +322,7 @@
             <div id="weekly-list" class="space-y-3 mt-4"></div>
         </div>
         <div id="view-strategy" class="hidden space-y-4 pb-8 relative z-10"><div id="strategy-list" class="space-y-3"></div></div>
+        <div id="view-dream11" class="hidden space-y-4 pb-8 relative z-10"><div id="dream11-list" class="space-y-3"></div></div>
         
         <div id="view-h2h" class="hidden space-y-4 pb-8 relative z-10">
             <div class="glass-panel p-4 mb-3">
@@ -434,7 +436,7 @@
             if (t !== 'standings') window.resetTeamTheme(); 
 
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            const navBtn = document.getElementById('nav-' + (['hof','gems','weekly','strategy','h2h'].includes(t) ? 'main' : t));
+            const navBtn = document.getElementById('nav-' + (['hof','gems','weekly','strategy','dream11','h2h'].includes(t) ? 'main' : t));
             if (navBtn) navBtn.classList.add('active');
 
             document.querySelectorAll('#discovery-tabs .glass-panel').forEach(el => {
@@ -443,7 +445,7 @@
             const pillBtn = document.getElementById('btn-' + (t==='strategy'?'strat':t));
             if(pillBtn) pillBtn.style.borderColor = 'var(--accent)';
 
-            const views = {main:'view-main', livepoints:'view-livepoints', schedule:'view-schedule', standings:'view-standings', hof:'view-hof', gems:'view-gems', weekly:'view-weekly', strategy:'view-strategy', h2h:'view-h2h'};
+            const views = {main:'view-main', livepoints:'view-livepoints', schedule:'view-schedule', standings:'view-standings', hof:'view-hof', gems:'view-gems', weekly:'view-weekly', strategy:'view-strategy', dream11:'view-dream11', h2h:'view-h2h'};
             
             Object.keys(views).forEach(k => {
                 const el = document.getElementById(views[k]);
@@ -497,9 +499,10 @@
         async function updateApp() {
             hideError();
             try {
-                const [lbRows, rosRows, pcRows, schedRows, standRows, liveRows] = await Promise.all([
+                const [lbRows, rosRows, pcRows, schedRows, standRows, liveRows, dream11Rows] = await Promise.all([
                     fetchSheet('Leaderboard'), fetchSheet('Roster'), fetchSheet('PointsCalc'),
-                    fetchSheet('Schedule').catch(()=>[]), fetchSheet('Standings').catch(()=>[]), fetchSheet('Livescore').catch(()=>[])
+                    fetchSheet('Schedule').catch(()=>[]), fetchSheet('Standings').catch(()=>[]), fetchSheet('Livescore').catch(()=>[]),
+                    fetchSheet('Complete_Season_Stats').catch(()=>[])
                 ]);
 
                 const completedMatches = [...new Set(pcRows.filter(r=>r[0]&&parseFloat(r[6])>0).map(r=>r[0].toString().trim()))];
@@ -536,7 +539,7 @@
                 const unsold=owners.find(o=>o.id==='unsold'); const allOwners=unsold?[...active,unsold]:active;
                 const cumulScores=buildCumulScores(active,pcRows,completedMatches);
                 
-                window._state={squads, cumulScores, completedMatches, rosRows, pPoints, pcRows, active, schedRows};
+                window._state={squads, cumulScores, completedMatches, rosRows, pPoints, pcRows, active, schedRows, dream11Rows};
 
                 renderTop3(active); renderLeaderboard(allOwners, squads);
                 renderMVPMerged(matchPlayers.sort((a,b)=>b.pts-a.pts)[0], lastMatchName, active, pcRows, completedMatches);
@@ -546,7 +549,7 @@
                 if(schedRows&&schedRows.length){ window._schedRows=schedRows; renderSchedule(schedRows); renderScheduleFilters(); }
                 renderTodayBar(schedRows||[]); renderWeekly(active, pcRows, completedMatches, squads);
                 renderStandings(standRows||[]); renderHallOfFame(active, pcRows, completedMatches);
-                renderGems(rosRows, pPoints); renderLivePoints(liveRows||[]);
+                renderGems(rosRows, pPoints); renderLivePoints(liveRows||[]); renderDream11Rankings(dream11Rows||[]);
 
                 if(!window._confettiFired && active.length > 0) { window._confettiFired=true; setTimeout(fireConfetti,800); }
                 setTimeout(dismissSplash, Math.max(0, 2500 - (Date.now() - window._appStartTime)));
@@ -885,6 +888,66 @@
                             <div><p class="text-[11px] font-bold text-[var(--text1)]">${g.name}</p><p class="text-[8px] font-bold text-[var(--text4)] mt-0.5"><span style="color:${tc}">${g.team}</span> · ${g.role}</p></div>
                         </div>
                         <div class="text-right"><p class="font-cyber text-sm font-black ${i<3?'text-[#48dbfb]':'text-[var(--text3)]'}">${g.pts}</p></div>
+                    </div>`;
+                }).join('')}`;
+        }
+
+        function renderDream11Rankings(rows) {
+            const el = document.getElementById('dream11-list'); if (!el) return;
+            const OWNER_COL = 18, POINTS_COL = 20;
+            const owners = {};
+
+            rows.forEach(row => {
+                const owner = (row[OWNER_COL] || '').toString().trim();
+                const ownerId = fixID(owner);
+                const points = parseFloat((row[POINTS_COL] || '').toString().replace(/,/g, ''));
+                if (!owner || !ownerId || ownerId.includes('owner') || Number.isNaN(points)) return;
+                if (!owners[ownerId]) owners[ownerId] = { name: owner, id: ownerId, points: 0, players: 0 };
+                owners[ownerId].points += points;
+                owners[ownerId].players += 1;
+            });
+
+            const rankings = Object.values(owners).sort((a, b) => b.points - a.points);
+            const leaderPoints = rankings[0]?.points || 1;
+            const totalPoints = rankings.reduce((sum, owner) => sum + owner.points, 0);
+
+            el.innerHTML = `
+                <div class="glass-panel p-4 mb-3 stagger-item" style="border-color: rgba(241,196,15,0.25); background: linear-gradient(135deg, rgba(241,196,15,0.06), transparent)">
+                    <div class="flex justify-between items-center gap-3">
+                        <div>
+                            <p class="font-cyber text-[8px] font-black tracking-widest text-yellow-500 uppercase mb-1">🏏 Dream11 Rankings</p>
+                            <p class="text-[11px] font-bold text-[var(--text3)] leading-relaxed">What if the Dream11 points system were followed for the full season? This table re-ranks owners by adding each player’s Dream11-style total from Complete_Season_Stats.</p>
+                            <p class="text-[8px] font-black text-[var(--text4)] uppercase tracking-widest mt-2">Owner: Column S · Player Points: Column U</p>
+                        </div>
+                        <div class="text-right flex-shrink-0">
+                            <p class="font-cyber text-xl font-black text-yellow-500">${Math.round(totalPoints)}</p>
+                            <p class="text-[7px] font-black text-[var(--text4)] uppercase tracking-widest">Total Pts</p>
+                        </div>
+                    </div>
+                </div>
+                ${rankings.length === 0 ? `<div class="p-8 text-center text-[10px] text-[var(--text4)] font-cyber uppercase">No Dream11 rankings found</div>` : rankings.map((owner, i) => {
+                    const color = window.getColor(owner.id), gap = i === 0 ? 0 : leaderPoints - owner.points;
+                    const pct = Math.max(5, Math.min(100, Math.round((owner.points / leaderPoints) * 100)));
+                    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`;
+                    return `
+                    <div class="glass-panel p-4 stagger-item" style="animation-delay: ${0.05 * i}s; --owner-color: ${color}; ${i < 3 ? `border-color: ${color}55;` : ''}">
+                        <div class="aura-glow"></div>
+                        <div class="relative z-10">
+                            <div class="flex justify-between items-center gap-3 mb-3">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <div class="w-10 h-10 rounded-full flex items-center justify-center font-cyber font-black text-[10px] border flex-shrink-0" style="border-color:${color}66; background:${color}18; color:${color}">${medal}</div>
+                                    <div class="min-w-0">
+                                        <p class="text-sm font-extrabold uppercase tracking-tight text-[var(--text1)] truncate">${owner.name}</p>
+                                        <p class="text-[9px] font-bold text-[var(--text4)] uppercase mt-0.5">${owner.players} Players${gap > 0 ? ` · ${Math.round(gap)} pts behind` : ' · Leader'}</p>
+                                    </div>
+                                </div>
+                                <div class="text-right flex-shrink-0">
+                                    <p class="font-cyber text-xl font-black italic leading-none" style="color:${color}">${Math.round(owner.points)}</p>
+                                    <p class="text-[7px] font-black text-[var(--text4)] uppercase tracking-widest">PTS</p>
+                                </div>
+                            </div>
+                            <div class="w-full h-1 bg-[var(--glass-border)] rounded-full overflow-hidden"><div class="h-full rounded-full transition-all duration-1000" style="width:${pct}%; background:linear-gradient(90deg, ${color}66, ${color})"></div></div>
+                        </div>
                     </div>`;
                 }).join('')}`;
         }
