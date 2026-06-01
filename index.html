@@ -607,7 +607,7 @@
                     fetchSheet('Schedule').catch(()=>[]), fetchSheet('Standings').catch(()=>[]), fetchSheet('Livescore').catch(()=>[]),
                     fetchSheet('Complete_Season_Stats').catch(()=>[]), fetchSheet('IPL 2026 Players').catch(()=>[])
                 ]);
-                window._playerPhotoMap = buildSportMonksPhotoMap(iplPlayerRows || []);
+                window._playerPhotoMap = buildPlayerPhotoMap(iplPlayerRows || []);
 
                 const completedMatches = [...new Set(pcRows.filter(r=>r[0]&&parseFloat(r[6])>0).map(r=>r[0].toString().trim()))];
                 document.getElementById('match-counter').innerText = `MATCHES: ${completedMatches.length}/${TOTAL_SEASON_MATCHES}`;
@@ -1016,19 +1016,12 @@
         }
 
 
-        function sportMonksCricketImageUrl(playerId) {
-            const id = (playerId ?? '').toString().trim();
-            return /^\d+$/.test(id) ? `https://cdn.sportmonks.com/images/cricket/players/${id}/${id}.png` : '';
-        }
-
-        function buildSportMonksPhotoMap(rows) {
-            const PLAYER_ID_COL = 7;
-            const PLAYER_PHOTO_URL_COL = 8;
+        function buildPlayerPhotoMap(rows) {
+            const PLAYER_PHOTO_URL_COL = 8; // Column I in IPL 2026 Players
             const PLAYER_NAME_COLS = [0, 3];
             const map = {};
             rows.forEach(row => {
-                const sheetPhotoUrl = (row[PLAYER_PHOTO_URL_COL] || '').toString().trim();
-                const imageUrl = sheetPhotoUrl || sportMonksCricketImageUrl(row[PLAYER_ID_COL]);
+                const imageUrl = (row[PLAYER_PHOTO_URL_COL] || '').toString().trim();
                 if (!imageUrl) return;
                 PLAYER_NAME_COLS.forEach(col => {
                     const name = (row[col] || '').toString().trim();
