@@ -1000,23 +1000,60 @@
         }
 
         function normalizeSeasonStats(rows) {
-            const COL = { name: 0, team: 1, runs: 4, sixes: 7, sr: 8, fifties: 10, hundreds: 11, wickets: 15, threeW: 17, fiveW: 18, country: 22, role: 23 };
-            return rows.map(row => {
+            const COL = { team: 2, name: 3, runs: 4, sixes: 7, sr: 8, fifties: 10, hundreds: 11, wickets: 15, threeW: 17, fiveW: 18, country: 22, role: 23 };
+            const players = new Map();
+
+            rows.forEach(row => {
                 const name = (row[COL.name] || '').toString().trim();
                 const team = (row[COL.team] || '').toString().trim();
+                const id = fixID(name);
+                if (!name || ['player', 'player name', 'name'].includes(id) || id.includes('total')) return;
+
+                const normalizedTeam = team || 'Unknown';
+                const key = `${fixID(normalizedTeam)}::${id}`;
                 const role = (row[COL.role] || '').toString().trim();
                 const country = (row[COL.country] || '').toString().trim();
-                return {
-                    name, team: team || 'Unknown', role: role || '—', country: country || '—',
-                    runs: seasonStatNumber(row[COL.runs]), sixes: seasonStatNumber(row[COL.sixes]),
-                    strikeRate: seasonStatNumber(row[COL.sr]), fifties: seasonStatNumber(row[COL.fifties]),
-                    hundreds: seasonStatNumber(row[COL.hundreds]), wickets: seasonStatNumber(row[COL.wickets]),
-                    threeW: seasonStatNumber(row[COL.threeW]), fiveW: seasonStatNumber(row[COL.fiveW])
-                };
-            }).filter(player => {
-                const id = fixID(player.name);
-                return player.name && !['player', 'player name', 'name'].includes(id) && !id.includes('total');
+                const strikeRate = seasonStatNumber(row[COL.sr]);
+
+                if (!players.has(key)) {
+                    players.set(key, {
+                        name,
+                        team: normalizedTeam,
+                        role: role || '—',
+                        country: country || '—',
+                        runs: 0,
+                        sixes: 0,
+                        strikeRate: 0,
+                        strikeRateTotal: 0,
+                        strikeRateRows: 0,
+                        fifties: 0,
+                        hundreds: 0,
+                        wickets: 0,
+                        threeW: 0,
+                        fiveW: 0
+                    });
+                }
+
+                const player = players.get(key);
+                if (country) player.country = country;
+                if (role) player.role = role;
+                player.runs += seasonStatNumber(row[COL.runs]);
+                player.sixes += seasonStatNumber(row[COL.sixes]);
+                player.fifties += seasonStatNumber(row[COL.fifties]);
+                player.hundreds += seasonStatNumber(row[COL.hundreds]);
+                player.wickets += seasonStatNumber(row[COL.wickets]);
+                player.threeW += seasonStatNumber(row[COL.threeW]);
+                player.fiveW += seasonStatNumber(row[COL.fiveW]);
+                if (strikeRate > 0) {
+                    player.strikeRateTotal += strikeRate;
+                    player.strikeRateRows += 1;
+                }
             });
+
+            return [...players.values()].map(player => ({
+                ...player,
+                strikeRate: player.strikeRateRows ? player.strikeRateTotal / player.strikeRateRows : 0
+            }));
         }
 
         function filterSeasonStats(query) {
@@ -1076,7 +1113,7 @@
                     <div class="flex justify-between items-start gap-3 mb-4">
                         <div>
                             <p class="font-cyber text-[8px] font-black tracking-widest text-yellow-500 uppercase mb-1">📚 Season Stats</p>
-                            <p class="text-[11px] font-bold text-[var(--text3)] leading-relaxed">Team-wise player summary for future IPL season reviews. Search by player, team, country, or role.</p>
+                            <p class="text-[11px] font-bold text-[var(--text3)] leading-relaxed">Team-wise player summary for future IPL season reviews. Players are matched from Column D and teams from Column C, then totals are combined per player.</p>
                         </div>
                         <div class="text-right flex-shrink-0">
                             <p class="font-cyber text-xl font-black text-yellow-500">${filtered.length}</p>
