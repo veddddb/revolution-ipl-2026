@@ -579,6 +579,7 @@
 
         window._state = {squads:{}, cumulScores:{}, completedMatches:[], active:[]};
         window._seasonStatsState = { query: '', team: 'all', sort: 'runs', rows: [], normalizedRows: [], rowsRef: null, searchTimer: null };
+        window._playerPhotoMap = {};
 
         async function fetchSheet(name) {
             const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=0&sheet=${encodeURIComponent(name)}`;
@@ -601,11 +602,12 @@
         async function updateApp() {
             hideError();
             try {
-                const [lbRows, rosRows, pcRows, schedRows, standRows, liveRows, seasonStatsRows] = await Promise.all([
+                const [lbRows, rosRows, pcRows, schedRows, standRows, liveRows, seasonStatsRows, iplPlayerRows] = await Promise.all([
                     fetchSheet('Leaderboard'), fetchSheet('Roster'), fetchSheet('PointsCalc'),
                     fetchSheet('Schedule').catch(()=>[]), fetchSheet('Standings').catch(()=>[]), fetchSheet('Livescore').catch(()=>[]),
-                    fetchSheet('Complete_Season_Stats').catch(()=>[])
+                    fetchSheet('Complete_Season_Stats').catch(()=>[]), fetchSheet('IPL 2026 Players').catch(()=>[])
                 ]);
+                window._playerPhotoMap = buildPlayerPhotoMap(iplPlayerRows || []);
 
                 const completedMatches = [...new Set(pcRows.filter(r=>r[0]&&parseFloat(r[6])>0).map(r=>r[0].toString().trim()))];
                 document.getElementById('match-counter').innerText = `MATCHES: ${completedMatches.length}/${TOTAL_SEASON_MATCHES}`;
@@ -641,7 +643,7 @@
                 const unsold=owners.find(o=>o.id==='unsold'); const allOwners=unsold?[...active,unsold]:active;
                 const cumulScores=buildCumulScores(active,pcRows,completedMatches);
                 
-                window._state={squads, cumulScores, completedMatches, rosRows, pPoints, pcRows, active, schedRows, seasonStatsRows};
+                window._state={squads, cumulScores, completedMatches, rosRows, pPoints, pcRows, active, schedRows, seasonStatsRows, iplPlayerRows};
 
                 renderSplashWinners(active);
                 renderTop3(active); renderLeaderboard(allOwners, squads);
@@ -1013,6 +1015,34 @@
             return decimals ? n.toFixed(decimals).replace(/\.0$/, '') : Math.round(n).toLocaleString();
         }
 
+
+        function buildPlayerPhotoMap(rows) {
+            const PLAYER_PHOTO_URL_COL = 8; // Column I in IPL 2026 Players
+            const PLAYER_NAME_COLS = [0, 3];
+            const map = {};
+            rows.forEach(row => {
+                const imageUrl = (row[PLAYER_PHOTO_URL_COL] || '').toString().trim();
+                if (!imageUrl) return;
+                PLAYER_NAME_COLS.forEach(col => {
+                    const name = (row[col] || '').toString().trim();
+                    const id = fixID(name);
+                    if (!name || ['player', 'player name', 'name'].includes(id) || id.includes('owner')) return;
+                    map[id] = imageUrl;
+                });
+            });
+            return map;
+        }
+
+        function seasonPlayerInitials(name) {
+            return (name || '?').split(/\s+/).filter(Boolean).map(part => part[0]).join('').slice(0, 2).toUpperCase() || '?';
+        }
+
+        function renderSeasonPlayerAvatar(player) {
+            const initials = escapeHTML(seasonPlayerInitials(player.name));
+            const image = player.photoUrl ? `<img src="${escapeHTML(player.photoUrl)}" alt="${escapeHTML(player.name)}" loading="lazy" class="absolute inset-0 w-full h-full object-cover" onerror="this.remove()">` : '';
+            return `<div class="relative w-11 h-11 rounded-2xl overflow-hidden border border-[var(--glass-border)] bg-white/10 flex items-center justify-center flex-shrink-0"><span class="font-cyber text-[10px] font-black text-[var(--text3)]">${initials}</span>${image}</div>`;
+        }
+
         function normalizeSeasonStats(rows) {
             const COL = { team: 2, name: 3, runs: 4, sixes: 7, sr: 8, fifties: 10, hundreds: 11, wickets: 15, threeW: 17, fiveW: 18, country: 22, role: 23, previousOwner: 24 };
             const players = new Map();
@@ -1028,6 +1058,7 @@
                 const role = (row[COL.role] || '').toString().trim();
                 const country = (row[COL.country] || '').toString().trim();
                 const previousOwner = (row[COL.previousOwner] || '').toString().trim();
+                const photoUrl = window._playerPhotoMap?.[id] || '';
                 const strikeRate = seasonStatNumber(row[COL.sr]);
 
                 if (!players.has(key)) {
@@ -1037,6 +1068,7 @@
                         role: role || '—',
                         country: country || '—',
                         previousOwner: previousOwner || '—',
+                        photoUrl,
                         runs: 0,
                         sixes: 0,
                         strikeRate: 0,
@@ -1054,6 +1086,7 @@
                 if (country) player.country = country;
                 if (role) player.role = role;
                 if (previousOwner) player.previousOwner = previousOwner;
+                if (photoUrl) player.photoUrl = photoUrl;
                 player.runs += seasonStatNumber(row[COL.runs]);
                 player.sixes += seasonStatNumber(row[COL.sixes]);
                 player.fifties += seasonStatNumber(row[COL.fifties]);
@@ -1187,9 +1220,12 @@
                                 ${teamPlayers.map((p, idx) => `
                                 <div class="rounded-2xl border border-[var(--glass-border)] bg-white/5 p-3">
                                     <div class="flex justify-between gap-3 mb-3">
-                                        <div class="min-w-0">
-                                            <p class="text-sm font-extrabold text-[var(--text1)] truncate">${escapeHTML(p.name)} <span class="text-[10px] font-bold text-[var(--text4)] normal-case">(${escapeHTML(p.previousOwner || '—')})</span></p>
-                                            <p class="text-[8px] font-black text-[var(--text4)] uppercase tracking-widest mt-1">${escapeHTML(p.country)} · ${escapeHTML(p.role)}</p>
+                                        <div class="flex items-center gap-3 min-w-0">
+                                            ${renderSeasonPlayerAvatar(p)}
+                                            <div class="min-w-0">
+                                                <p class="text-sm font-extrabold text-[var(--text1)] truncate">${escapeHTML(p.name)} <span class="text-[10px] font-bold text-[var(--text4)] normal-case">(${escapeHTML(p.previousOwner || '—')})</span></p>
+                                                <p class="text-[8px] font-black text-[var(--text4)] uppercase tracking-widest mt-1">${escapeHTML(p.country)} · ${escapeHTML(p.role)}</p>
+                                            </div>
                                         </div>
                                         <p class="text-[9px] font-black text-[var(--text4)] font-cyber flex-shrink-0">#${idx + 1}</p>
                                     </div>
