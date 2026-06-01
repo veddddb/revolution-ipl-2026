@@ -6,10 +6,10 @@
  * - Column H: SportMonks player ID
  * - Column I: SportMonks image_path / mugshot URL written by this script
  *
- * Before running:
- * 1. Open Apps Script from the Google Sheet.
- * 2. Project Settings > Script Properties: add SPORTMONKS_API_TOKEN = your token.
- * 3. Paste this file into the Apps Script editor and run fillSportMonksPhotoUrls().
+ * Auth setup:
+ * - Uses CRICKET_API_KEY from config.gs first.
+ * - Falls back to API_TOKEN from config.gs if present.
+ * - Falls back to Script Properties keys CRICKET_API_KEY, API_TOKEN, or SPORTMONKS_API_TOKEN.
  */
 const SPORTMONKS_PHOTO_CONFIG = {
   sheetName: 'IPL 2026 Players',
@@ -28,10 +28,7 @@ function onOpen() {
 }
 
 function fillSportMonksPhotoUrls() {
-  const token = PropertiesService.getScriptProperties().getProperty('SPORTMONKS_API_TOKEN');
-  if (!token) {
-    throw new Error('Missing SPORTMONKS_API_TOKEN script property. Add it in Apps Script Project Settings.');
-  }
+  const token = getCricketApiToken_();
 
   const cfg = SPORTMONKS_PHOTO_CONFIG;
   const sheet = SpreadsheetApp.getActive().getSheetByName(cfg.sheetName);
@@ -64,6 +61,23 @@ function fillSportMonksPhotoUrls() {
   });
 
   sheet.getRange(cfg.startRow, cfg.photoUrlColumn, rowCount, 1).setValues(output);
+}
+
+function getCricketApiToken_() {
+  const configGlobals = ['CRICKET_API_KEY', 'API_TOKEN', 'SPORTMONKS_API_TOKEN'];
+  for (const key of configGlobals) {
+    try {
+      if (typeof globalThis !== 'undefined' && globalThis[key]) return String(globalThis[key]).trim();
+    } catch (e) {}
+  }
+
+  const props = PropertiesService.getScriptProperties();
+  for (const key of configGlobals) {
+    const value = props.getProperty(key);
+    if (value) return String(value).trim();
+  }
+
+  throw new Error('Missing cricket API token. Define CRICKET_API_KEY in config.gs, or add CRICKET_API_KEY/API_TOKEN to Script Properties.');
 }
 
 function fetchSportMonksImagePath_(playerId, token) {
