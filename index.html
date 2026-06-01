@@ -191,29 +191,69 @@
 
         #splash {
             position: fixed; inset: 0; z-index: 9999;
-            background: #020617;
+            background:
+                radial-gradient(circle at top left, rgba(241, 196, 15, 0.18), transparent 34%),
+                radial-gradient(circle at bottom right, rgba(52, 152, 219, 0.16), transparent 38%),
+                #020617;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 24px;
             transition: opacity 0.8s ease, transform 0.8s ease;
         }
         #splash.hide { opacity: 0; transform: scale(1.05); pointer-events: none; }
-        
-        .loader-ring {
-            width: 70px; height: 70px;
-            border-radius: 50%;
-            border: 3px solid transparent;
-            border-top-color: #f1c40f;
-            border-right-color: #f1c40f;
-            animation: spinRing 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+        .season-closed-card {
+            width: min(100%, 460px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: linear-gradient(145deg, rgba(15,23,42,0.94), rgba(2,6,23,0.88));
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255,255,255,0.08);
+            border-radius: 32px;
+            padding: 28px 22px;
+            text-align: center;
+            overflow: hidden;
             position: relative;
         }
-        .loader-ring::after {
-            content: ''; position: absolute; inset: 4px; border-radius: 50%;
-            border: 3px solid transparent;
-            border-left-color: #eab308;
-            border-bottom-color: #eab308;
-            animation: spinRing 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite reverse;
+        .season-closed-card::before {
+            content: '';
+            position: absolute;
+            inset: -80px auto auto 50%;
+            width: 260px; height: 260px;
+            transform: translateX(-50%);
+            background: radial-gradient(circle, rgba(241,196,15,0.18), transparent 66%);
+            pointer-events: none;
         }
-        @keyframes spinRing { to { transform: rotate(360deg); } }
+        .winner-row {
+            display: grid;
+            grid-template-columns: 44px 1fr auto;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 18px;
+            background: rgba(255,255,255,0.045);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .winner-rank {
+            width: 44px; height: 44px;
+            display: grid; place-items: center;
+            border-radius: 15px;
+            font-family: var(--font-cyber);
+            font-size: 11px;
+            font-weight: 900;
+            color: #020617;
+            background: #f1c40f;
+        }
+        .winner-score { font-family: var(--font-cyber); font-weight: 900; color: #f1c40f; }
+        .view-site-btn {
+            width: 100%;
+            border: 0;
+            border-radius: 999px;
+            padding: 15px 18px;
+            background: linear-gradient(135deg, #facc15, #f59e0b);
+            color: #111827;
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            box-shadow: 0 14px 35px rgba(245,158,11,0.28);
+        }
 
         .error-banner { background:rgba(220,38,38,0.1); border:1px solid rgba(220,38,38,0.3); border-radius:16px; padding:12px 16px; margin-bottom:14px; display:flex; align-items:center; gap:12px; }
         .sched-pill { font-family: var(--font-cyber); font-size: 9px; font-weight: 900; padding: 6px 14px; border-radius: 20px; border: 1px solid var(--glass-border); background: var(--glass); color: var(--text3); cursor: pointer; transition: 0.2s; white-space: nowrap; }
@@ -228,15 +268,40 @@
     <div id="search-overlay" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[2000] transition-opacity duration-300"></div>
 
     <!-- SPLASH SCREEN -->
-    <div id="splash" onclick="dismissSplash()">
-        <div class="loader-ring mb-10"></div>
-        <h1 class="text-3xl font-extrabold tracking-[0.3em] uppercase text-white mb-2" style="font-family: 'Plus Jakarta Sans', sans-serif;">REVOLUTION</h1>
-        <p class="text-[10px] font-bold tracking-[0.5em] text-yellow-500 uppercase mb-12">IPL 2026</p>
-        <div class="flex items-center gap-2 px-4 py-2 rounded-full border border-white/5 bg-white/5 backdrop-blur-md">
-            <span class="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse shadow-[0_0_8px_#eab308]"></span>
-            <p class="text-[8px] font-bold tracking-widest text-[var(--text2)] uppercase">Syncing Live Data</p>
+    <div id="splash" role="dialog" aria-modal="true" aria-labelledby="splash-title">
+        <div class="season-closed-card">
+            <p class="relative text-[10px] font-black tracking-[0.36em] text-yellow-500 uppercase mb-3">IPL 2026 Wrapped</p>
+            <h1 id="splash-title" class="relative text-4xl sm:text-5xl font-black font-cyber text-white leading-none mb-4">Welcome</h1>
+            <p class="relative text-sm font-bold text-slate-300 leading-relaxed mb-6">Nothing to see here — the season is over. Here are the 3 winners.</p>
+            <div id="splash-winners" class="relative space-y-2.5 mb-6" aria-live="polite">
+                <div class="winner-row">
+                    <div class="winner-rank">1</div>
+                    <div class="text-left">
+                        <p class="text-xs font-black text-white uppercase tracking-wider">Loading winner...</p>
+                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Final standings</p>
+                    </div>
+                    <p class="winner-score">—</p>
+                </div>
+                <div class="winner-row opacity-80">
+                    <div class="winner-rank" style="background:#cbd5e1;">2</div>
+                    <div class="text-left">
+                        <p class="text-xs font-black text-white uppercase tracking-wider">Loading runner-up...</p>
+                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Final standings</p>
+                    </div>
+                    <p class="winner-score">—</p>
+                </div>
+                <div class="winner-row opacity-70">
+                    <div class="winner-rank" style="background:#fb923c;">3</div>
+                    <div class="text-left">
+                        <p class="text-xs font-black text-white uppercase tracking-wider">Loading third place...</p>
+                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Final standings</p>
+                    </div>
+                    <p class="winner-score">—</p>
+                </div>
+            </div>
+            <button type="button" class="view-site-btn active-scale" onclick="dismissSplash()">View IPL 2026 Stats</button>
+            <p class="relative text-[8px] font-bold text-slate-600 uppercase tracking-widest mt-5">Designed by Vedant Bhansali</p>
         </div>
-        <p class="text-[8px] font-bold text-slate-600 uppercase tracking-widest absolute bottom-8">Designed by Vedant Bhansali</p>
     </div>
 
     <!-- PLAYER STAT MODAL -->
@@ -423,6 +488,29 @@
 
         function dismissSplash() { const s=document.getElementById('splash'); if(s) { s.classList.add('hide'); setTimeout(()=>s.remove(),900); } }
 
+        function renderSplashWinners(active) {
+            const el = document.getElementById('splash-winners');
+            if (!el || !active || active.length < 3) return;
+            const medals = [
+                { rank: '1', label: 'Champion', bg: '#f1c40f', opacity: '1' },
+                { rank: '2', label: 'Runner-up', bg: '#cbd5e1', opacity: '0.86' },
+                { rank: '3', label: 'Third place', bg: '#fb923c', opacity: '0.76' }
+            ];
+            el.innerHTML = active.slice(0, 3).map((owner, idx) => {
+                const medal = medals[idx];
+                const color = idx === 0 ? '#f1c40f' : window.getColor(owner.id);
+                return `
+                <div class="winner-row" style="opacity:${medal.opacity}; border-color:${color}33;">
+                    <div class="winner-rank" style="background:${medal.bg};">${medal.rank}</div>
+                    <div class="text-left min-w-0">
+                        <p class="text-xs font-black text-white uppercase tracking-wider truncate">${owner.full}</p>
+                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">${medal.label}</p>
+                    </div>
+                    <p class="winner-score" style="color:${color};">${owner.score}</p>
+                </div>`;
+            }).join('');
+        }
+
         let _currentTab = 'main';
 
         function scrollScheduleToTodayMatch() {
@@ -541,6 +629,7 @@
                 
                 window._state={squads, cumulScores, completedMatches, rosRows, pPoints, pcRows, active, schedRows, dream11Rows};
 
+                renderSplashWinners(active);
                 renderTop3(active); renderLeaderboard(allOwners, squads);
                 renderMVPMerged(matchPlayers.sort((a,b)=>b.pts-a.pts)[0], lastMatchName, active, pcRows, completedMatches);
                 renderLastMatchCollapsible(active, pcRows, completedMatches); renderStreakTracker(active, cumulScores, completedMatches);
@@ -552,10 +641,8 @@
                 renderGems(rosRows, pPoints); renderLivePoints(liveRows||[]); renderDream11Rankings(dream11Rows||[]);
 
                 if(!window._confettiFired && active.length > 0) { window._confettiFired=true; setTimeout(fireConfetti,800); }
-                setTimeout(dismissSplash, Math.max(0, 2500 - (Date.now() - window._appStartTime)));
             } catch(e) {
                 showError(e.message || 'Could not sync. Retrying...');
-                setTimeout(dismissSplash, Math.max(0, 2500 - (Date.now() - window._appStartTime)));
             }
         }
 
@@ -1378,7 +1465,6 @@
 
         updateApp();
         setInterval(updateApp, 60000);
-        setTimeout(dismissSplash, 6000);
         
         window.addEventListener('scroll',()=>{
             const btn = document.getElementById('scroll-top-btn');
