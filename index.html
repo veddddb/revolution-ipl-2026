@@ -1023,10 +1023,12 @@
 
         function buildSportMonksPhotoMap(rows) {
             const PLAYER_ID_COL = 7;
+            const PLAYER_PHOTO_URL_COL = 8;
             const PLAYER_NAME_COLS = [0, 3];
             const map = {};
             rows.forEach(row => {
-                const imageUrl = sportMonksCricketImageUrl(row[PLAYER_ID_COL]);
+                const sheetPhotoUrl = (row[PLAYER_PHOTO_URL_COL] || '').toString().trim();
+                const imageUrl = sheetPhotoUrl || sportMonksCricketImageUrl(row[PLAYER_ID_COL]);
                 if (!imageUrl) return;
                 PLAYER_NAME_COLS.forEach(col => {
                     const name = (row[col] || '').toString().trim();
