@@ -33,14 +33,29 @@
             --text1: #0f172a; --text2: #334155; --text3: #475569; --text4: #94a3b8;
         }
 
+        *, *::before, *::after { box-sizing: border-box; }
+
+        html {
+            min-height: 100%;
+            background: var(--bg-void);
+            overflow-x: hidden;
+            overscroll-behavior-y: none;
+        }
+
         body {
             background: var(--bg-void);
             color: var(--text1);
             font-family: var(--font-main);
             min-height: 100vh;
+            min-height: 100svh;
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
             transition: background 0.4s, color 0.4s;
+        }
+
+        .app-body {
+            padding: 16px 16px 88px;
+            padding: 16px 16px calc(88px + env(safe-area-inset-bottom));
         }
 
         /* High-End Background Mesh with Dynamic Theming Support */
@@ -191,29 +206,69 @@
 
         #splash {
             position: fixed; inset: 0; z-index: 9999;
-            background: #020617;
+            background:
+                radial-gradient(circle at top left, rgba(241, 196, 15, 0.18), transparent 34%),
+                radial-gradient(circle at bottom right, rgba(52, 152, 219, 0.16), transparent 38%),
+                #020617;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 24px;
             transition: opacity 0.8s ease, transform 0.8s ease;
         }
         #splash.hide { opacity: 0; transform: scale(1.05); pointer-events: none; }
-        
-        .loader-ring {
-            width: 70px; height: 70px;
-            border-radius: 50%;
-            border: 3px solid transparent;
-            border-top-color: #f1c40f;
-            border-right-color: #f1c40f;
-            animation: spinRing 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+        .season-closed-card {
+            width: min(100%, 460px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: linear-gradient(145deg, rgba(15,23,42,0.94), rgba(2,6,23,0.88));
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255,255,255,0.08);
+            border-radius: 32px;
+            padding: 28px 22px;
+            text-align: center;
+            overflow: hidden;
             position: relative;
         }
-        .loader-ring::after {
-            content: ''; position: absolute; inset: 4px; border-radius: 50%;
-            border: 3px solid transparent;
-            border-left-color: #eab308;
-            border-bottom-color: #eab308;
-            animation: spinRing 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite reverse;
+        .season-closed-card::before {
+            content: '';
+            position: absolute;
+            inset: -80px auto auto 50%;
+            width: 260px; height: 260px;
+            transform: translateX(-50%);
+            background: radial-gradient(circle, rgba(241,196,15,0.18), transparent 66%);
+            pointer-events: none;
         }
-        @keyframes spinRing { to { transform: rotate(360deg); } }
+        .winner-row {
+            display: grid;
+            grid-template-columns: 44px 1fr auto;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 18px;
+            background: rgba(255,255,255,0.045);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .winner-rank {
+            width: 44px; height: 44px;
+            display: grid; place-items: center;
+            border-radius: 15px;
+            font-family: var(--font-cyber);
+            font-size: 11px;
+            font-weight: 900;
+            color: #020617;
+            background: #f1c40f;
+        }
+        .winner-score { font-family: var(--font-cyber); font-weight: 900; color: #f1c40f; }
+        .view-site-btn {
+            width: 100%;
+            border: 0;
+            border-radius: 999px;
+            padding: 15px 18px;
+            background: linear-gradient(135deg, #facc15, #f59e0b);
+            color: #111827;
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            box-shadow: 0 14px 35px rgba(245,158,11,0.28);
+        }
 
         .error-banner { background:rgba(220,38,38,0.1); border:1px solid rgba(220,38,38,0.3); border-radius:16px; padding:12px 16px; margin-bottom:14px; display:flex; align-items:center; gap:12px; }
         .sched-pill { font-family: var(--font-cyber); font-size: 9px; font-weight: 900; padding: 6px 14px; border-radius: 20px; border: 1px solid var(--glass-border); background: var(--glass); color: var(--text3); cursor: pointer; transition: 0.2s; white-space: nowrap; }
@@ -223,20 +278,45 @@
         .today-glow { border-color: rgba(241, 196, 15, 0.5) !important; background: rgba(241, 196, 15, 0.08) !important; box-shadow: 0 0 20px rgba(241, 196, 15, 0.15); }
     </style>
 </head>
-<body class="p-4 pb-32">
+<body class="app-body">
     <div class="mesh-bg"></div>
     <div id="search-overlay" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[2000] transition-opacity duration-300"></div>
 
     <!-- SPLASH SCREEN -->
-    <div id="splash" onclick="dismissSplash()">
-        <div class="loader-ring mb-10"></div>
-        <h1 class="text-3xl font-extrabold tracking-[0.3em] uppercase text-white mb-2" style="font-family: 'Plus Jakarta Sans', sans-serif;">REVOLUTION</h1>
-        <p class="text-[10px] font-bold tracking-[0.5em] text-yellow-500 uppercase mb-12">IPL 2026</p>
-        <div class="flex items-center gap-2 px-4 py-2 rounded-full border border-white/5 bg-white/5 backdrop-blur-md">
-            <span class="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse shadow-[0_0_8px_#eab308]"></span>
-            <p class="text-[8px] font-bold tracking-widest text-[var(--text2)] uppercase">Syncing Live Data</p>
+    <div id="splash" role="dialog" aria-modal="true" aria-labelledby="splash-title">
+        <div class="season-closed-card">
+            <p class="relative text-[10px] font-black tracking-[0.36em] text-yellow-500 uppercase mb-3">IPL 2026 Wrapped</p>
+            <h1 id="splash-title" class="relative text-4xl sm:text-5xl font-black font-cyber text-white leading-none mb-4">Welcome</h1>
+            <p class="relative text-sm font-bold text-slate-300 leading-relaxed mb-6">Nothing to see here — the season is over. Here are the 3 winners.</p>
+            <div id="splash-winners" class="relative space-y-2.5 mb-6" aria-live="polite">
+                <div class="winner-row">
+                    <div class="winner-rank">1</div>
+                    <div class="text-left">
+                        <p class="text-xs font-black text-white uppercase tracking-wider">Loading winner...</p>
+                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Final standings</p>
+                    </div>
+                    <p class="winner-score">—</p>
+                </div>
+                <div class="winner-row opacity-80">
+                    <div class="winner-rank" style="background:#cbd5e1;">2</div>
+                    <div class="text-left">
+                        <p class="text-xs font-black text-white uppercase tracking-wider">Loading runner-up...</p>
+                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Final standings</p>
+                    </div>
+                    <p class="winner-score">—</p>
+                </div>
+                <div class="winner-row opacity-70">
+                    <div class="winner-rank" style="background:#fb923c;">3</div>
+                    <div class="text-left">
+                        <p class="text-xs font-black text-white uppercase tracking-wider">Loading third place...</p>
+                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Final standings</p>
+                    </div>
+                    <p class="winner-score">—</p>
+                </div>
+            </div>
+            <button type="button" class="view-site-btn active-scale" onclick="dismissSplash()">View IPL 2026 Stats</button>
+            <p class="relative text-[8px] font-bold text-slate-600 uppercase tracking-widest mt-5">Designed by Vedant Bhansali</p>
         </div>
-        <p class="text-[8px] font-bold text-slate-600 uppercase tracking-widest absolute bottom-8">Designed by Vedant Bhansali</p>
     </div>
 
     <!-- PLAYER STAT MODAL -->
@@ -285,10 +365,8 @@
         <div id="discovery-tabs" class="flex gap-2.5 overflow-x-auto no-scrollbar pb-1 mb-6 stagger-item relative" style="animation-delay: 0.15s">
             <button onclick="switchTab('hof')" id="btn-hof" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)] border-yellow-500/30">🏆 Hall of Fame</button>
             <button onclick="switchTab('gems')" id="btn-gems" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">💎 Unsold Gems</button>
-            <button onclick="switchTab('weekly')" id="btn-weekly" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">📊 Weekly Recap</button>
+            <button onclick="switchTab('schedule')" id="btn-schedule" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">🗓️ Schedule</button>
             <button onclick="switchTab('strategy')" id="btn-strat" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">🎯 Luckiest</button>
-            <button onclick="switchTab('dream11')" id="btn-dream11" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">🏏 Dream11 Rankings</button>
-            <button onclick="switchTab('h2h')" id="btn-h2h" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">⚔️ Head-to-Head</button>
         </div>
 
         <div id="error-banner" class="error-banner hidden relative z-10">
@@ -322,7 +400,7 @@
             <div id="weekly-list" class="space-y-3 mt-4"></div>
         </div>
         <div id="view-strategy" class="hidden space-y-4 pb-8 relative z-10"><div id="strategy-list" class="space-y-3"></div></div>
-        <div id="view-dream11" class="hidden space-y-4 pb-8 relative z-10"><div id="dream11-list" class="space-y-3"></div></div>
+        <div id="view-season" class="hidden space-y-4 pb-8 relative z-10"><div id="season-stats-list" class="space-y-3"></div></div>
         
         <div id="view-h2h" class="hidden space-y-4 pb-8 relative z-10">
             <div class="glass-panel p-4 mb-3">
@@ -341,15 +419,11 @@
         <button onclick="switchTab('main')" id="nav-main" class="nav-item active active-scale flex-1">
             <span class="nav-icon">📊</span><span class="nav-label">Ranks</span>
         </button>
-        <button onclick="switchTab('livepoints')" id="nav-livepoints" class="nav-item active-scale relative flex-1">
-            <span class="nav-icon">🔴</span><span class="nav-label">Live</span>
-            <span id="live-tab-dot" class="hidden absolute top-2 right-4 w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981] animate-pulse"></span>
-        </button>
-        <button onclick="switchTab('schedule')" id="nav-schedule" class="nav-item active-scale flex-1">
-            <span class="nav-icon">🗓️</span><span class="nav-label">Events</span>
+        <button onclick="switchTab('season')" id="nav-season" class="nav-item active-scale flex-1">
+            <span class="nav-icon">📚</span><span class="nav-label">Season Stats</span>
         </button>
         <button onclick="switchTab('standings')" id="nav-standings" class="nav-item active-scale flex-1">
-            <span class="nav-icon">🏟️</span><span class="nav-label">Table</span>
+            <span class="nav-icon">🏟️</span><span class="nav-label">Table (2026)</span>
         </button>
     </nav>
 
@@ -423,6 +497,29 @@
 
         function dismissSplash() { const s=document.getElementById('splash'); if(s) { s.classList.add('hide'); setTimeout(()=>s.remove(),900); } }
 
+        function renderSplashWinners(active) {
+            const el = document.getElementById('splash-winners');
+            if (!el || !active || active.length < 3) return;
+            const medals = [
+                { rank: '1', label: 'Champion', bg: '#f1c40f', opacity: '1' },
+                { rank: '2', label: 'Runner-up', bg: '#cbd5e1', opacity: '0.86' },
+                { rank: '3', label: 'Third place', bg: '#fb923c', opacity: '0.76' }
+            ];
+            el.innerHTML = active.slice(0, 3).map((owner, idx) => {
+                const medal = medals[idx];
+                const color = idx === 0 ? '#f1c40f' : window.getColor(owner.id);
+                return `
+                <div class="winner-row" style="opacity:${medal.opacity}; border-color:${color}33;">
+                    <div class="winner-rank" style="background:${medal.bg};">${medal.rank}</div>
+                    <div class="text-left min-w-0">
+                        <p class="text-xs font-black text-white uppercase tracking-wider truncate">${owner.full}</p>
+                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">${medal.label}</p>
+                    </div>
+                    <p class="winner-score" style="color:${color};">${owner.score}</p>
+                </div>`;
+            }).join('');
+        }
+
         let _currentTab = 'main';
 
         function scrollScheduleToTodayMatch() {
@@ -436,7 +533,8 @@
             if (t !== 'standings') window.resetTeamTheme(); 
 
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            const navBtn = document.getElementById('nav-' + (['hof','gems','weekly','strategy','dream11','h2h'].includes(t) ? 'main' : t));
+            const navMap = { hof: 'main', gems: 'main', strategy: 'main', schedule: 'main', main: 'main', season: 'season', standings: 'standings' };
+            const navBtn = document.getElementById('nav-' + (navMap[t] || t));
             if (navBtn) navBtn.classList.add('active');
 
             document.querySelectorAll('#discovery-tabs .glass-panel').forEach(el => {
@@ -445,7 +543,7 @@
             const pillBtn = document.getElementById('btn-' + (t==='strategy'?'strat':t));
             if(pillBtn) pillBtn.style.borderColor = 'var(--accent)';
 
-            const views = {main:'view-main', livepoints:'view-livepoints', schedule:'view-schedule', standings:'view-standings', hof:'view-hof', gems:'view-gems', weekly:'view-weekly', strategy:'view-strategy', dream11:'view-dream11', h2h:'view-h2h'};
+            const views = {main:'view-main', livepoints:'view-livepoints', schedule:'view-schedule', standings:'view-standings', hof:'view-hof', gems:'view-gems', weekly:'view-weekly', strategy:'view-strategy', season:'view-season', h2h:'view-h2h'};
             
             Object.keys(views).forEach(k => {
                 const el = document.getElementById(views[k]);
@@ -465,6 +563,9 @@
             } else if(t!=='main') {
                 window.scrollTo({top:0, behavior:'smooth'});
             }
+            if (t === 'season' && window._state?.seasonStatsRows) {
+                requestAnimationFrame(() => renderSeasonStats(window._state.seasonStatsRows, window._seasonStatsState.rowsRef !== window._state.seasonStatsRows));
+            }
         }
 
         function toggleTheme() {
@@ -477,6 +578,8 @@
         if (localStorage.getItem('revo-theme') === 'light') { document.body.classList.add('light'); document.getElementById('theme-toggle').textContent = '☀️'; }
 
         window._state = {squads:{}, cumulScores:{}, completedMatches:[], active:[]};
+        window._seasonStatsState = { query: '', team: 'all', sort: 'runs', rows: [], normalizedRows: [], rowsRef: null, searchTimer: null };
+        window._playerPhotoMap = {};
 
         async function fetchSheet(name) {
             const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=0&sheet=${encodeURIComponent(name)}`;
@@ -499,11 +602,12 @@
         async function updateApp() {
             hideError();
             try {
-                const [lbRows, rosRows, pcRows, schedRows, standRows, liveRows, dream11Rows] = await Promise.all([
+                const [lbRows, rosRows, pcRows, schedRows, standRows, liveRows, seasonStatsRows, iplPlayerRows] = await Promise.all([
                     fetchSheet('Leaderboard'), fetchSheet('Roster'), fetchSheet('PointsCalc'),
                     fetchSheet('Schedule').catch(()=>[]), fetchSheet('Standings').catch(()=>[]), fetchSheet('Livescore').catch(()=>[]),
-                    fetchSheet('Complete_Season_Stats').catch(()=>[])
+                    fetchSheet('Complete_Season_Stats').catch(()=>[]), fetchSheet('IPL 2026 Players').catch(()=>[])
                 ]);
+                window._playerPhotoMap = buildSportMonksPhotoMap(iplPlayerRows || []);
 
                 const completedMatches = [...new Set(pcRows.filter(r=>r[0]&&parseFloat(r[6])>0).map(r=>r[0].toString().trim()))];
                 document.getElementById('match-counter').innerText = `MATCHES: ${completedMatches.length}/${TOTAL_SEASON_MATCHES}`;
@@ -539,8 +643,9 @@
                 const unsold=owners.find(o=>o.id==='unsold'); const allOwners=unsold?[...active,unsold]:active;
                 const cumulScores=buildCumulScores(active,pcRows,completedMatches);
                 
-                window._state={squads, cumulScores, completedMatches, rosRows, pPoints, pcRows, active, schedRows, dream11Rows};
+                window._state={squads, cumulScores, completedMatches, rosRows, pPoints, pcRows, active, schedRows, seasonStatsRows, iplPlayerRows};
 
+                renderSplashWinners(active);
                 renderTop3(active); renderLeaderboard(allOwners, squads);
                 renderMVPMerged(matchPlayers.sort((a,b)=>b.pts-a.pts)[0], lastMatchName, active, pcRows, completedMatches);
                 renderLastMatchCollapsible(active, pcRows, completedMatches); renderStreakTracker(active, cumulScores, completedMatches);
@@ -549,13 +654,12 @@
                 if(schedRows&&schedRows.length){ window._schedRows=schedRows; renderSchedule(schedRows); renderScheduleFilters(); }
                 renderTodayBar(schedRows||[]); renderWeekly(active, pcRows, completedMatches, squads);
                 renderStandings(standRows||[]); renderHallOfFame(active, pcRows, completedMatches);
-                renderGems(rosRows, pPoints); renderLivePoints(liveRows||[]); renderDream11Rankings(dream11Rows||[]);
+                renderGems(rosRows, pPoints); renderLivePoints(liveRows||[]);
+                if (_currentTab === 'season' || !window._seasonStatsState.rowsRef) renderSeasonStats(seasonStatsRows||[]);
 
                 if(!window._confettiFired && active.length > 0) { window._confettiFired=true; setTimeout(fireConfetti,800); }
-                setTimeout(dismissSplash, Math.max(0, 2500 - (Date.now() - window._appStartTime)));
             } catch(e) {
                 showError(e.message || 'Could not sync. Retrying...');
-                setTimeout(dismissSplash, Math.max(0, 2500 - (Date.now() - window._appStartTime)));
             }
         }
 
@@ -892,64 +996,270 @@
                 }).join('')}`;
         }
 
-        function renderDream11Rankings(rows) {
-            const el = document.getElementById('dream11-list'); if (!el) return;
-            const OWNER_COL = 18, POINTS_COL = 20;
-            const owners = {};
+        function escapeHTML(value) {
+            return (value ?? '').toString().replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+        }
+
+        function escapeJSString(value) {
+            return (value ?? '').toString().replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        }
+
+        function seasonStatNumber(value) {
+            const cleaned = (value ?? '').toString().replace(/,/g, '').trim();
+            const n = parseFloat(cleaned);
+            return Number.isFinite(n) ? n : 0;
+        }
+
+        function formatSeasonStat(value, decimals = 0) {
+            const n = seasonStatNumber(value);
+            return decimals ? n.toFixed(decimals).replace(/\.0$/, '') : Math.round(n).toLocaleString();
+        }
+
+
+        function sportMonksCricketImageUrl(playerId) {
+            const id = (playerId ?? '').toString().trim();
+            return /^\d+$/.test(id) ? `https://cdn.sportmonks.com/images/cricket/players/${id}/${id}.png` : '';
+        }
+
+        function buildSportMonksPhotoMap(rows) {
+            const PLAYER_ID_COL = 7;
+            const PLAYER_NAME_COLS = [0, 3];
+            const map = {};
+            rows.forEach(row => {
+                const imageUrl = sportMonksCricketImageUrl(row[PLAYER_ID_COL]);
+                if (!imageUrl) return;
+                PLAYER_NAME_COLS.forEach(col => {
+                    const name = (row[col] || '').toString().trim();
+                    const id = fixID(name);
+                    if (!name || ['player', 'player name', 'name'].includes(id) || id.includes('owner')) return;
+                    map[id] = imageUrl;
+                });
+            });
+            return map;
+        }
+
+        function seasonPlayerInitials(name) {
+            return (name || '?').split(/\s+/).filter(Boolean).map(part => part[0]).join('').slice(0, 2).toUpperCase() || '?';
+        }
+
+        function renderSeasonPlayerAvatar(player) {
+            const initials = escapeHTML(seasonPlayerInitials(player.name));
+            const image = player.photoUrl ? `<img src="${escapeHTML(player.photoUrl)}" alt="${escapeHTML(player.name)}" loading="lazy" class="absolute inset-0 w-full h-full object-cover" onerror="this.remove()">` : '';
+            return `<div class="relative w-11 h-11 rounded-2xl overflow-hidden border border-[var(--glass-border)] bg-white/10 flex items-center justify-center flex-shrink-0"><span class="font-cyber text-[10px] font-black text-[var(--text3)]">${initials}</span>${image}</div>`;
+        }
+
+        function normalizeSeasonStats(rows) {
+            const COL = { team: 2, name: 3, runs: 4, sixes: 7, sr: 8, fifties: 10, hundreds: 11, wickets: 15, threeW: 17, fiveW: 18, country: 22, role: 23, previousOwner: 24 };
+            const players = new Map();
 
             rows.forEach(row => {
-                const owner = (row[OWNER_COL] || '').toString().trim();
-                const ownerId = fixID(owner);
-                const points = parseFloat((row[POINTS_COL] || '').toString().replace(/,/g, ''));
-                if (!owner || !ownerId || ownerId.includes('owner') || Number.isNaN(points)) return;
-                if (!owners[ownerId]) owners[ownerId] = { name: owner, id: ownerId, points: 0, players: 0 };
-                owners[ownerId].points += points;
-                owners[ownerId].players += 1;
+                const name = (row[COL.name] || '').toString().trim();
+                const team = (row[COL.team] || '').toString().trim();
+                const id = fixID(name);
+                if (!name || ['player', 'player name', 'name'].includes(id) || id.includes('total')) return;
+
+                const normalizedTeam = team || 'Unknown';
+                const key = `${fixID(normalizedTeam)}::${id}`;
+                const role = (row[COL.role] || '').toString().trim();
+                const country = (row[COL.country] || '').toString().trim();
+                const previousOwner = (row[COL.previousOwner] || '').toString().trim();
+                const photoUrl = window._playerPhotoMap?.[id] || '';
+                const strikeRate = seasonStatNumber(row[COL.sr]);
+
+                if (!players.has(key)) {
+                    players.set(key, {
+                        name,
+                        team: normalizedTeam,
+                        role: role || '—',
+                        country: country || '—',
+                        previousOwner: previousOwner || '—',
+                        photoUrl,
+                        runs: 0,
+                        sixes: 0,
+                        strikeRate: 0,
+                        strikeRateTotal: 0,
+                        strikeRateRows: 0,
+                        fifties: 0,
+                        hundreds: 0,
+                        wickets: 0,
+                        threeW: 0,
+                        fiveW: 0
+                    });
+                }
+
+                const player = players.get(key);
+                if (country) player.country = country;
+                if (role) player.role = role;
+                if (previousOwner) player.previousOwner = previousOwner;
+                if (photoUrl) player.photoUrl = photoUrl;
+                player.runs += seasonStatNumber(row[COL.runs]);
+                player.sixes += seasonStatNumber(row[COL.sixes]);
+                player.fifties += seasonStatNumber(row[COL.fifties]);
+                player.hundreds += seasonStatNumber(row[COL.hundreds]);
+                player.wickets += seasonStatNumber(row[COL.wickets]);
+                player.threeW += seasonStatNumber(row[COL.threeW]);
+                player.fiveW += seasonStatNumber(row[COL.fiveW]);
+                if (strikeRate > 0) {
+                    player.strikeRateTotal += strikeRate;
+                    player.strikeRateRows += 1;
+                }
             });
 
-            const rankings = Object.values(owners).sort((a, b) => b.points - a.points);
-            const leaderPoints = rankings[0]?.points || 1;
-            const totalPoints = rankings.reduce((sum, owner) => sum + owner.points, 0);
+            return [...players.values()].map(player => ({
+                ...player,
+                strikeRate: player.strikeRateRows ? player.strikeRateTotal / player.strikeRateRows : 0
+            }));
+        }
+
+        function filterSeasonStats(query) {
+            window._seasonStatsState.query = query || '';
+            clearTimeout(window._seasonStatsState.searchTimer);
+            window._seasonStatsState.searchTimer = setTimeout(() => renderSeasonStats(window._seasonStatsState.rows, false), 120);
+        }
+
+        function selectSeasonStatsTeam(team) {
+            window.haptic(10);
+            window._seasonStatsState.team = team || 'all';
+            renderSeasonStats(window._seasonStatsState.rows, false);
+        }
+
+        function sortSeasonStats(sortBy) {
+            window._seasonStatsState.sort = sortBy || 'runs';
+            renderSeasonStats(window._seasonStatsState.rows, false);
+        }
+
+        function renderSeasonStats(rows, resetRows = true) {
+            const el = document.getElementById('season-stats-list'); if (!el) return;
+            const keepSearchFocus = document.activeElement?.id === 'season-stats-search';
+            if (resetRows) window._seasonStatsState.rows = rows;
+            if (resetRows || window._seasonStatsState.rowsRef !== window._seasonStatsState.rows) {
+                window._seasonStatsState.normalizedRows = normalizeSeasonStats(window._seasonStatsState.rows);
+                window._seasonStatsState.rowsRef = window._seasonStatsState.rows;
+            }
+
+            const players = window._seasonStatsState.normalizedRows || [];
+            const query = fixID(window._seasonStatsState.query);
+            const selectedTeam = window._seasonStatsState.team || 'all';
+            const sortBy = window._seasonStatsState.sort || 'runs';
+
+            const teams = [...new Set(players.map(p => p.team).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+            const filtered = players.filter(p => {
+                const haystack = fixID(`${p.name} ${p.team} ${p.role} ${p.country} ${p.previousOwner}`);
+                return (selectedTeam === 'all' || p.team === selectedTeam) && (!query || haystack.includes(query));
+            }).sort((a,b) => (b[sortBy] || 0) - (a[sortBy] || 0) || a.name.localeCompare(b.name));
+
+            const showPlayerCards = selectedTeam !== 'all' || !!query;
+            const grouped = {};
+            filtered.forEach(player => { if(!grouped[player.team]) grouped[player.team] = []; grouped[player.team].push(player); });
+
+            const totals = filtered.reduce((acc, p) => {
+                acc.runs += p.runs; acc.wickets += p.wickets; acc.sixes += p.sixes; acc.fifties += p.fifties; acc.hundreds += p.hundreds;
+                return acc;
+            }, { runs: 0, wickets: 0, sixes: 0, fifties: 0, hundreds: 0 });
+
+            const statChip = (label, value, color = 'text-[var(--text1)]') => `
+                <div class="rounded-xl bg-white/5 border border-[var(--glass-border)] px-2.5 py-2 text-center">
+                    <p class="font-cyber text-sm font-black ${color} leading-none">${value}</p>
+                    <p class="text-[7px] font-black text-[var(--text4)] uppercase tracking-widest mt-1">${label}</p>
+                </div>`;
+
+            const teamPills = ['all', ...teams].map(team => {
+                const active = selectedTeam === team, label = team === 'all' ? 'All Teams' : team;
+                const color = team === 'all' ? '#f1c40f' : (TEAM_COLORS[getShortTeam(team)] || TEAM_COLORS[team] || '#64748b');
+                return `<button onclick="selectSeasonStatsTeam('${escapeJSString(team)}')" class="sched-pill ${active ? 'active' : ''}" style="${active ? `color:${color}; border-color:${color}; background:${color}18;` : ''}">${escapeHTML(label)}</button>`;
+            }).join('');
 
             el.innerHTML = `
-                <div class="glass-panel p-4 mb-3 stagger-item" style="border-color: rgba(241,196,15,0.25); background: linear-gradient(135deg, rgba(241,196,15,0.06), transparent)">
-                    <div class="flex justify-between items-center gap-3">
+                <div class="glass-panel p-4 stagger-item" style="border-color: rgba(241,196,15,0.25); background: linear-gradient(135deg, rgba(241,196,15,0.06), transparent)">
+                    <div class="flex justify-between items-start gap-3 mb-4">
                         <div>
-                            <p class="font-cyber text-[8px] font-black tracking-widest text-yellow-500 uppercase mb-1">🏏 Dream11 Rankings</p>
-                            <p class="text-[11px] font-bold text-[var(--text3)] leading-relaxed">What if the Dream11 points system were followed for the full season? This table re-ranks owners by adding each player’s Dream11-style total from Complete_Season_Stats.</p>
-                            <p class="text-[8px] font-black text-[var(--text4)] uppercase tracking-widest mt-2">Owner: Column S · Player Points: Column U</p>
+                            <p class="font-cyber text-[8px] font-black tracking-widest text-yellow-500 uppercase mb-1">📚 Season Stats</p>
+                            <p class="text-[11px] font-bold text-[var(--text3)] leading-relaxed">Team-wise player summary for future IPL season reviews. Summary loads first; pick a team to open its player card.</p>
                         </div>
                         <div class="text-right flex-shrink-0">
-                            <p class="font-cyber text-xl font-black text-yellow-500">${Math.round(totalPoints)}</p>
-                            <p class="text-[7px] font-black text-[var(--text4)] uppercase tracking-widest">Total Pts</p>
+                            <p class="font-cyber text-xl font-black text-yellow-500">${filtered.length}</p>
+                            <p class="text-[7px] font-black text-[var(--text4)] uppercase tracking-widest">Players</p>
                         </div>
                     </div>
+                    <div class="grid grid-cols-3 gap-2 mb-4">
+                        ${statChip('Runs', formatSeasonStat(totals.runs), 'text-yellow-500')}
+                        ${statChip('Wkts', formatSeasonStat(totals.wickets), 'text-[#48dbfb]')}
+                        ${statChip('6s', formatSeasonStat(totals.sixes), 'text-[#2ecc71]')}
+                    </div>
+                    <div class="relative mb-3">
+                        <input id="season-stats-search" type="text" value="${escapeHTML(window._seasonStatsState.query)}" placeholder="Search season stats..." oninput="filterSeasonStats(this.value)" class="w-full bg-black/20 border border-[var(--glass-border)] rounded-2xl py-3 pl-10 pr-3 text-xs font-bold text-[var(--text1)] outline-none focus:border-yellow-500/50 placeholder:text-[var(--text4)]">
+                        <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 opacity-40 text-[var(--text1)]" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                    </div>
+                    <div class="flex items-center gap-2 mb-3">
+                        <label class="text-[8px] font-black uppercase tracking-widest text-[var(--text4)] flex-shrink-0">Sort</label>
+                        <select onchange="sortSeasonStats(this.value)" class="flex-1 bg-black/20 border border-[var(--glass-border)] rounded-xl px-3 py-2.5 text-[10px] font-black text-[var(--text1)] outline-none">
+                            ${[['runs','Runs'],['wickets','Wickets'],['sixes','Sixes'],['strikeRate','Strike Rate'],['fifties','50s'],['hundreds','100s'],['threeW','3W'],['fiveW','5W']].map(([value,label]) => `<option value="${value}" ${sortBy===value?'selected':''}>${label}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">${teamPills}</div>
                 </div>
-                ${rankings.length === 0 ? `<div class="p-8 text-center text-[10px] text-[var(--text4)] font-cyber uppercase">No Dream11 rankings found</div>` : rankings.map((owner, i) => {
-                    const color = window.getColor(owner.id), gap = i === 0 ? 0 : leaderPoints - owner.points;
-                    const pct = Math.max(5, Math.min(100, Math.round((owner.points / leaderPoints) * 100)));
-                    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`;
+                ${filtered.length === 0 ? `<div class="p-8 text-center text-[10px] text-[var(--text4)] font-cyber uppercase">No season stats found</div>` : !showPlayerCards ? `
+                    <div class="glass-panel p-4 text-center stagger-item">
+                        <p class="text-[10px] font-black text-yellow-500 uppercase tracking-widest mb-1">Summary Loaded</p>
+                        <p class="text-[9px] font-bold text-[var(--text4)] uppercase tracking-widest leading-relaxed">Use a team button above to open only that team's player card.</p>
+                    </div>` : Object.entries(grouped).map(([team, teamPlayers], teamIdx) => {
+                    const shortTeam = getShortTeam(team);
+                    const teamColor = TEAM_COLORS[shortTeam] || TEAM_COLORS[team] || '#64748b';
+                    const teamTotals = teamPlayers.reduce((acc, p) => { acc.players += 1; acc.runs += p.runs; acc.wickets += p.wickets; acc.sixes += p.sixes; acc.fifties += p.fifties; acc.hundreds += p.hundreds; return acc; }, {players:0,runs:0,wickets:0,sixes:0,fifties:0,hundreds:0});
                     return `
-                    <div class="glass-panel p-4 stagger-item" style="animation-delay: ${0.05 * i}s; --owner-color: ${color}; ${i < 3 ? `border-color: ${color}55;` : ''}">
+                    <div class="glass-panel p-4 stagger-item" style="animation-delay:${Math.min(0.02 * teamIdx, 0.18)}s; --owner-color:${teamColor}; border-color:${teamColor}44;">
                         <div class="aura-glow"></div>
                         <div class="relative z-10">
-                            <div class="flex justify-between items-center gap-3 mb-3">
-                                <div class="flex items-center gap-3 min-w-0">
-                                    <div class="w-10 h-10 rounded-full flex items-center justify-center font-cyber font-black text-[10px] border flex-shrink-0" style="border-color:${color}66; background:${color}18; color:${color}">${medal}</div>
-                                    <div class="min-w-0">
-                                        <p class="text-sm font-extrabold uppercase tracking-tight text-[var(--text1)] truncate">${owner.name}</p>
-                                        <p class="text-[9px] font-bold text-[var(--text4)] uppercase mt-0.5">${owner.players} Players${gap > 0 ? ` · ${Math.round(gap)} pts behind` : ' · Leader'}</p>
-                                    </div>
+                            <div class="flex justify-between items-center gap-3 ${showPlayerCards ? 'mb-3' : ''}">
+                                <div>
+                                    <p class="font-cyber text-base font-black uppercase" style="color:${teamColor}">${escapeHTML(team)}</p>
+                                    <p class="text-[8px] font-black text-[var(--text4)] uppercase tracking-widest mt-0.5">${teamTotals.players} players · ${formatSeasonStat(teamTotals.runs)} runs · ${formatSeasonStat(teamTotals.wickets)} wkts</p>
                                 </div>
-                                <div class="text-right flex-shrink-0">
-                                    <p class="font-cyber text-xl font-black italic leading-none" style="color:${color}">${Math.round(owner.points)}</p>
-                                    <p class="text-[7px] font-black text-[var(--text4)] uppercase tracking-widest">PTS</p>
+                                <div class="grid grid-cols-3 gap-1.5 text-center flex-shrink-0">
+                                    <div><p class="font-cyber text-xs font-black text-[#2ecc71]">${formatSeasonStat(teamTotals.sixes)}</p><p class="text-[6px] font-black text-[var(--text4)] uppercase">6s</p></div>
+                                    <div><p class="font-cyber text-xs font-black text-yellow-500">${formatSeasonStat(teamTotals.fifties)}</p><p class="text-[6px] font-black text-[var(--text4)] uppercase">50s</p></div>
+                                    <div><p class="font-cyber text-xs font-black text-orange-400">${formatSeasonStat(teamTotals.hundreds)}</p><p class="text-[6px] font-black text-[var(--text4)] uppercase">100s</p></div>
                                 </div>
                             </div>
-                            <div class="w-full h-1 bg-[var(--glass-border)] rounded-full overflow-hidden"><div class="h-full rounded-full transition-all duration-1000" style="width:${pct}%; background:linear-gradient(90deg, ${color}66, ${color})"></div></div>
+                            ${showPlayerCards ? `<div class="space-y-2.5">
+                                ${teamPlayers.map((p, idx) => `
+                                <div class="rounded-2xl border border-[var(--glass-border)] bg-white/5 p-3">
+                                    <div class="flex justify-between gap-3 mb-3">
+                                        <div class="flex items-center gap-3 min-w-0">
+                                            ${renderSeasonPlayerAvatar(p)}
+                                            <div class="min-w-0">
+                                                <p class="text-sm font-extrabold text-[var(--text1)] truncate">${escapeHTML(p.name)} <span class="text-[10px] font-bold text-[var(--text4)] normal-case">(${escapeHTML(p.previousOwner || '—')})</span></p>
+                                                <p class="text-[8px] font-black text-[var(--text4)] uppercase tracking-widest mt-1">${escapeHTML(p.country)} · ${escapeHTML(p.role)}</p>
+                                            </div>
+                                        </div>
+                                        <p class="text-[9px] font-black text-[var(--text4)] font-cyber flex-shrink-0">#${idx + 1}</p>
+                                    </div>
+                                    <div class="grid grid-cols-4 gap-1.5 mb-1.5">
+                                        ${statChip('Runs', formatSeasonStat(p.runs), 'text-yellow-500')}
+                                        ${statChip('Wkts', formatSeasonStat(p.wickets), 'text-[#48dbfb]')}
+                                        ${statChip('6s', formatSeasonStat(p.sixes), 'text-[#2ecc71]')}
+                                        ${statChip('SR', formatSeasonStat(p.strikeRate, 1), 'text-[var(--text1)]')}
+                                    </div>
+                                    <div class="grid grid-cols-4 gap-1.5">
+                                        ${statChip('50s', formatSeasonStat(p.fifties), 'text-yellow-400')}
+                                        ${statChip('100s', formatSeasonStat(p.hundreds), 'text-orange-400')}
+                                        ${statChip('3W', formatSeasonStat(p.threeW), 'text-purple-400')}
+                                        ${statChip('5W', formatSeasonStat(p.fiveW), 'text-red-400')}
+                                    </div>
+                                </div>`).join('')}
+                            </div>` : ''}
                         </div>
                     </div>`;
                 }).join('')}`;
+
+            if (keepSearchFocus) {
+                requestAnimationFrame(() => {
+                    const input = document.getElementById('season-stats-search');
+                    if (!input) return;
+                    input.focus();
+                    input.setSelectionRange(input.value.length, input.value.length);
+                });
+            }
         }
 
         function renderH2HDropdowns(active) {
@@ -1378,7 +1688,6 @@
 
         updateApp();
         setInterval(updateApp, 60000);
-        setTimeout(dismissSplash, 6000);
         
         window.addEventListener('scroll',()=>{
             const btn = document.getElementById('scroll-top-btn');
