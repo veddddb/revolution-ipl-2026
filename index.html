@@ -352,8 +352,6 @@
             <button onclick="switchTab('gems')" id="btn-gems" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">💎 Unsold Gems</button>
             <button onclick="switchTab('schedule')" id="btn-schedule" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">🗓️ Schedule</button>
             <button onclick="switchTab('strategy')" id="btn-strat" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">🎯 Luckiest</button>
-            <button onclick="switchTab('season')" id="btn-season" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">📚 Season Stats</button>
-            <button onclick="switchTab('h2h')" id="btn-h2h" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">⚔️ Head-to-Head</button>
         </div>
 
         <div id="error-banner" class="error-banner hidden relative z-10">
@@ -550,6 +548,9 @@
             } else if(t!=='main') {
                 window.scrollTo({top:0, behavior:'smooth'});
             }
+            if (t === 'season' && window._state?.seasonStatsRows) {
+                requestAnimationFrame(() => renderSeasonStats(window._state.seasonStatsRows, window._seasonStatsState.rowsRef !== window._state.seasonStatsRows));
+            }
         }
 
         function toggleTheme() {
@@ -562,7 +563,7 @@
         if (localStorage.getItem('revo-theme') === 'light') { document.body.classList.add('light'); document.getElementById('theme-toggle').textContent = '☀️'; }
 
         window._state = {squads:{}, cumulScores:{}, completedMatches:[], active:[]};
-        window._seasonStatsState = { query: '', team: 'all', sort: 'runs', rows: [] };
+        window._seasonStatsState = { query: '', team: 'all', sort: 'runs', rows: [], normalizedRows: [], rowsRef: null, searchTimer: null };
 
         async function fetchSheet(name) {
             const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=0&sheet=${encodeURIComponent(name)}`;
@@ -636,7 +637,8 @@
                 if(schedRows&&schedRows.length){ window._schedRows=schedRows; renderSchedule(schedRows); renderScheduleFilters(); }
                 renderTodayBar(schedRows||[]); renderWeekly(active, pcRows, completedMatches, squads);
                 renderStandings(standRows||[]); renderHallOfFame(active, pcRows, completedMatches);
-                renderGems(rosRows, pPoints); renderLivePoints(liveRows||[]); renderSeasonStats(seasonStatsRows||[]);
+                renderGems(rosRows, pPoints); renderLivePoints(liveRows||[]);
+                if (_currentTab === 'season' || !window._seasonStatsState.rowsRef) renderSeasonStats(seasonStatsRows||[]);
 
                 if(!window._confettiFired && active.length > 0) { window._confettiFired=true; setTimeout(fireConfetti,800); }
             } catch(e) {
@@ -1055,7 +1057,8 @@
 
         function filterSeasonStats(query) {
             window._seasonStatsState.query = query || '';
-            renderSeasonStats(window._seasonStatsState.rows, false);
+            clearTimeout(window._seasonStatsState.searchTimer);
+            window._seasonStatsState.searchTimer = setTimeout(() => renderSeasonStats(window._seasonStatsState.rows, false), 120);
         }
 
         function selectSeasonStatsTeam(team) {
@@ -1073,8 +1076,12 @@
             const el = document.getElementById('season-stats-list'); if (!el) return;
             const keepSearchFocus = document.activeElement?.id === 'season-stats-search';
             if (resetRows) window._seasonStatsState.rows = rows;
+            if (resetRows || window._seasonStatsState.rowsRef !== window._seasonStatsState.rows) {
+                window._seasonStatsState.normalizedRows = normalizeSeasonStats(window._seasonStatsState.rows);
+                window._seasonStatsState.rowsRef = window._seasonStatsState.rows;
+            }
 
-            const players = normalizeSeasonStats(window._seasonStatsState.rows);
+            const players = window._seasonStatsState.normalizedRows || [];
             const query = fixID(window._seasonStatsState.query);
             const selectedTeam = window._seasonStatsState.team || 'all';
             const sortBy = window._seasonStatsState.sort || 'runs';
@@ -1085,6 +1092,7 @@
                 return (selectedTeam === 'all' || p.team === selectedTeam) && (!query || haystack.includes(query));
             }).sort((a,b) => (b[sortBy] || 0) - (a[sortBy] || 0) || a.name.localeCompare(b.name));
 
+            const showPlayerCards = selectedTeam !== 'all' || !!query;
             const grouped = {};
             filtered.forEach(player => { if(!grouped[player.team]) grouped[player.team] = []; grouped[player.team].push(player); });
 
@@ -1110,7 +1118,7 @@
                     <div class="flex justify-between items-start gap-3 mb-4">
                         <div>
                             <p class="font-cyber text-[8px] font-black tracking-widest text-yellow-500 uppercase mb-1">📚 Season Stats</p>
-                            <p class="text-[11px] font-bold text-[var(--text3)] leading-relaxed">Team-wise player summary for future IPL season reviews. Players are matched from Column D and teams from Column C, then totals are combined per player.</p>
+                            <p class="text-[11px] font-bold text-[var(--text3)] leading-relaxed">Team-wise player summary for future IPL season reviews. Summary loads first; pick a team to open its player card.</p>
                         </div>
                         <div class="text-right flex-shrink-0">
                             <p class="font-cyber text-xl font-black text-yellow-500">${filtered.length}</p>
@@ -1134,18 +1142,22 @@
                     </div>
                     <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">${teamPills}</div>
                 </div>
-                ${filtered.length === 0 ? `<div class="p-8 text-center text-[10px] text-[var(--text4)] font-cyber uppercase">No season stats found</div>` : Object.entries(grouped).map(([team, teamPlayers], teamIdx) => {
+                ${filtered.length === 0 ? `<div class="p-8 text-center text-[10px] text-[var(--text4)] font-cyber uppercase">No season stats found</div>` : !showPlayerCards ? `
+                    <div class="glass-panel p-4 text-center stagger-item">
+                        <p class="text-[10px] font-black text-yellow-500 uppercase tracking-widest mb-1">Summary Loaded</p>
+                        <p class="text-[9px] font-bold text-[var(--text4)] uppercase tracking-widest leading-relaxed">Use a team button above to open only that team's player card.</p>
+                    </div>` : Object.entries(grouped).map(([team, teamPlayers], teamIdx) => {
                     const shortTeam = getShortTeam(team);
                     const teamColor = TEAM_COLORS[shortTeam] || TEAM_COLORS[team] || '#64748b';
-                    const teamTotals = teamPlayers.reduce((acc, p) => { acc.runs += p.runs; acc.wickets += p.wickets; acc.sixes += p.sixes; acc.fifties += p.fifties; acc.hundreds += p.hundreds; return acc; }, {runs:0,wickets:0,sixes:0,fifties:0,hundreds:0});
+                    const teamTotals = teamPlayers.reduce((acc, p) => { acc.players += 1; acc.runs += p.runs; acc.wickets += p.wickets; acc.sixes += p.sixes; acc.fifties += p.fifties; acc.hundreds += p.hundreds; return acc; }, {players:0,runs:0,wickets:0,sixes:0,fifties:0,hundreds:0});
                     return `
-                    <div class="glass-panel p-4 stagger-item" style="animation-delay:${0.05 * teamIdx}s; --owner-color:${teamColor}; border-color:${teamColor}44;">
+                    <div class="glass-panel p-4 stagger-item" style="animation-delay:${Math.min(0.02 * teamIdx, 0.18)}s; --owner-color:${teamColor}; border-color:${teamColor}44;">
                         <div class="aura-glow"></div>
                         <div class="relative z-10">
-                            <div class="flex justify-between items-center gap-3 mb-3">
+                            <div class="flex justify-between items-center gap-3 ${showPlayerCards ? 'mb-3' : ''}">
                                 <div>
                                     <p class="font-cyber text-base font-black uppercase" style="color:${teamColor}">${escapeHTML(team)}</p>
-                                    <p class="text-[8px] font-black text-[var(--text4)] uppercase tracking-widest mt-0.5">${teamPlayers.length} players · ${formatSeasonStat(teamTotals.runs)} runs · ${formatSeasonStat(teamTotals.wickets)} wkts</p>
+                                    <p class="text-[8px] font-black text-[var(--text4)] uppercase tracking-widest mt-0.5">${teamTotals.players} players · ${formatSeasonStat(teamTotals.runs)} runs · ${formatSeasonStat(teamTotals.wickets)} wkts</p>
                                 </div>
                                 <div class="grid grid-cols-3 gap-1.5 text-center flex-shrink-0">
                                     <div><p class="font-cyber text-xs font-black text-[#2ecc71]">${formatSeasonStat(teamTotals.sixes)}</p><p class="text-[6px] font-black text-[var(--text4)] uppercase">6s</p></div>
@@ -1153,7 +1165,7 @@
                                     <div><p class="font-cyber text-xs font-black text-orange-400">${formatSeasonStat(teamTotals.hundreds)}</p><p class="text-[6px] font-black text-[var(--text4)] uppercase">100s</p></div>
                                 </div>
                             </div>
-                            <div class="space-y-2.5">
+                            ${showPlayerCards ? `<div class="space-y-2.5">
                                 ${teamPlayers.map((p, idx) => `
                                 <div class="rounded-2xl border border-[var(--glass-border)] bg-white/5 p-3">
                                     <div class="flex justify-between gap-3 mb-3">
@@ -1176,7 +1188,7 @@
                                         ${statChip('5W', formatSeasonStat(p.fiveW), 'text-red-400')}
                                     </div>
                                 </div>`).join('')}
-                            </div>
+                            </div>` : ''}
                         </div>
                     </div>`;
                 }).join('')}`;
