@@ -350,7 +350,7 @@
         <div id="discovery-tabs" class="flex gap-2.5 overflow-x-auto no-scrollbar pb-1 mb-6 stagger-item relative" style="animation-delay: 0.15s">
             <button onclick="switchTab('hof')" id="btn-hof" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)] border-yellow-500/30">🏆 Hall of Fame</button>
             <button onclick="switchTab('gems')" id="btn-gems" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">💎 Unsold Gems</button>
-            <button onclick="switchTab('weekly')" id="btn-weekly" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">📊 Weekly Recap</button>
+            <button onclick="switchTab('schedule')" id="btn-schedule" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">🗓️ Schedule</button>
             <button onclick="switchTab('strategy')" id="btn-strat" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">🎯 Luckiest</button>
             <button onclick="switchTab('season')" id="btn-season" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">📚 Season Stats</button>
             <button onclick="switchTab('h2h')" id="btn-h2h" class="flex-shrink-0 px-4 py-2.5 glass-panel whitespace-nowrap text-[9px] font-black uppercase tracking-widest active-scale text-[var(--text2)]">⚔️ Head-to-Head</button>
@@ -406,15 +406,11 @@
         <button onclick="switchTab('main')" id="nav-main" class="nav-item active active-scale flex-1">
             <span class="nav-icon">📊</span><span class="nav-label">Ranks</span>
         </button>
-        <button onclick="switchTab('livepoints')" id="nav-livepoints" class="nav-item active-scale relative flex-1">
-            <span class="nav-icon">🔴</span><span class="nav-label">Live</span>
-            <span id="live-tab-dot" class="hidden absolute top-2 right-4 w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981] animate-pulse"></span>
-        </button>
-        <button onclick="switchTab('schedule')" id="nav-schedule" class="nav-item active-scale flex-1">
-            <span class="nav-icon">🗓️</span><span class="nav-label">Events</span>
+        <button onclick="switchTab('season')" id="nav-season" class="nav-item active-scale flex-1">
+            <span class="nav-icon">📚</span><span class="nav-label">Season Stats</span>
         </button>
         <button onclick="switchTab('standings')" id="nav-standings" class="nav-item active-scale flex-1">
-            <span class="nav-icon">🏟️</span><span class="nav-label">Table</span>
+            <span class="nav-icon">🏟️</span><span class="nav-label">Table (2026)</span>
         </button>
     </nav>
 
@@ -524,7 +520,8 @@
             if (t !== 'standings') window.resetTeamTheme(); 
 
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            const navBtn = document.getElementById('nav-' + (['hof','gems','weekly','strategy','season','h2h'].includes(t) ? 'main' : t));
+            const navMap = { hof: 'main', gems: 'main', strategy: 'main', schedule: 'main', main: 'main', season: 'season', standings: 'standings' };
+            const navBtn = document.getElementById('nav-' + (navMap[t] || t));
             if (navBtn) navBtn.classList.add('active');
 
             document.querySelectorAll('#discovery-tabs .glass-panel').forEach(el => {
