@@ -33,14 +33,29 @@
             --text1: #0f172a; --text2: #334155; --text3: #475569; --text4: #94a3b8;
         }
 
+        *, *::before, *::after { box-sizing: border-box; }
+
+        html {
+            min-height: 100%;
+            background: var(--bg-void);
+            overflow-x: hidden;
+            overscroll-behavior-y: none;
+        }
+
         body {
             background: var(--bg-void);
             color: var(--text1);
             font-family: var(--font-main);
             min-height: 100vh;
+            min-height: 100svh;
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
             transition: background 0.4s, color 0.4s;
+        }
+
+        .app-body {
+            padding: 16px 16px 88px;
+            padding: 16px 16px calc(88px + env(safe-area-inset-bottom));
         }
 
         /* High-End Background Mesh with Dynamic Theming Support */
@@ -263,7 +278,7 @@
         .today-glow { border-color: rgba(241, 196, 15, 0.5) !important; background: rgba(241, 196, 15, 0.08) !important; box-shadow: 0 0 20px rgba(241, 196, 15, 0.15); }
     </style>
 </head>
-<body class="p-4 pb-32">
+<body class="app-body">
     <div class="mesh-bg"></div>
     <div id="search-overlay" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[2000] transition-opacity duration-300"></div>
 
@@ -999,7 +1014,7 @@
         }
 
         function normalizeSeasonStats(rows) {
-            const COL = { team: 2, name: 3, runs: 4, sixes: 7, sr: 8, fifties: 10, hundreds: 11, wickets: 15, threeW: 17, fiveW: 18, country: 22, role: 23 };
+            const COL = { team: 2, name: 3, runs: 4, sixes: 7, sr: 8, fifties: 10, hundreds: 11, wickets: 15, threeW: 17, fiveW: 18, country: 22, role: 23, previousOwner: 24 };
             const players = new Map();
 
             rows.forEach(row => {
@@ -1012,6 +1027,7 @@
                 const key = `${fixID(normalizedTeam)}::${id}`;
                 const role = (row[COL.role] || '').toString().trim();
                 const country = (row[COL.country] || '').toString().trim();
+                const previousOwner = (row[COL.previousOwner] || '').toString().trim();
                 const strikeRate = seasonStatNumber(row[COL.sr]);
 
                 if (!players.has(key)) {
@@ -1020,6 +1036,7 @@
                         team: normalizedTeam,
                         role: role || '—',
                         country: country || '—',
+                        previousOwner: previousOwner || '—',
                         runs: 0,
                         sixes: 0,
                         strikeRate: 0,
@@ -1036,6 +1053,7 @@
                 const player = players.get(key);
                 if (country) player.country = country;
                 if (role) player.role = role;
+                if (previousOwner) player.previousOwner = previousOwner;
                 player.runs += seasonStatNumber(row[COL.runs]);
                 player.sixes += seasonStatNumber(row[COL.sixes]);
                 player.fifties += seasonStatNumber(row[COL.fifties]);
@@ -1088,7 +1106,7 @@
 
             const teams = [...new Set(players.map(p => p.team).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
             const filtered = players.filter(p => {
-                const haystack = fixID(`${p.name} ${p.team} ${p.role} ${p.country}`);
+                const haystack = fixID(`${p.name} ${p.team} ${p.role} ${p.country} ${p.previousOwner}`);
                 return (selectedTeam === 'all' || p.team === selectedTeam) && (!query || haystack.includes(query));
             }).sort((a,b) => (b[sortBy] || 0) - (a[sortBy] || 0) || a.name.localeCompare(b.name));
 
@@ -1170,7 +1188,7 @@
                                 <div class="rounded-2xl border border-[var(--glass-border)] bg-white/5 p-3">
                                     <div class="flex justify-between gap-3 mb-3">
                                         <div class="min-w-0">
-                                            <p class="text-sm font-extrabold text-[var(--text1)] truncate">${escapeHTML(p.name)}</p>
+                                            <p class="text-sm font-extrabold text-[var(--text1)] truncate">${escapeHTML(p.name)} <span class="text-[10px] font-bold text-[var(--text4)] normal-case">(${escapeHTML(p.previousOwner || '—')})</span></p>
                                             <p class="text-[8px] font-black text-[var(--text4)] uppercase tracking-widest mt-1">${escapeHTML(p.country)} · ${escapeHTML(p.role)}</p>
                                         </div>
                                         <p class="text-[9px] font-black text-[var(--text4)] font-cyber flex-shrink-0">#${idx + 1}</p>
